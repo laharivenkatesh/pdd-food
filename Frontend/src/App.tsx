@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "./components/Layout";
@@ -15,7 +15,6 @@ import PostFood from "./pages/PostFood";
 import Activity from "./pages/Activity";
 import NGOs from "./pages/NGOs";
 import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
 import Expired from "./pages/Expired";
 import SplashScreen from "./components/SplashScreen";
 
@@ -49,7 +48,7 @@ const App = () => {
                     <Route path="/post" element={<RequireAuth><PostFood /></RequireAuth>} />
                     <Route path="/activity" element={<RequireAuth><Activity /></RequireAuth>} />
                     <Route path="/ngos" element={<RequireAuth><NGOs /></RequireAuth>} />
-                    <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+                    <Route path="/dashboard" element={<Navigate to="/activity" replace />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>

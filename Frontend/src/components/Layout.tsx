@@ -399,7 +399,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <SidebarLink to="/post" icon={<PlusCircle className="w-5 h-5" />} label="Post Food" />
               <SidebarLink to="/activity" icon={<User className="w-5 h-5" />} label="Profile" />
               <SidebarLink to="/ngos" icon={<Heart className="w-5 h-5" />} label="NGOs" />
-              <SidebarLink to="/dashboard" icon={<LayoutDashboard className="w-5 h-5" />} label="Dashboard" />
             </nav>
           </div>
 
