@@ -3,13 +3,15 @@ import { createClient } from "@supabase/supabase-js";
 // These are read from .env (Vite). After connecting Supabase, add to a .env file:
 // VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 // VITE_SUPABASE_ANON_KEY=eyJhbGciOi... (anon/publishable key — safe to expose)
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const DEFAULT_SUPABASE_URL = "https://uyjvckvhsbfvlpffhefy.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5anZja3Zoc2JmdmxwZmZoZWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3ODc3MzQsImV4cCI6MjA5MjM2MzczNH0.FizI5YxINmGT68NlkfZ9RuO46enAPcB6NTRklZ1vZMo";
+
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || DEFAULT_SUPABASE_URL;
+const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || DEFAULT_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = Boolean(
   SUPABASE_URL && 
   SUPABASE_ANON_KEY && 
-  SUPABASE_URL !== "YOUR_SECRET_VALUE_GOES_HERE" &&
   SUPABASE_URL.startsWith("http")
 );
 
@@ -21,8 +23,8 @@ if (!isSupabaseConfigured) {
 }
 
 export const supabase = createClient(
-  SUPABASE_URL ?? "https://placeholder.supabase.co",
-  SUPABASE_ANON_KEY ?? "placeholder-anon-key",
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
   {
     auth: {
       persistSession: true,
