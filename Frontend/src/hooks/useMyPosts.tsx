@@ -12,6 +12,7 @@ function resolveImageUrl(image: string | null | undefined): string {
 }
 
 function mapRow(row: any): FoodItem {
+  const profileInfo = row.profiles || {};
   return {
     id: row.id,
     name: row.name,
@@ -44,17 +45,37 @@ function mapRow(row: any): FoodItem {
       date: new Date(r.created_at).toLocaleDateString(),
     })),
     provider: {
-      id: row.profiles?.id || row["profiles!foods_user_id_profiles_fkey"]?.id || row.user_id,
-      name: row.profiles?.name || row["profiles!foods_user_id_profiles_fkey"]?.name || "Unknown User",
+      id: profileInfo.id || row.user_id,
+      name: profileInfo.name || "Community Member",
       trustScore: 4.5,
       badges: ["Community Member"],
       streak: 1,
       reliability: "high",
       avatar: "🧑",
-      email: row.profiles?.email || row["profiles!foods_user_id_profiles_fkey"]?.email || "",
-      phone: row.profiles?.phone || row["profiles!foods_user_id_profiles_fkey"]?.phone || "",
+      email: profileInfo.email || "",
+      phone: profileInfo.phone || "",
     },
   };
+}
+
+async function fetchFoodsQuery(userId?: string) {
+  let query = supabase.from("foods").select("*, profiles(*)");
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+  query = query.order("created_at", { ascending: false });
+
+  const res = await query;
+  if (res.error) {
+    // Fail-safe fallback to simple select("*") if foreign key relation string is missing
+    let fallbackQuery = supabase.from("foods").select("*");
+    if (userId) {
+      fallbackQuery = fallbackQuery.eq("user_id", userId);
+    }
+    fallbackQuery = fallbackQuery.order("created_at", { ascending: false });
+    return await fallbackQuery;
+  }
+  return res;
 }
 
 let globalMyPostsCache: FoodItem[] = [];
@@ -75,11 +96,7 @@ export function useMyPosts() {
     try {
       if (!isBackground && !globalMyPostsLoaded) setLoading(true);
 
-      const { data, error } = await supabase
-        .from("foods")
-        .select("*, profiles!foods_user_id_profiles_fkey(*)")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      const { data, error } = await fetchFoodsQuery(user.id);
 
       if (error) {
         console.error("useMyPosts fetch error:", error);
@@ -153,7 +170,7 @@ export function useMyPosts() {
           notes: input.notes,
           allow_split: input.allow_split,
         })
-        .select("*, profiles!foods_user_id_profiles_fkey(*)")
+        .select("*")
         .single();
 
       if (error) {
@@ -198,10 +215,8 @@ export function useAllFoods() {
   const refresh = useCallback(async (isBackground = false) => {
     try {
       if (!isBackground && !globalFoodsLoaded) setLoading(true);
-      const { data, error } = await supabase
-        .from("foods")
-        .select("*, profiles!foods_user_id_profiles_fkey(*)")
-        .order("created_at", { ascending: false });
+      
+      const { data, error } = await fetchFoodsQuery();
 
       if (error) {
         console.error("useAllFoods fetch error:", error);
