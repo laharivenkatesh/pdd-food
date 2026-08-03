@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal, useWindowDimensions } from 'react-native';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; // radius of Earth in km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -47,12 +47,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navigation = useNavigation<any>();
   const route = useRoute();
   const { user, logout } = useAuth();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
   const hideNav = route.name === "Auth";
 
-  const { transactions, markCollected, markDonated } = useTransactions();
-  const { foods } = useAllFoods();
+  const { transactions } = useTransactions();
   const [oppositeProfiles, setOppositeProfiles] = useState<Record<string, any>>({});
-  const bellDistancesRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -109,9 +109,79 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     (n) => activeTab === "all" || !n.is_read
   );
 
+  if (hideNav) {
+    return <View style={styles.container}>{children}</View>;
+  }
+
   return (
-    <View style={styles.container}>
-      {!hideNav && (
+    <View style={[styles.container, isDesktop && styles.desktopContainer]}>
+      {/* Desktop Web Sidebar */}
+      {isDesktop && (
+        <View style={styles.sidebar}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Home")}
+            style={styles.sidebarLogoRow}
+            activeOpacity={0.8}
+          >
+            <View style={styles.logoIconBg}>
+              <Ionicons name="leaf" size={22} color="#ffffff" />
+            </View>
+            <Text style={styles.logoText}>Zerra</Text>
+          </TouchableOpacity>
+
+          <View style={styles.sidebarNavGroup}>
+            <SidebarItem
+              to="Home"
+              icon={<Ionicons name="home-outline" size={20} color={route.name === "Home" ? "#309267" : "#5c7066"} />}
+              label="Home"
+              active={route.name === "Home"}
+            />
+            <SidebarItem
+              to="Expired"
+              icon={<Ionicons name="time-outline" size={20} color={route.name === "Expired" ? "#309267" : "#5c7066"} />}
+              label="Expired Outlet"
+              active={route.name === "Expired"}
+            />
+            <SidebarItem
+              to="Post"
+              icon={<Ionicons name="add-circle-outline" size={20} color={route.name === "Post" ? "#309267" : "#5c7066"} />}
+              label="Post Food"
+              active={route.name === "Post"}
+            />
+            <SidebarItem
+              to="Activity"
+              icon={<Ionicons name="person-outline" size={20} color={route.name === "Activity" ? "#309267" : "#5c7066"} />}
+              label="Profile"
+              active={route.name === "Activity"}
+            />
+          </View>
+
+          {user && (
+            <View style={styles.sidebarFooter}>
+              <TouchableOpacity
+                onPress={() => setDrawerOpen(true)}
+                style={styles.sidebarNotifBtn}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="notifications-outline" size={20} color="#1e382b" />
+                <Text style={styles.sidebarNotifText}>Notifications</Text>
+                {unreadCount > 0 && (
+                  <View style={styles.badgeCount}>
+                    <Text style={styles.badgeCountText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn} activeOpacity={0.8}>
+                <Text style={styles.logoutText}>Log Out</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Mobile Top Header */}
+      {!isDesktop && (
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation.navigate("Home")}
@@ -248,7 +318,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <View style={styles.main}>{children}</View>
 
-      {!hideNav && (
+      {/* Mobile Bottom Nav Bar */}
+      {!isDesktop && (
         <View style={styles.bottomNav}>
           <NavItem
             to="Home"
@@ -278,6 +349,31 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </View>
       )}
     </View>
+  );
+}
+
+function SidebarItem({
+  to,
+  icon,
+  label,
+  active,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+}) {
+  const navigation = useNavigation<any>();
+
+  return (
+    <TouchableOpacity
+      onPress={() => navigation.navigate(to)}
+      style={[styles.sidebarItem, active && styles.sidebarItemActive]}
+      activeOpacity={0.7}
+    >
+      {icon}
+      <Text style={[styles.sidebarItemText, active && styles.sidebarItemTextActive]}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -312,6 +408,68 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f6f4ec',
+  },
+  desktopContainer: {
+    flexDirection: 'row',
+  },
+  sidebar: {
+    width: 240,
+    backgroundColor: '#ffffff',
+    borderRightWidth: 1,
+    borderColor: '#e8e6df',
+    padding: 20,
+    justifyContent: 'space-between',
+  },
+  sidebarLogoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 24,
+  },
+  sidebarNavGroup: {
+    gap: 8,
+    flex: 1,
+  },
+  sidebarItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 14,
+  },
+  sidebarItemActive: {
+    backgroundColor: 'rgba(48, 146, 103, 0.1)',
+  },
+  sidebarItemText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#5c7066',
+  },
+  sidebarItemTextActive: {
+    color: '#309267',
+  },
+  sidebarFooter: {
+    gap: 12,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderColor: '#e8e6df',
+  },
+  sidebarNotifBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#f6f4ec',
+    position: 'relative',
+  },
+  sidebarNotifText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1e382b',
+    flex: 1,
   },
   header: {
     backgroundColor: 'rgba(246, 244, 236, 0.95)',

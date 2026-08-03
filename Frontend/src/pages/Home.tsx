@@ -120,17 +120,16 @@ export default function Home() {
   const { userStats } = useTransactions();
   const navigation = useNavigation<any>();
 
-  // Location state — no localStorage, purely in-memory
+  // Location state
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [locError, setLocError] = useState("");
   const [locLoading, setLocLoading] = useState(false);
   const [locGranted, setLocGranted] = useState(false);
 
-  // NGO section state
-  const [showNGOs, setShowNGOs] = useState(false);
+  // NGO section state — open by default right below food posts
+  const [showNGOs, setShowNGOs] = useState(true);
   const [ngoFilter, setNgoFilter] = useState<"All" | "Humans" | "Animals">("All");
 
-  // Request location only when user explicitly clicks the button
   const requestLocation = useCallback(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
       setLocLoading(true);
@@ -142,20 +141,24 @@ export default function Home() {
           setLocLoading(false);
         },
         (err) => {
-          setLocError("Location unavailable. Showing all food.");
+          setLocError("Location permission pending or unavailable. Displaying nearby NGOs.");
           setLocLoading(false);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      setLocError("Geolocation not supported on this device.");
+      setLocLoading(false);
     }
   }, []);
+
+  // Automatically request location on load
+  useEffect(() => {
+    requestLocation();
+  }, [requestLocation]);
 
   const list = useMemo(() => {
     let arr = [...dbFoods];
     
-    // Filter out expired items (show only active ones)
     const now = Date.now();
     arr = arr.filter((f) => {
       const { primaryExpiry } = getFoodTimes(f);
@@ -172,15 +175,17 @@ export default function Home() {
   }, [dbFoods, userLoc]);
 
   const nearbyNGOs = useMemo(() => {
-    if (!userLoc) return [];
-    
     let filtered = ngosList;
     if (ngoFilter !== "All") filtered = filtered.filter((n) => n.types.includes(ngoFilter));
     
-    return filtered
-      .map((n) => ({ ...n, distance: calculateDistance(userLoc.lat, userLoc.lng, n.lat, n.lng) }))
-      .filter((n) => n.distance <= 40)
-      .sort((a, b) => a.distance - b.distance);
+    if (userLoc) {
+      return filtered
+        .map((n) => ({ ...n, distance: calculateDistance(userLoc.lat, userLoc.lng, n.lat, n.lng) }))
+        .filter((n) => n.distance <= 50)
+        .sort((a, b) => a.distance - b.distance);
+    }
+
+    return filtered.map((n) => ({ ...n, distance: null }));
   }, [userLoc, ngoFilter]);
 
   return (
