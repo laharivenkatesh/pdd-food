@@ -57,26 +57,8 @@ function mapRow(row: any): FoodItem {
   };
 }
 
-// Local cache helpers for instant (0ms) UI load
-function getSavedCache(key: string): FoodItem[] {
-  try {
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch {}
-  return [];
-}
-
-function setSavedCache(key: string, data: FoodItem[]) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch {}
-}
-
-let globalMyPostsCache: FoodItem[] = getSavedCache("zerra_cached_myposts");
-let globalMyPostsLoaded = globalMyPostsCache.length > 0;
+let globalMyPostsCache: FoodItem[] = [];
+let globalMyPostsLoaded = false;
 
 export function useMyPosts() {
   const { user, loading: authLoading } = useAuth();
@@ -91,7 +73,7 @@ export function useMyPosts() {
       return;
     }
     try {
-      if (!isBackground && !globalMyPostsLoaded && globalMyPostsCache.length === 0) setLoading(true);
+      if (!isBackground && !globalMyPostsLoaded) setLoading(true);
 
       const { data, error } = await supabase
         .from("foods")
@@ -107,7 +89,6 @@ export function useMyPosts() {
       const mapped = (data || []).map(mapRow);
       globalMyPostsCache = mapped;
       globalMyPostsLoaded = true;
-      setSavedCache("zerra_cached_myposts", mapped);
       setPosts(mapped);
     } catch (err) {
       console.error("Exception in useMyPosts refresh:", err);
@@ -119,13 +100,13 @@ export function useMyPosts() {
   useEffect(() => {
     if (authLoading) return;
 
-    refresh(globalMyPostsCache.length > 0);
+    refresh();
 
     if (!user) return;
 
     const pollInterval = setInterval(() => {
       refresh(true);
-    }, 3000);
+    }, 2000);
 
     const channelId = `my-posts-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
@@ -182,7 +163,6 @@ export function useMyPosts() {
 
       const newFood = mapRow(data);
       globalMyPostsCache = [newFood, ...globalMyPostsCache];
-      setSavedCache("zerra_cached_myposts", globalMyPostsCache);
       setPosts((prev) => [newFood, ...prev]);
       return { ok: true as const, data: newFood };
     },
@@ -193,8 +173,6 @@ export function useMyPosts() {
     await supabase.from("foods").delete().eq("id", id);
     globalMyPostsCache = globalMyPostsCache.filter((p) => p.id !== id);
     globalFoodsCache = globalFoodsCache.filter((p) => p.id !== id);
-    setSavedCache("zerra_cached_myposts", globalMyPostsCache);
-    setSavedCache("zerra_cached_allfoods", globalFoodsCache);
     setPosts((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
@@ -209,8 +187,8 @@ export function useMyPosts() {
   return { posts, loading, addPost, removePost, refresh, getLastPostTime };
 }
 
-let globalFoodsCache: FoodItem[] = getSavedCache("zerra_cached_allfoods");
-let globalFoodsLoaded = globalFoodsCache.length > 0;
+let globalFoodsCache: FoodItem[] = [];
+let globalFoodsLoaded = false;
 
 export function useAllFoods() {
   const { loading: authLoading } = useAuth();
@@ -219,7 +197,7 @@ export function useAllFoods() {
 
   const refresh = useCallback(async (isBackground = false) => {
     try {
-      if (!isBackground && !globalFoodsLoaded && globalFoodsCache.length === 0) setLoading(true);
+      if (!isBackground && !globalFoodsLoaded) setLoading(true);
       const { data, error } = await supabase
         .from("foods")
         .select("*, profiles!foods_user_id_profiles_fkey(*)")
@@ -233,7 +211,6 @@ export function useAllFoods() {
       const mapped = (data || []).map(mapRow);
       globalFoodsCache = mapped;
       globalFoodsLoaded = true;
-      setSavedCache("zerra_cached_allfoods", mapped);
       setFoods(mapped);
     } catch (err) {
       console.error("Exception in useAllFoods refresh:", err);
@@ -245,11 +222,11 @@ export function useAllFoods() {
   useEffect(() => {
     if (authLoading) return;
 
-    refresh(globalFoodsCache.length > 0);
+    refresh();
 
     const pollInterval = setInterval(() => {
       refresh(true);
-    }, 3000);
+    }, 2000);
 
     const channelId = `foods-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
