@@ -336,25 +336,25 @@ export default function Auth() {
             </span>
           </div>
 
-          {/* Main Hero Header */}
-          <div className="my-auto max-w-md space-y-2">
-            <h1 className="text-xl xl:text-2xl font-extrabold text-[#1e382b] leading-tight font-serif">
-              Share leftover food, <br />
-              <span className="text-[#1c7b50]">save the planet.</span>
-            </h1>
-            <p className="text-[11px] text-[#5c7066] leading-relaxed font-medium">
-              Zerra Food Hub connects communities to reduce food waste and help those in need.
-            </p>
+          {/* Main Hero Header & Rice Food Image */}
+          <div className="flex-1 flex flex-col justify-between my-3 max-w-md w-full overflow-hidden">
+            <div>
+              <h1 className="text-xl xl:text-2xl font-extrabold text-[#1e382b] leading-tight font-serif">
+                Share leftover food, <br />
+                <span className="text-[#1c7b50]">save the planet.</span>
+              </h1>
+              <p className="text-[11px] text-[#5c7066] leading-relaxed font-medium mt-1">
+                Zerra Food Hub connects communities to reduce food waste and help those in need.
+              </p>
+            </div>
 
-            {/* Separated Clean Image Showcase */}
-            <div className="pt-1.5">
-              <div className="w-full h-36 xl:h-44 rounded-xl overflow-hidden shadow-sm border border-[#e2e0d8] bg-white">
-                <img 
-                  src="https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=900&auto=format&fit=crop" 
-                  alt="Fresh food bowl" 
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
-                />
-              </div>
+            {/* Expanded Rice Meal Image Showcase fitting full gap */}
+            <div className="flex-1 my-2.5 w-full rounded-2xl overflow-hidden shadow-sm border border-[#e2e0d8] bg-white min-h-[200px]">
+              <img 
+                src="https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1000&auto=format&fit=crop" 
+                alt="Delicious rice bowl meal" 
+                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+              />
             </div>
           </div>
 
