@@ -321,34 +321,34 @@ export default function Auth() {
   }, [otpValues]);
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-[#faf8f5] flex flex-col justify-between">
+    <div className="h-screen max-h-screen overflow-hidden bg-[#faf8f5] flex flex-col justify-between select-none">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 h-full overflow-hidden">
         
         {/* ── Left Hero Panel (Desktop) ── */}
-        <div className="hidden lg:flex flex-col justify-between p-8 xl:p-12 bg-[#f4f6f0] border-r border-[#e8e6df] overflow-hidden">
+        <div className="hidden lg:flex flex-col justify-between p-6 xl:p-8 bg-[#f4f6f0] border-r border-[#e8e6df] overflow-hidden">
           {/* Top Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#1c7b50] flex items-center justify-center shadow-sm">
-              <Leaf className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#1c7b50] flex items-center justify-center shadow-sm">
+              <Leaf className="w-4 h-4 text-white" />
             </div>
-            <span className="font-extrabold text-2xl text-[#1e382b] tracking-tight">
+            <span className="font-extrabold text-xl text-[#1e382b] tracking-tight">
               Zerra <span className="text-[#1c7b50]">Food Hub</span>
             </span>
           </div>
 
           {/* Main Hero Header */}
-          <div className="my-auto max-w-lg space-y-4">
-            <h1 className="text-4xl xl:text-5xl font-extrabold text-[#1e382b] leading-[1.2] tracking-tight font-serif">
+          <div className="my-auto max-w-md space-y-3">
+            <h1 className="text-2xl xl:text-3xl font-extrabold text-[#1e382b] leading-tight font-serif">
               Share leftover food, <br />
               <span className="text-[#1c7b50]">save the planet.</span>
             </h1>
-            <p className="text-sm text-[#5c7066] leading-relaxed font-medium">
+            <p className="text-xs text-[#5c7066] leading-relaxed font-medium">
               Zerra Food Hub connects communities to reduce food waste and help those in need.
             </p>
 
-            {/* Separated Clean Image Showcase (No text overlap) */}
-            <div className="pt-3">
-              <div className="w-full h-56 xl:h-64 rounded-3xl overflow-hidden shadow-md border border-[#e2e0d8] bg-white">
+            {/* Separated Clean Image Showcase */}
+            <div className="pt-2">
+              <div className="w-full h-44 xl:h-52 rounded-2xl overflow-hidden shadow-sm border border-[#e2e0d8] bg-white">
                 <img 
                   src="https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=900&auto=format&fit=crop" 
                   alt="Fresh food bowl" 
@@ -359,30 +359,30 @@ export default function Auth() {
           </div>
 
           {/* Left Footer Copyright */}
-          <div className="text-[11px] text-[#7a8c82] font-semibold">
+          <div className="text-[10px] text-[#7a8c82] font-semibold">
             © 2025 Zerra Food Hub. All rights reserved.
           </div>
         </div>
 
         {/* ── Right Form Panel (Desktop & Mobile) ── */}
-        <div className="flex flex-col justify-between p-6 sm:p-8 xl:p-10 bg-[#faf8f5] overflow-y-auto">
-          <div className="my-auto w-full max-w-md mx-auto">
-            {/* White Form Card */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#e8e6df]/80 space-y-5">
+        <div className="flex flex-col justify-between p-4 sm:p-6 bg-[#faf8f5] overflow-hidden h-full">
+          <div className="my-auto w-full max-w-sm sm:max-w-md mx-auto">
+            {/* Compact White Form Card */}
+            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg border border-[#e8e6df]/80 space-y-3.5">
               
               {/* Form Top Badge & Header */}
-              <div className="text-center space-y-1.5">
-                <div className="w-12 h-12 rounded-full bg-[#e3efe8] text-[#1c7b50] flex items-center justify-center mx-auto shadow-sm">
-                  <Leaf className="w-6 h-6" />
+              <div className="text-center space-y-1">
+                <div className="w-10 h-10 rounded-full bg-[#e3efe8] text-[#1c7b50] flex items-center justify-center mx-auto shadow-sm">
+                  <Leaf className="w-5 h-5" />
                 </div>
-                <h2 className="text-2xl font-extrabold text-[#1e382b] tracking-tight font-serif">
+                <h2 className="text-xl font-extrabold text-[#1e382b] tracking-tight font-serif">
                   {authMode === "reset"
                     ? "Reset Password"
                     : step === "otp"
-                    ? "Verify Verification Code"
+                    ? "Verify Code"
                     : "Welcome back!"}
                 </h2>
-                <p className="text-xs text-[#5c7066] font-medium">
+                <p className="text-[11px] text-[#5c7066] font-medium">
                   {authMode === "reset"
                     ? "Enter your new password below."
                     : step === "otp"
@@ -392,17 +392,17 @@ export default function Auth() {
               </div>
 
               {authMode === "reset" ? (
-                <form onSubmit={handleUpdatePassword} className="space-y-4 pt-1">
+                <form onSubmit={handleUpdatePassword} className="space-y-3 pt-0.5">
                   <div>
-                    <label className="block text-xs font-extrabold text-[#1e382b] mb-1">
+                    <label className="block text-[11px] font-bold text-[#1e382b] mb-0.5">
                       New Password
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-3 text-[#7a8c82]">
-                        <Lock className="w-4 h-4" />
+                      <span className="absolute left-3 top-2.5 text-[#7a8c82]">
+                        <Lock className="w-3.5 h-3.5" />
                       </span>
                       <input
-                        className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none"
+                        className="w-full pl-9 pr-9 py-2 text-xs rounded-lg border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none"
                         placeholder="••••••••"
                         type={showPassword ? "text" : "password"}
                         value={password}
@@ -412,23 +412,23 @@ export default function Auth() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-3 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
+                        className="absolute right-3 top-2.5 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold text-[#1e382b] mb-1">
+                    <label className="block text-[11px] font-bold text-[#1e382b] mb-0.5">
                       Confirm New Password
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-3 text-[#7a8c82]">
-                        <Lock className="w-4 h-4" />
+                      <span className="absolute left-3 top-2.5 text-[#7a8c82]">
+                        <Lock className="w-3.5 h-3.5" />
                       </span>
                       <input
-                        className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none"
+                        className="w-full pl-9 pr-9 py-2 text-xs rounded-lg border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none"
                         placeholder="••••••••"
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
@@ -438,9 +438,9 @@ export default function Auth() {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3.5 top-3 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
+                        className="absolute right-3 top-2.5 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
                       >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>
@@ -448,15 +448,15 @@ export default function Auth() {
                   <button
                     type="submit"
                     disabled={busy}
-                    className="w-full py-3 bg-[#1c7b50] hover:bg-[#15613e] text-white font-extrabold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 mt-2"
+                    className="w-full py-2.5 bg-[#1c7b50] hover:bg-[#15613e] text-white font-extrabold text-xs rounded-lg transition-all shadow flex items-center justify-center gap-1.5 mt-1"
                   >
                     {busy ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin" /> Updating...
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Updating...
                       </>
                     ) : (
                       <>
-                        Update Password <ArrowRight className="w-4 h-4" />
+                        Update Password <ArrowRight className="w-3.5 h-3.5" />
                       </>
                     )}
                   </button>
@@ -467,19 +467,19 @@ export default function Auth() {
                       setAuthMode("login");
                       navigate("/auth", { replace: true });
                     }}
-                    className="w-full text-center text-xs font-extrabold text-[#5c7066] hover:text-[#1e382b] pt-1"
+                    className="w-full text-center text-[11px] font-extrabold text-[#5c7066] hover:text-[#1e382b]"
                   >
                     Back to Login
                   </button>
                 </form>
               ) : step === "email" ? (
-                <div className="space-y-4">
-                  {/* Segmented Tab Switcher */}
-                  <div className="flex p-1 bg-[#f4f3ed] rounded-xl border border-[#e2e0d8]">
+                <div className="space-y-3">
+                  {/* Compact Segmented Tab Switcher */}
+                  <div className="flex p-0.5 bg-[#f4f3ed] rounded-lg border border-[#e2e0d8]">
                     <button
                       type="button"
                       onClick={() => setAuthMode("login")}
-                      className={`flex-1 py-2 text-center text-xs font-extrabold rounded-lg transition-all ${
+                      className={`flex-1 py-1.5 text-center text-xs font-extrabold rounded-md transition-all ${
                         authMode === "login" 
                           ? "bg-white text-[#1c7b50] shadow-sm border border-[#e2e0d8]" 
                           : "text-[#5c7066] hover:text-[#1e382b]"
@@ -490,7 +490,7 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={() => setAuthMode("signup")}
-                      className={`flex-1 py-2 text-center text-xs font-extrabold rounded-lg transition-all ${
+                      className={`flex-1 py-1.5 text-center text-xs font-extrabold rounded-md transition-all ${
                         authMode === "signup" 
                           ? "bg-white text-[#1c7b50] shadow-sm border border-[#e2e0d8]" 
                           : "text-[#5c7066] hover:text-[#1e382b]"
@@ -500,19 +500,19 @@ export default function Auth() {
                     </button>
                   </div>
 
-                  <form onSubmit={handleSendOtp} className="space-y-3.5">
+                  <form onSubmit={handleSendOtp} className="space-y-2.5">
                     {authMode === "signup" && (
                       <>
                         <div>
-                          <label className="block text-xs font-extrabold text-[#1e382b] mb-1">
+                          <label className="block text-[11px] font-bold text-[#1e382b] mb-0.5">
                             Full Name
                           </label>
                           <div className="relative">
-                            <span className="absolute left-3.5 top-3 text-[#7a8c82]">
-                              <UserIcon className="w-4 h-4" />
+                            <span className="absolute left-3 top-2.5 text-[#7a8c82]">
+                              <UserIcon className="w-3.5 h-3.5" />
                             </span>
                             <input
-                              className="w-full pl-10 py-2.5 text-sm rounded-xl border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
+                              className="w-full pl-9 py-2 text-xs rounded-lg border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
                               placeholder="John Doe"
                               type="text"
                               value={name}
@@ -523,15 +523,15 @@ export default function Auth() {
                         </div>
 
                         <div>
-                          <label className="block text-xs font-extrabold text-[#1e382b] mb-1">
+                          <label className="block text-[11px] font-bold text-[#1e382b] mb-0.5">
                             Phone Number
                           </label>
                           <div className="relative">
-                            <span className="absolute left-3.5 top-3 text-[#7a8c82]">
-                              <Phone className="w-4 h-4" />
+                            <span className="absolute left-3 top-2.5 text-[#7a8c82]">
+                              <Phone className="w-3.5 h-3.5" />
                             </span>
                             <input
-                              className="w-full pl-10 py-2.5 text-sm rounded-xl border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
+                              className="w-full pl-9 py-2 text-xs rounded-lg border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
                               placeholder="9876543210"
                               type="tel"
                               value={phone}
@@ -545,15 +545,15 @@ export default function Auth() {
 
                     {/* Email Address */}
                     <div>
-                      <label className="block text-xs font-extrabold text-[#1e382b] mb-1">
+                      <label className="block text-[11px] font-bold text-[#1e382b] mb-0.5">
                         Email address
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-3 text-[#7a8c82]">
-                          <Mail className="w-4 h-4" />
+                        <span className="absolute left-3 top-2.5 text-[#7a8c82]">
+                          <Mail className="w-3.5 h-3.5" />
                         </span>
                         <input
-                          className="w-full pl-10 py-2.5 text-sm rounded-xl border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
+                          className="w-full pl-9 py-2 text-xs rounded-lg border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
                           placeholder="yourname@example.com"
                           type="email"
                           value={email}
@@ -565,26 +565,26 @@ export default function Auth() {
 
                     {/* Password */}
                     <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="block text-xs font-extrabold text-[#1e382b]">
+                      <div className="flex justify-between items-center mb-0.5">
+                        <label className="block text-[11px] font-bold text-[#1e382b]">
                           Password
                         </label>
                         {authMode === "login" && (
                           <button 
                             type="button" 
                             onClick={handleForgotPassword}
-                            className="text-xs font-extrabold text-[#1c7b50] hover:underline"
+                            className="text-[11px] font-bold text-[#1c7b50] hover:underline"
                           >
                             Forgot password?
                           </button>
                         )}
                       </div>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-3 text-[#7a8c82]">
-                          <Lock className="w-4 h-4" />
+                        <span className="absolute left-3 top-2.5 text-[#7a8c82]">
+                          <Lock className="w-3.5 h-3.5" />
                         </span>
                         <input
-                          className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
+                          className="w-full pl-9 pr-9 py-2 text-xs rounded-lg border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
                           placeholder="Enter your password"
                           type={showPassword ? "text" : "password"}
                           value={password}
@@ -594,9 +594,9 @@ export default function Auth() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3.5 top-3 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
+                          className="absolute right-3 top-2.5 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
                         >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
@@ -604,15 +604,15 @@ export default function Auth() {
                     {authMode === "signup" && (
                       <>
                         <div>
-                          <label className="block text-xs font-extrabold text-[#1e382b] mb-1">
+                          <label className="block text-[11px] font-bold text-[#1e382b] mb-0.5">
                             Confirm Password
                           </label>
                           <div className="relative">
-                            <span className="absolute left-3.5 top-3 text-[#7a8c82]">
-                              <Lock className="w-4 h-4" />
+                            <span className="absolute left-3 top-2.5 text-[#7a8c82]">
+                              <Lock className="w-3.5 h-3.5" />
                             </span>
                             <input
-                              className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
+                              className="w-full pl-9 pr-9 py-2 text-xs rounded-lg border border-[#d6d4cb] focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] transition-all bg-[#faf8f5]/50 outline-none text-[#1e382b]"
                               placeholder="••••••••"
                               type={showConfirmPassword ? "text" : "password"}
                               value={confirmPassword}
@@ -622,22 +622,22 @@ export default function Auth() {
                             <button
                               type="button"
                               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              className="absolute right-3.5 top-3 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
+                              className="absolute right-3 top-2.5 text-[#7a8c82] hover:text-[#1e382b] transition-colors"
                             >
-                              {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                         </div>
 
                         <div className="pt-0.5">
-                          <label className="flex items-center gap-2.5 cursor-pointer">
+                          <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={agreed}
                               onChange={(e) => setAgreed(e.target.checked)}
-                              className="w-4 h-4 rounded border-[#d6d4cb] text-[#1c7b50] focus:ring-[#1c7b50] cursor-pointer"
+                              className="w-3.5 h-3.5 rounded border-[#d6d4cb] text-[#1c7b50] focus:ring-[#1c7b50] cursor-pointer"
                             />
-                            <span className="text-xs text-[#5c7066] font-medium">
+                            <span className="text-[11px] text-[#5c7066] font-medium">
                               I accept food quality & sharing guidelines.
                             </span>
                           </label>
@@ -646,15 +646,15 @@ export default function Auth() {
                     )}
 
                     {authMode === "login" && (
-                      <div className="flex items-center gap-2.5 pt-0.5">
+                      <div className="flex items-center gap-2 pt-0.5">
                         <input
                           type="checkbox"
                           id="rememberMe"
                           checked={rememberMe}
                           onChange={(e) => setRememberMe(e.target.checked)}
-                          className="w-4 h-4 rounded border-[#d6d4cb] text-[#1c7b50] focus:ring-[#1c7b50] cursor-pointer"
+                          className="w-3.5 h-3.5 rounded border-[#d6d4cb] text-[#1c7b50] focus:ring-[#1c7b50] cursor-pointer"
                         />
-                        <label htmlFor="rememberMe" className="text-xs text-[#5c7066] font-medium cursor-pointer select-none">
+                        <label htmlFor="rememberMe" className="text-[11px] text-[#5c7066] font-medium cursor-pointer select-none">
                           Remember me
                         </label>
                       </div>
@@ -663,40 +663,40 @@ export default function Auth() {
                     <button
                       type="submit"
                       disabled={busy || (authMode === "signup" && !agreed)}
-                      className="w-full py-3 bg-[#1c7b50] hover:bg-[#15613e] text-white font-extrabold text-base rounded-xl transition-all shadow-md flex items-center justify-center gap-2 mt-1 active:scale-[0.99]"
+                      className="w-full py-2.5 bg-[#1c7b50] hover:bg-[#15613e] text-white font-extrabold text-xs rounded-lg transition-all shadow flex items-center justify-center gap-1.5 mt-0.5 active:scale-[0.99]"
                     >
                       {busy ? (
                         <>
-                          <RefreshCw className="w-4 h-4 animate-spin" /> Processing...
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Processing...
                         </>
                       ) : (
                         <>
-                          {authMode === "login" ? "Log In" : "Register & Get OTP"} <ArrowRight className="w-4 h-4" />
+                          {authMode === "login" ? "Log In" : "Register & Get OTP"} <ArrowRight className="w-3.5 h-3.5" />
                         </>
                       )}
                     </button>
                   </form>
 
                   {/* Social Login Divider */}
-                  <div className="relative py-1">
+                  <div className="relative py-0.5">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-[#e2e0d8]" />
                     </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="bg-white px-3 text-[#7a8c82] font-semibold">
+                    <div className="relative flex justify-center text-[10px]">
+                      <span className="bg-white px-2.5 text-[#7a8c82] font-semibold">
                         or continue with
                       </span>
                     </div>
                   </div>
 
-                  {/* Social Login Buttons */}
-                  <div className="grid grid-cols-3 gap-2.5">
+                  {/* Compact Social Login Buttons */}
+                  <div className="grid grid-cols-3 gap-2">
                     <button 
                       type="button"
                       onClick={() => toast.info("Google authentication in progress")}
-                      className="py-2 border border-[#e2e0d8] rounded-xl flex items-center justify-center bg-white hover:bg-[#faf8f5] transition-colors shadow-sm"
+                      className="py-1.5 border border-[#e2e0d8] rounded-lg flex items-center justify-center bg-white hover:bg-[#faf8f5] transition-colors shadow-sm"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
@@ -707,9 +707,9 @@ export default function Auth() {
                     <button 
                       type="button"
                       onClick={() => toast.info("Facebook authentication in progress")}
-                      className="py-2 border border-[#e2e0d8] rounded-xl flex items-center justify-center bg-white hover:bg-[#faf8f5] transition-colors shadow-sm"
+                      className="py-1.5 border border-[#e2e0d8] rounded-lg flex items-center justify-center bg-white hover:bg-[#faf8f5] transition-colors shadow-sm"
                     >
-                      <svg className="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 fill-[#1877F2]" viewBox="0 0 24 24">
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                       </svg>
                     </button>
@@ -717,9 +717,9 @@ export default function Auth() {
                     <button 
                       type="button"
                       onClick={() => toast.info("Apple authentication in progress")}
-                      className="py-2 border border-[#e2e0d8] rounded-xl flex items-center justify-center bg-white hover:bg-[#faf8f5] transition-colors shadow-sm"
+                      className="py-1.5 border border-[#e2e0d8] rounded-lg flex items-center justify-center bg-white hover:bg-[#faf8f5] transition-colors shadow-sm"
                     >
-                      <svg className="w-4 h-4 fill-black" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24">
                         <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.82c.62-.75 1.04-1.8 1.04-2.82 0-.14-.01-.28-.04-.42-1 .04-2.2.67-2.92 1.51-.57.66-1.07 1.73-1.07 2.76 0 .15.02.3.04.42 1.13-.09 2.29-.7 2.95-1.45z"/>
                       </svg>
                     </button>
@@ -727,8 +727,8 @@ export default function Auth() {
                 </div>
               ) : (
                 /* OTP Verification Step */
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
-                  <div className="flex items-center justify-between p-2.5 bg-[#f4f3ed] rounded-xl border border-[#e2e0d8]">
+                <form onSubmit={handleVerifyOtp} className="space-y-3">
+                  <div className="flex items-center justify-between p-2 bg-[#f4f3ed] rounded-lg border border-[#e2e0d8]">
                     <div className="min-w-0 flex-1 mr-2">
                       <p className="text-[9px] text-[#7a8c82] font-extrabold uppercase">Sending OTP to</p>
                       <p className="text-xs font-extrabold text-[#1e382b] truncate">{email}</p>
@@ -736,17 +736,17 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={() => setStep("email")}
-                      className="px-2 py-1 text-[10px] font-extrabold text-[#1c7b50] bg-white border border-[#e2e0d8] rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-1 shrink-0"
+                      className="px-2 py-0.5 text-[10px] font-extrabold text-[#1c7b50] bg-white border border-[#e2e0d8] rounded-md shadow-sm hover:shadow transition-all flex items-center gap-1 shrink-0"
                     >
                       <ArrowLeft className="w-3 h-3" /> Edit
                     </button>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <label className="block text-xs font-extrabold text-[#1e382b] text-center">
                       6-Digit OTP Code
                     </label>
-                    <div className="flex justify-between gap-1.5">
+                    <div className="flex justify-between gap-1">
                       {otpValues.map((val, idx) => (
                         <input
                           key={idx}
@@ -759,16 +759,16 @@ export default function Auth() {
                           onChange={(e) => handleOtpChange(idx, e.target.value)}
                           onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                           onPaste={idx === 0 ? handleOtpPaste : undefined}
-                          className="w-9 h-11 text-center text-lg font-extrabold text-[#1e382b] bg-[#faf8f5] focus:bg-white focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] border border-[#d6d4cb] rounded-xl transition-all shadow-sm outline-none"
+                          className="w-8 h-10 text-center text-base font-extrabold text-[#1e382b] bg-[#faf8f5] focus:bg-white focus:ring-2 focus:ring-[#1c7b50]/30 focus:border-[#1c7b50] border border-[#d6d4cb] rounded-lg transition-all shadow-sm outline-none"
                           autoFocus={idx === 0}
                         />
                       ))}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs font-extrabold">
+                  <div className="flex items-center justify-between text-[11px] font-bold">
                     <div className="flex items-center gap-1 text-[#7a8c82]">
-                      <KeyRound className="w-3.5 h-3.5" />
+                      <KeyRound className="w-3 h-3" />
                       <span>Expires in:</span>
                       <span className="text-red-500">{formatTime(expiryTimer)}</span>
                     </div>
@@ -790,15 +790,15 @@ export default function Auth() {
                   <button
                     type="submit"
                     disabled={busy || otpValues.join("").length < 6}
-                    className="w-full py-3 bg-[#1c7b50] hover:bg-[#15613e] text-white font-extrabold text-base rounded-xl transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.99]"
+                    className="w-full py-2.5 bg-[#1c7b50] hover:bg-[#15613e] text-white font-extrabold text-xs rounded-lg transition-all shadow flex items-center justify-center gap-1.5 active:scale-[0.99]"
                   >
                     {busy ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin" /> Verifying...
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Verifying...
                       </>
                     ) : (
                       <>
-                        <ShieldCheck className="w-5 h-5" /> Verify & Access
+                        <ShieldCheck className="w-4 h-4" /> Verify & Access
                       </>
                     )}
                   </button>
@@ -808,7 +808,7 @@ export default function Auth() {
           </div>
 
           {/* Right Footer Links */}
-          <div className="flex items-center justify-center gap-6 text-xs text-[#5c7066] font-bold pt-4">
+          <div className="flex items-center justify-center gap-4 text-[11px] text-[#5c7066] font-bold pt-2">
             <a href="#" className="hover:text-[#1c7b50] transition-colors">Terms of Service</a>
             <a href="#" className="hover:text-[#1c7b50] transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-[#1c7b50] transition-colors">Contact Us</a>
