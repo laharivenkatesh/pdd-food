@@ -52,17 +52,23 @@ export default function Activity() {
       <div className="bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-950 rounded-[32px] p-5 relative overflow-hidden shadow-soft border border-emerald-800 text-white">
         <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -z-10" />
         
-        <div className="flex items-center gap-4 mb-6 relative z-10">
+        <div className="flex items-center gap-4 relative z-10">
           <div className="w-16 h-16 rounded-[20px] bg-emerald-800/40 border border-emerald-500/30 flex items-center justify-center shadow-inner shrink-0 backdrop-blur">
             <Leaf className="w-8 h-8 text-emerald-300" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold text-white truncate">{profile.name}</h2>
-            <p className="text-xs text-emerald-300 font-semibold mt-0.5 flex items-center gap-1.5">
+            <div className="text-xs text-emerald-300 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span>Community Member</span> 
               <span className="text-[10px]">•</span> 
-              <span className="flex items-center gap-0.5"><Star className="w-3.5 h-3.5 fill-warning text-warning" /> {profile.trustScore}</span>
-            </p>
+              {profile.trustScore !== null && profile.reviewCount > 0 ? (
+                <span className="flex items-center gap-0.5 text-amber-300 font-bold">
+                  <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" /> {profile.trustScore} ({profile.reviewCount} {profile.reviewCount === 1 ? "review" : "reviews"})
+                </span>
+              ) : (
+                <span className="text-emerald-200/80 font-medium">New Member (0 reviews)</span>
+              )}
+            </div>
             {profile.phone && (
               <p className="text-[11px] text-emerald-200/80 font-semibold mt-1 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" /> {profile.phone}
@@ -74,13 +80,6 @@ export default function Activity() {
               </p>
             )}
           </div>
-        </div>
-
-        <div className="bg-emerald-950/50 backdrop-blur-md rounded-[20px] py-3 px-4 flex items-center justify-between shadow-sm relative z-10 border border-emerald-800/50">
-          <div className="flex items-center gap-2 font-bold text-sm text-emerald-100">
-            <Flame className="w-4 h-4 text-orange-400 animate-pulse" /> {profile.streak} Day Streak
-          </div>
-          <span className="text-xs text-emerald-300 font-bold">Keep it going!</span>
         </div>
       </div>
 

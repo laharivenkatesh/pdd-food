@@ -9,8 +9,8 @@ export interface UserProfile {
   phone?: string;
   created_at: string;
   role: string;
-  streak: number;
-  trustScore: number;
+  trustScore: number | null;
+  reviewCount: number;
 }
 
 export interface JWTUser {
@@ -46,20 +46,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        const userId = session.user.id;
+        let avgScore: number | null = null;
+        let reviewCount = 0;
+
+        try {
+          const { data: foodsData } = await supabase
+            .from("foods")
+            .select("id, reviews(*)")
+            .eq("user_id", userId);
+
+          if (foodsData) {
+            let totalRating = 0;
+            foodsData.forEach((f: any) => {
+              if (Array.isArray(f.reviews)) {
+                f.reviews.forEach((r: any) => {
+                  if (typeof r.rating === "number") {
+                    totalRating += r.rating;
+                    reviewCount++;
+                  }
+                });
+              }
+            });
+            if (reviewCount > 0) {
+              avgScore = Number((totalRating / reviewCount).toFixed(1));
+            }
+          }
+        } catch (e) {}
+
         setUser({
-          id: session.user.id,
+          id: userId,
           email: session.user.email || "",
           phone: session.user.user_metadata?.phone || "",
         });
         setProfile({
-          id: session.user.id,
-          name: session.user.user_metadata?.name || "User",
+          id: userId,
+          name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
           email: session.user.email || "",
           phone: session.user.user_metadata?.phone || "",
           created_at: session.user.created_at,
           role: session.user.user_metadata?.role || "Community Member",
-          streak: 3,
-          trustScore: 4.8,
+          trustScore: avgScore,
+          reviewCount: reviewCount,
         });
       }
     } catch (err) {
@@ -75,21 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen to Supabase auth changes dynamically in background
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || "",
-          phone: session.user.user_metadata?.phone || "",
-        });
-        setProfile({
-          id: session.user.id,
-          name: session.user.user_metadata?.name || "User",
-          email: session.user.email || "",
-          phone: session.user.user_metadata?.phone || "",
-          created_at: session.user.created_at,
-          role: session.user.user_metadata?.role || "Community Member",
-          streak: 3,
-          trustScore: 4.8,
-        });
+        refreshProfile();
 
         if (_event === "PASSWORD_RECOVERY") {
           window.location.href = "/auth?mode=reset";

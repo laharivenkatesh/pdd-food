@@ -100,8 +100,14 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
     const completed = completedTxs || [];
 
+    const { data: userFoods } = await supabase
+      .from("foods")
+      .select("id")
+      .eq("user_id", user.id);
+
+    const postsMade = userFoods?.length || 0;
+
     const mealsCollected = completed.filter(t => t.collector_id === user.id).length * 5;
-    const postsMade = completed.filter(t => t.donor_id === user.id).length;
 
     const { data: allTxs } = await supabase
       .from("transactions")
