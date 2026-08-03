@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,25 +16,14 @@ import Activity from "./pages/Activity";
 import NGOs from "./pages/NGOs";
 import NotFound from "./pages/NotFound";
 import Expired from "./pages/Expired";
-import SplashScreen from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [showSplash, setShowSplash] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Sonner position="top-center" />
-        {showSplash && <SplashScreen />}
         <BrowserRouter>
           <AuthProvider>
             <NotificationProvider>

@@ -131,6 +131,10 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
     fetchTransactions();
 
+    const pollInterval = setInterval(() => {
+      fetchTransactions();
+    }, 1000);
+
     const channelId = `transactions-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
       .channel(channelId)
@@ -144,6 +148,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .subscribe();
 
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
   }, [fetchTransactions, authLoading]);

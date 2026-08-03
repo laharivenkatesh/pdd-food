@@ -116,6 +116,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     refresh();
 
+    const pollInterval = setInterval(() => {
+      refresh();
+    }, 1000);
+
     // Subscribe to realtime changes on notifications table for current user
     const channelId = `notifications-user-${user.id}-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
@@ -166,6 +170,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       .subscribe();
 
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
   }, [user, refresh, soundEnabled, authLoading]);

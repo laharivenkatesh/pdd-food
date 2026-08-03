@@ -104,6 +104,10 @@ export function useMyPosts() {
 
     if (!user) return;
 
+    const pollInterval = setInterval(() => {
+      refresh(true);
+    }, 1000);
+
     const channelId = `my-posts-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
       .channel(channelId)
@@ -117,6 +121,7 @@ export function useMyPosts() {
       .subscribe();
 
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
   }, [refresh, authLoading, user]);
@@ -219,6 +224,10 @@ export function useAllFoods() {
 
     refresh();
 
+    const pollInterval = setInterval(() => {
+      refresh(true);
+    }, 1000);
+
     const channelId = `foods-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
       .channel(channelId)
@@ -232,6 +241,7 @@ export function useAllFoods() {
       .subscribe();
 
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
   }, [refresh, authLoading]);
