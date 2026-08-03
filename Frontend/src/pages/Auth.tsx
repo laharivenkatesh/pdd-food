@@ -35,6 +35,22 @@ export default function Auth() {
     }
   }, [user, navigate, from, authMode]);
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setBusy(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      toast.error(err.message || "Failed to initiate Google sign in.");
+      setBusy(false);
+    }
+  };
+
   const [step, setStep] = useState<"email" | "otp">("email");
   
   const [email, setEmail] = useState("");
@@ -693,7 +709,8 @@ export default function Auth() {
                   <div className="grid grid-cols-3 gap-1.5">
                     <button 
                       type="button"
-                      onClick={() => toast.info("Google authentication in progress")}
+                      onClick={handleGoogleSignIn}
+                      disabled={busy}
                       className="py-1 px-2 border border-[#e2e0d8] rounded-lg flex items-center justify-center gap-1 bg-white hover:bg-[#faf8f5] transition-colors shadow-sm text-[10px] font-extrabold text-[#1e382b]"
                       title="Sign in with Google"
                     >
