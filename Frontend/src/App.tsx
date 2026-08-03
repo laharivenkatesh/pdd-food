@@ -17,6 +17,8 @@ import NGOs from "./pages/NGOs";
 import NotFound from "./pages/NotFound";
 import Expired from "./pages/Expired";
 
+import OtaUpdateModal from "./components/OtaUpdateModal";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -24,6 +26,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Sonner position="top-center" />
+        <OtaUpdateModal />
         <BrowserRouter>
           <AuthProvider>
             <NotificationProvider>
