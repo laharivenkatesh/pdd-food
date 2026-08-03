@@ -183,81 +183,6 @@ export default function Activity() {
           </div>
         )}
       </div>
-
-      {/* Badges */}
-      <div className="space-y-3 pt-1">
-        <h3 className="text-lg font-extrabold font-serif text-foreground">Badges</h3>
-        <div className="flex flex-wrap gap-2">
-          {userStats.badges.length > 0 ? (
-            userStats.badges.map(b => (
-              <Badge key={b.text} icon={b.icon} text={b.text} />
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground font-bold">Complete transactions to earn badges!</p>
-          )}
-        </div>
-      </div>
-
-      {/* Sharing Metrics Section */}
-      <div className="space-y-4 pt-2">
-        <div className="card-soft p-4 border border-border bg-card space-y-3">
-          <h3 className="text-sm font-extrabold text-foreground">Your Contribution Summary</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            By participating in Zerra's food redistribution network, you are directly mitigating waste and supporting local communities.
-          </p>
-          
-          <div className="space-y-3 pt-1">
-            <div>
-              <div className="flex justify-between text-xs font-bold text-muted-foreground mb-1">
-                <span>Community Meals Saved</span>
-                <span>14 / 20 Saved</span>
-              </div>
-              <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border">
-                <div className="bg-emerald-500 h-full rounded-full" style={{ width: "70%" }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-bold text-muted-foreground mb-1">
-                <span>CO2 Offset (Carbon reduction)</span>
-                <span>8.5 kg Offset</span>
-              </div>
-              <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border">
-                <div className="bg-emerald-400 h-full rounded-full" style={{ width: "45%" }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-bold text-muted-foreground mb-1">
-                <span>NGO Partnerships Supported</span>
-                <span>4 Partners</span>
-              </div>
-              <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border">
-                <div className="bg-emerald-600 h-full rounded-full" style={{ width: "90%" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card-soft p-4 border border-border bg-card space-y-3">
-          <h3 className="text-sm font-extrabold text-foreground">Next Action Steps</h3>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => navigate("/")}
-              className="py-3 px-2 rounded-xl bg-primary-deep text-white font-bold text-[11px] text-center hover:opacity-95 transition-all shadow-sm flex items-center justify-center gap-1"
-            >
-              Browse Food <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => navigate("/post")}
-              className="py-3 px-2 rounded-xl bg-muted text-foreground border border-border font-bold text-[11px] text-center hover:bg-muted/70 transition-all flex items-center justify-center gap-1"
-            >
-              Post Food <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -267,14 +192,6 @@ function StatCard({ value, label }: { value: string; label: string }) {
     <div className="bg-card rounded-[24px] p-5 shadow-sm border border-border/50">
       <div className="text-[28px] font-extrabold text-primary-deep mb-0.5">{value}</div>
       <div className="text-[13px] text-muted-foreground font-bold leading-tight">{label}</div>
-    </div>
-  );
-}
-
-function Badge({ icon, text }: { key?: React.Key; icon: string; text: string }) {
-  return (
-    <div className="bg-card px-3.5 py-2.5 rounded-full flex items-center gap-2 shadow-sm border border-border/50 text-sm font-extrabold text-foreground">
-      <span>{icon}</span> {text}
     </div>
   );
 }
