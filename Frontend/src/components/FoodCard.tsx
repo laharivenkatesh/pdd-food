@@ -1,6 +1,7 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import { FoodItem } from "@/types/food";
-import { Link } from "react-router-dom";
-import { MapPin, Users, AlertTriangle, Star, Navigation, Trash2 } from "lucide-react";
 import MapPreview, { openInGoogleMaps } from "./MapPreview";
 import LiveCountdown from "./LiveCountdown";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,13 +10,8 @@ import { toast } from "sonner";
 
 const purposeIcon = (p: string) => (p === "humans" ? "🧑 Humans" : p === "animals" ? "🐾 Animals" : "♻️ Both");
 
-const statusStyles: Record<string, string> = {
-  available: "bg-success text-success-foreground",
-  reserved: "bg-warning text-warning-foreground",
-  collected: "bg-muted-foreground/30 text-foreground",
-};
-
 export default function FoodCard({ food }: { food: FoodItem }) {
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { posts, removePost } = useMyPosts();
   const isDonor = user?.id === food.provider.id || posts.some((p) => p.id === food.id);
@@ -28,149 +24,465 @@ export default function FoodCard({ food }: { food: FoodItem }) {
   const remaining = Math.max(0, total - booked);
   const isFullyBooked = remaining <= 0;
 
-  // Custom status configuration
   let statusText = food.status as string;
-  let statusColorClass = "bg-success text-success-foreground";
+  let statusBadgeStyle = styles.badgeSuccess;
 
   if (isCollected) {
     statusText = "collected";
-    statusColorClass = "bg-muted-foreground/30 text-foreground";
+    statusBadgeStyle = styles.badgeMuted;
   } else if (isReserved || isFullyBooked) {
     statusText = isFullyBooked ? "booked" : "reserved";
-    statusColorClass = isFullyBooked ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground";
+    statusBadgeStyle = isFullyBooked ? styles.badgeDestructive : styles.badgeWarning;
   } else {
     statusText = "available";
-    statusColorClass = "bg-success text-success-foreground";
+    statusBadgeStyle = styles.badgeSuccess;
   }
 
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Listing",
+      `Are you sure you want to delete "${food.name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await removePost(food.id);
+            toast.success("Listing deleted successfully!");
+          },
+        },
+      ]
+    );
+  };
+
   return (
-    <article className="card-soft animate-fade-up">
-      <Link to={`/food/${food.id}`} className="block overflow-hidden">
-        <div className="relative">
-          <img 
-            src={food.image} 
-            alt={food.name} 
-            className="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" 
-            loading="lazy" 
-            onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80"; }}
-          />
-          <span className={`absolute top-3 right-3 badge-pill ${statusColorClass}`}>
-            {statusText}
-          </span>
-          {food.purpose === "animals" && (
-            <span className="absolute top-3 left-3 badge-pill bg-secondary text-secondary-foreground">
-              🐾 Animal Priority
-            </span>
-          )}
-        </div>
-      </Link>
+    <View style={styles.card}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("FoodDetail", { id: food.id })}
+        activeOpacity={0.9}
+        style={styles.imageContainer}
+      >
+        <Image
+          source={{ uri: food.image }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <View style={[styles.badgePill, statusBadgeStyle, styles.statusBadgePosition]}>
+          <Text style={styles.badgeText}>{statusText}</Text>
+        </View>
+        {food.purpose === "animals" && (
+          <View style={[styles.badgePill, styles.badgeSecondary, styles.animalBadgePosition]}>
+            <Text style={styles.badgeSecondaryText}>🐾 Animal Priority</Text>
+          </View>
+        )}
+      </TouchableOpacity>
 
-      <div className="p-4 space-y-3">
-        <Link to={`/food/${food.id}`} className="block hover:opacity-90 transition-opacity">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-extrabold text-lg leading-tight text-foreground truncate">{food.name}</h3>
-              <div className="text-xs font-bold text-muted-foreground flex flex-col gap-1 mt-1">
-                <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> Feeds {total} people</span>
-                <span className="text-primary-deep flex items-center gap-1 font-extrabold">📊 {remaining} / {total} portions left</span>
-              </div>
-              {/* Portions Progress Bar */}
-              <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden border border-border/40 mt-1.5">
-                <div 
-                  className="bg-primary-deep h-full transition-all duration-500" 
-                  style={{ width: `${(remaining / total) * 100}%` }}
+      <View style={styles.content}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("FoodDetail", { id: food.id })}
+          activeOpacity={0.8}
+        >
+          <View style={styles.headerRow}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.foodName} numberOfLines={1}>{food.name}</Text>
+              <View style={styles.feedsRow}>
+                <View style={styles.inlineIcon}>
+                  <Ionicons name="people-outline" size={14} color="#5c7066" />
+                  <Text style={styles.feedsText}> Feeds {total} people</Text>
+                </View>
+                <Text style={styles.remainingText}>📊 {remaining} / {total} portions left</Text>
+              </View>
+
+              <View style={styles.progressBarBg}>
+                <View
+                  style={[styles.progressBarFill, { width: `${(remaining / total) * 100}%` }]}
                 />
-              </div>
-            </div>
-            <div className="text-right shrink-0">
+              </View>
+            </View>
+
+            <View style={styles.priceContainer}>
               {food.price === 0 ? (
-                <span className="badge-pill bg-success text-success-foreground">FREE</span>
+                <View style={[styles.badgePill, styles.badgeSuccess]}>
+                  <Text style={styles.badgeText}>FREE</Text>
+                </View>
               ) : (
-                <span className="font-extrabold text-lg text-foreground">₹{food.price}</span>
+                <Text style={styles.priceText}>₹{food.price}</Text>
               )}
-            </div>
-          </div>
-        </Link>
+            </View>
+          </View>
+        </TouchableOpacity>
 
-
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`badge-pill ${isUrgent ? 'bg-urgent text-urgent-foreground animate-pulse-soft' : 'bg-muted text-muted-foreground'}`}>
+        <View style={styles.badgesRow}>
+          <View style={[styles.badgePill, isUrgent ? styles.badgeUrgent : styles.badgeMuted]}>
             <LiveCountdown postedAt={food.postedAt} expiryHours={food.expiryHours} urgent={isUrgent} />
-          </span>
-          <span className="badge-pill bg-accent text-accent-foreground">{purposeIcon(food.purpose)}</span>
+          </View>
+          <View style={[styles.badgePill, styles.badgeAccent]}>
+            <Text style={styles.badgeAccentText}>{purposeIcon(food.purpose)}</Text>
+          </View>
           {food.safeForAnimals ? (
-            <span className="badge-pill bg-primary text-primary-foreground">✔ Safe for animals</span>
+            <View style={[styles.badgePill, styles.badgePrimary]}>
+              <Text style={styles.badgePrimaryText}>✔ Safe for animals</Text>
+            </View>
           ) : (
-            <span className="badge-pill bg-muted text-muted-foreground">⚠️ Not for animals</span>
+            <View style={[styles.badgePill, styles.badgeMuted]}>
+              <Text style={styles.badgeMutedText}>⚠️ Not for animals</Text>
+            </View>
           )}
-        </div>
+        </View>
 
-        <p className="text-sm text-muted-foreground flex items-start gap-1.5 line-clamp-2">
-          <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-          {food.address}
-        </p>
+        <View style={styles.addressRow}>
+          <Ionicons name="location-outline" size={16} color="#5c7066" />
+          <Text style={styles.addressText} numberOfLines={2}>{food.address}</Text>
+        </View>
 
         <MapPreview lat={food.lat} lng={food.lng} label={food.name} />
 
-        <button
-          onClick={() => openInGoogleMaps(food.lat, food.lng)}
-          className="w-full py-2 rounded-xl bg-muted text-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-muted/70 transition-all"
+        <TouchableOpacity
+          onPress={() => openInGoogleMaps(food.lat, food.lng)}
+          style={styles.mapsBtn}
+          activeOpacity={0.7}
         >
-          <Navigation className="w-4 h-4" /> Open in Maps
-        </button>
+          <Feather name="navigation" size={16} color="#1e382b" />
+          <Text style={styles.mapsBtnText}>Open in Maps</Text>
+        </TouchableOpacity>
 
-        <div className="flex flex-wrap gap-1.5">
+        <View style={styles.tagsRow}>
           {food.tags.map((t) => (
-            <span key={t} className="chip chip-default !py-1">{t}</span>
+            <View key={t} style={styles.tagChip}>
+              <Text style={styles.tagChipText}>{t}</Text>
+            </View>
           ))}
-        </div>
+        </View>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center gap-1 text-sm">
-            <Star className="w-4 h-4 fill-warning text-warning" />
-            <span className="font-bold">{food.trustScore}</span>
-            <span className="text-muted-foreground">·</span>
-            <span className={`text-xs font-semibold ${food.confidence === "High" ? "text-success" : food.confidence === "Medium" ? "text-warning" : "text-destructive"}`}>
+        <View style={styles.footerRow}>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={16} color="#f59e0b" />
+            <Text style={styles.trustScore}>{food.trustScore}</Text>
+            <Text style={styles.dotSeparator}>·</Text>
+            <Text style={[
+              styles.confidenceText,
+              food.confidence === "High" ? styles.textSuccess : food.confidence === "Medium" ? styles.textWarning : styles.textDestructive
+            ]}>
               {food.confidence}
-            </span>
-          </div>
+            </Text>
+          </View>
+
           {food.provider.reliability === "low" && (
-            <span className="text-[10px] text-destructive font-semibold flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" /> Low reliability
-            </span>
+            <View style={styles.lowReliabilityContainer}>
+              <Ionicons name="warning-outline" size={12} color="#dc2626" />
+              <Text style={styles.lowReliabilityText}>Low reliability</Text>
+            </View>
           )}
-        </div>
+        </View>
 
         {isReserved && (
-          <div className="bg-warning/20 text-warning-foreground p-2 rounded-xl text-xs font-semibold text-center">
-            ⚠️ Already Reserved
-          </div>
+          <View style={styles.reservedAlert}>
+            <Text style={styles.reservedAlertText}>⚠️ Already Reserved</Text>
+          </View>
         )}
 
-        <div className="flex gap-2">
-          <Link
-            to={`/food/${food.id}`}
-            className={`flex-1 btn-primary block text-center ${isCollected ? "bg-muted text-muted-foreground hover:bg-muted/80 border border-border/80" : ""}`}
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("FoodDetail", { id: food.id })}
+            style={[styles.detailsBtn, isCollected && styles.collectedBtn]}
+            activeOpacity={0.8}
           >
-            {isCollected ? "Collected" : "View Details"}
-          </Link>
+            <Text style={[styles.detailsBtnText, isCollected && styles.collectedBtnText]}>
+              {isCollected ? "Collected" : "View Details"}
+            </Text>
+          </TouchableOpacity>
+
           {isDonor && (
-            <button
-              onClick={async () => {
-                if (window.confirm(`Are you sure you want to delete "${food.name}"?`)) {
-                  await removePost(food.id);
-                  toast.success("Listing deleted successfully!");
-                }
-              }}
-              className="px-3.5 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive hover:text-white transition-all flex items-center justify-center shrink-0"
-              title="Delete Listing"
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={styles.deleteBtn}
+              activeOpacity={0.7}
             >
-              <Trash2 className="w-4.5 h-4.5" />
-            </button>
+              <Feather name="trash-2" size={18} color="#dc2626" />
+            </TouchableOpacity>
           )}
-        </div>
-      </div>
-    </article>
+        </View>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+    marginVertical: 6,
+  },
+  imageContainer: {
+    position: 'relative',
+    height: 176,
+    width: '100%',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  statusBadgePosition: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+  },
+  animalBadgePosition: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+  },
+  badgePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 9999,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    color: '#ffffff',
+  },
+  badgeSuccess: {
+    backgroundColor: '#309267',
+  },
+  badgeWarning: {
+    backgroundColor: '#f59e0b',
+  },
+  badgeDestructive: {
+    backgroundColor: '#dc2626',
+  },
+  badgeMuted: {
+    backgroundColor: 'rgba(92, 112, 102, 0.3)',
+  },
+  badgeMutedText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#5c7066',
+  },
+  badgeSecondary: {
+    backgroundColor: '#fde68a',
+  },
+  badgeSecondaryText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#78350f',
+  },
+  badgeAccent: {
+    backgroundColor: '#fde68a',
+  },
+  badgeAccentText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#78350f',
+  },
+  badgePrimary: {
+    backgroundColor: '#bbf7d0',
+  },
+  badgePrimaryText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#14532d',
+  },
+  badgeUrgent: {
+    backgroundColor: '#f97316',
+  },
+  content: {
+    padding: 16,
+    gap: 12,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  foodName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  feedsRow: {
+    gap: 4,
+    marginTop: 4,
+  },
+  inlineIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  feedsText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#5c7066',
+  },
+  remainingText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#309267',
+  },
+  progressBarBg: {
+    width: '100%',
+    backgroundColor: '#f6f4ec',
+    height: 6,
+    borderRadius: 9999,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+    marginTop: 6,
+  },
+  progressBarFill: {
+    backgroundColor: '#309267',
+    height: '100%',
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  priceText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+  },
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
+  addressText: {
+    fontSize: 14,
+    color: '#5c7066',
+    flex: 1,
+  },
+  mapsBtn: {
+    width: '100%',
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#f6f4ec',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  mapsBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1e382b',
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  tagChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 9999,
+    backgroundColor: '#f6f4ec',
+  },
+  tagChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#5c7066',
+  },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderColor: '#e8e6df',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  trustScore: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e382b',
+  },
+  dotSeparator: {
+    color: '#5c7066',
+  },
+  confidenceText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  textSuccess: {
+    color: '#309267',
+  },
+  textWarning: {
+    color: '#f59e0b',
+  },
+  textDestructive: {
+    color: '#dc2626',
+  },
+  lowReliabilityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  lowReliabilityText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#dc2626',
+  },
+  reservedAlert: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    padding: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  reservedAlertText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#78350f',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  detailsBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: '#309267',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailsBtnText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  collectedBtn: {
+    backgroundColor: '#f6f4ec',
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+  },
+  collectedBtnText: {
+    color: '#5c7066',
+  },
+  deleteBtn: {
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(220, 38, 38, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

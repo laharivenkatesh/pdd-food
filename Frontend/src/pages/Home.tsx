@@ -1,11 +1,12 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking } from 'react-native';
 import { useEffect, useMemo, useState, useCallback } from "react";
 import FoodCard from "@/components/FoodCard";
 import Chip from "@/components/Chip";
-import { Flame, Award, MapPin, RefreshCw, Navigation, Phone, Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import { useAllFoods } from "@/hooks/useMyPosts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { openInGoogleMaps } from "@/components/MapPreview";
-import { useNavigate } from "react-router-dom";
+import { useNavigation } from "@react-navigation/native";
 import { getFoodTimes } from "@/lib/utils";
 
 // ─── NGO data ─────────────────────────────────────────────────────────────────
@@ -56,48 +57,60 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 // ─── NGO Card ─────────────────────────────────────────────────────────────────
 function NGOCard({ ngo, distance, onDonate }: { ngo: NGO; distance: number | null; onDonate: () => void }) {
   return (
-    <article className="card-soft animate-fade-up p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-extrabold text-base leading-tight text-foreground truncate">{ngo.name}</h3>
-          {ngo.description && <p className="text-xs text-muted-foreground mt-0.5">{ngo.description}</p>}
-        </div>
+    <View style={styles.ngoCard}>
+      <View style={styles.ngoHeader}>
+        <View style={styles.ngoTitleCol}>
+          <Text style={styles.ngoName}>{ngo.name}</Text>
+          {ngo.description && <Text style={styles.ngoDescription}>{ngo.description}</Text>}
+        </View>
         {distance !== null && (
-          <span className="badge-pill bg-muted text-muted-foreground shrink-0">{distance.toFixed(1)} km</span>
+          <View style={styles.distanceBadge}>
+            <Text style={styles.distanceText}>{distance.toFixed(1)} km</Text>
+          </View>
         )}
-      </div>
+      </View>
 
-      <div className="flex gap-1.5 flex-wrap">
+      <View style={styles.ngoTypesRow}>
         {ngo.types.map((t) => (
-          <span key={t} className="chip chip-default !py-0.5 !text-xs">{t}</span>
+          <View key={t} style={styles.typeChip}>
+            <Text style={styles.typeChipText}>{t}</Text>
+          </View>
         ))}
-      </div>
+      </View>
 
-      <p className="text-xs text-muted-foreground flex items-start gap-1.5">
-        <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-        {ngo.address}
-      </p>
+      <View style={styles.addressRow}>
+        <Ionicons name="location-outline" size={14} color="#5c7066" />
+        <Text style={styles.addressText}>{ngo.address}</Text>
+      </View>
 
-      <p className="text-sm font-semibold flex items-center gap-1.5">
-        <Phone className="w-4 h-4 shrink-0 text-primary-deep" />
-        <a href={`tel:${ngo.phone}`} className="text-primary-deep hover:underline">{ngo.phone}</a>
-      </p>
+      <TouchableOpacity
+        onPress={() => Linking.openURL(`tel:${ngo.phone}`)}
+        style={styles.phoneRow}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="call-outline" size={16} color="#309267" />
+        <Text style={styles.phoneText}>{ngo.phone}</Text>
+      </TouchableOpacity>
 
-      <div className="flex gap-2">
-        <button
-          onClick={() => openInGoogleMaps(ngo.lat, ngo.lng)}
-          className="flex-1 py-2 rounded-xl bg-muted text-foreground font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-muted/70 transition-all"
+      <View style={styles.ngoActionsRow}>
+        <TouchableOpacity
+          onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)}
+          style={styles.directionsBtn}
+          activeOpacity={0.7}
         >
-          <Navigation className="w-3.5 h-3.5" /> Directions
-        </button>
-        <button
-          onClick={onDonate}
-          className="flex-[2] py-2 rounded-xl bg-primary-deep text-primary-deep-foreground font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-all shadow-soft"
+          <Feather name="navigation" size={14} color="#1e382b" />
+          <Text style={styles.directionsBtnText}>Directions</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onDonate}
+          style={styles.donateBtn}
+          activeOpacity={0.8}
         >
-          <Heart className="w-3.5 h-3.5" /> Donate Food
-        </button>
-      </div>
-    </article>
+          <Ionicons name="heart-outline" size={14} color="#ffffff" />
+          <Text style={styles.donateBtnText}>Donate Food</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -105,7 +118,7 @@ function NGOCard({ ngo, distance, onDonate }: { ngo: NGO; distance: number | nul
 export default function Home() {
   const { foods: dbFoods, loading, refresh } = useAllFoods();
   const { userStats } = useTransactions();
-  const nav = useNavigate();
+  const navigation = useNavigation<any>();
 
   // Location state — no localStorage, purely in-memory
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
@@ -119,30 +132,24 @@ export default function Home() {
 
   // Request location only when user explicitly clicks the button
   const requestLocation = useCallback(() => {
-    if (!("geolocation" in navigator)) {
-      setLocError("Geolocation not supported by your browser.");
-      return;
-    }
-    setLocLoading(true);
-    setLocError("");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocGranted(true);
-        setLocLoading(false);
-      },
-      (err) => {
-        if (err.code === err.PERMISSION_DENIED) {
-          setLocError("Location permission denied. Please allow location access in your browser settings, then try again.");
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
+    if (typeof navigator !== "undefined" && "geolocation" in navigator) {
+      setLocLoading(true);
+      setLocError("");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setLocGranted(true);
+          setLocLoading(false);
+        },
+        (err) => {
           setLocError("Location unavailable. Showing all food.");
-        } else {
-          setLocError("Location request timed out. Showing all food.");
-        }
-        setLocLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+          setLocLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      setLocError("Geolocation not supported on this device.");
+    }
   }, []);
 
   const list = useMemo(() => {
@@ -164,7 +171,6 @@ export default function Home() {
     return arr;
   }, [dbFoods, userLoc]);
 
-
   const nearbyNGOs = useMemo(() => {
     if (!userLoc) return [];
     
@@ -178,155 +184,490 @@ export default function Home() {
   }, [userLoc, ngoFilter]);
 
   return (
-    <div className="px-4 py-5 space-y-5">
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Available Food</h1>
-          <p className="text-sm text-muted-foreground">Rescue meals near you, today.</p>
-        </div>
-        <button
-          onClick={() => refresh()}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headingTitle}>Available Food</Text>
+          <Text style={styles.headingSubtitle}>Rescue meals near you, today.</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => refresh()}
           disabled={loading}
-          className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center shadow-sm hover:bg-muted transition-all"
-          title="Refresh"
+          style={styles.refreshBtn}
+          activeOpacity={0.7}
         >
-          <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
-        </button>
-      </div>
+          <Ionicons name="refresh" size={18} color="#5c7066" />
+        </TouchableOpacity>
+      </View>
 
       {/* Stats banner */}
-      <div className="bg-hero p-4 rounded-2xl flex items-center justify-between shadow-soft">
-        <div className="flex items-center gap-3">
-          <Flame className="w-6 h-6 text-urgent" />
-          <div>
-            <p className="font-extrabold text-foreground">
+      <View style={styles.statsBanner}>
+        <View style={styles.statsLeft}>
+          <Ionicons name="flame" size={24} color="#f97316" />
+          <View>
+            <Text style={styles.statsTitle}>
               {userStats.postsMade > 0 ? `${userStats.postsMade} Posts Made` : "Start Sharing Food"}
-            </p>
-            <p className="text-xs text-muted-foreground">Keep saving food!</p>
-          </div>
-        </div>
-        <Award className="w-6 h-6 text-primary-deep" />
-      </div>
+            </Text>
+            <Text style={styles.statsSubtitle}>Keep saving food!</Text>
+          </View>
+        </View>
+        <Ionicons name="ribbon-outline" size={24} color="#309267" />
+      </View>
 
       {/* Location section */}
-      <div className="space-y-2">
+      <View style={styles.locationSection}>
         {!locGranted && !locLoading && !locError && (
-          <button
-            onClick={requestLocation}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-primary-deep text-primary-deep font-semibold text-sm hover:bg-primary/5 transition-all"
+          <TouchableOpacity
+            onPress={requestLocation}
+            style={styles.locBtn}
+            activeOpacity={0.7}
           >
-            <MapPin className="w-4 h-4" /> Use My Location (within 50 km)
-          </button>
+            <Ionicons name="location-outline" size={16} color="#309267" />
+            <Text style={styles.locBtnText}>Use My Location (within 50 km)</Text>
+          </TouchableOpacity>
         )}
         {locLoading && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 p-2.5 rounded-xl">
-            <MapPin className="w-4 h-4 animate-pulse" /> Detecting your location…
-          </div>
+          <View style={styles.locLoadingBox}>
+            <Ionicons name="location-outline" size={16} color="#5c7066" />
+            <Text style={styles.locLoadingText}>Detecting your location…</Text>
+          </View>
         )}
         {locGranted && userLoc && (
-          <div className="flex items-center justify-between text-xs font-semibold text-primary-deep bg-primary/10 px-3 py-2 rounded-xl">
-            <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> Showing items within 50 km</span>
-            <button
-              onClick={() => { setUserLoc(null); setLocGranted(false); setLocError(""); }}
-              className="text-muted-foreground hover:text-destructive transition-colors text-xs"
-            >
-              Clear
-            </button>
-          </div>
+          <View style={styles.locActiveBox}>
+            <View style={styles.locActiveRow}>
+              <Ionicons name="location-outline" size={16} color="#309267" />
+              <Text style={styles.locActiveText}>Showing items within 50 km</Text>
+            </View>
+            <TouchableOpacity onPress={() => { setUserLoc(null); setLocGranted(false); setLocError(""); }}>
+              <Text style={styles.clearLocText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
         )}
-        {locError && (
-          <div className="text-xs font-semibold text-warning bg-warning/10 p-2.5 rounded-xl">
-            {locError}
-          </div>
+        {locError !== "" && (
+          <View style={styles.locErrorBox}>
+            <Text style={styles.locErrorText}>{locError}</Text>
+          </View>
         )}
-      </div>
-
-      {/* Categories chips and sort dropdown removed */}
+      </View>
 
       {/* Food list */}
       {loading && (
-        <div className="space-y-4">
+        <View style={styles.foodListGap}>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="card-soft animate-pulse">
-              <div className="w-full h-44 bg-muted rounded-t-2xl" />
-              <div className="p-4 space-y-3">
-                <div className="h-5 bg-muted rounded-xl w-2/3" />
-                <div className="h-4 bg-muted rounded-xl w-1/2" />
-                <div className="h-4 bg-muted rounded-xl w-3/4" />
-              </div>
-            </div>
+            <View key={i} style={styles.skeletonCard}>
+              <View style={styles.skeletonImage} />
+              <View style={styles.skeletonContent}>
+                <View style={styles.skeletonLine1} />
+                <View style={styles.skeletonLine2} />
+              </View>
+            </View>
           ))}
-        </div>
+        </View>
       )}
 
       {!loading && (
-        <div className="space-y-4">
+        <View style={styles.foodListGap}>
           {list.map((f) => <FoodCard key={f.id} food={f} />)}
           {list.length === 0 && (
-            <div className="text-center py-14 space-y-2">
-              <p className="text-4xl">🍱</p>
-              <p className="font-bold text-foreground">No food listings found</p>
-              <p className="text-sm text-muted-foreground">
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyEmoji}>🍱</Text>
+              <Text style={styles.emptyTitle}>No food listings found</Text>
+              <Text style={styles.emptySubtitle}>
                 {userLoc ? "No available food within 50 km. Check back soon!" : "No items match your filters."}
-              </p>
-            </div>
+              </Text>
+            </View>
           )}
-        </div>
+        </View>
       )}
 
       {/* ── NGO Section (inline, collapsible) ───────────────────────────────── */}
-      <div className="border border-border rounded-2xl overflow-hidden">
-        <button
-          onClick={() => setShowNGOs((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-card hover:bg-muted/50 transition-all"
+      <View style={styles.ngoSectionContainer}>
+        <TouchableOpacity
+          onPress={() => setShowNGOs((v) => !v)}
+          style={styles.ngoHeaderBtn}
+          activeOpacity={0.8}
         >
-          <div className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-primary-deep" />
-            <span className="font-extrabold text-base">Nearby NGOs</span>
-            <span className="badge-pill bg-primary text-primary-foreground text-xs">
-              {nearbyNGOs.length}
-            </span>
-          </div>
-          {showNGOs ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-        </button>
+          <View style={styles.ngoHeaderLeft}>
+            <Ionicons name="heart" size={20} color="#309267" />
+            <Text style={styles.ngoHeaderTitle}>Nearby NGOs</Text>
+            <View style={styles.ngoCountBadge}>
+              <Text style={styles.ngoCountText}>{nearbyNGOs.length}</Text>
+            </View>
+          </View>
+          <Ionicons name={showNGOs ? "chevron-up" : "chevron-down"} size={16} color="#5c7066" />
+        </TouchableOpacity>
 
         {showNGOs && (
-          <div className="px-4 pb-4 space-y-4 bg-background">
-            <p className="text-xs text-muted-foreground pt-2">
+          <View style={styles.ngoContent}>
+            <Text style={styles.ngoSubtitle}>
               {userLoc ? "Showing NGOs within 50 km of your location." : "Enable location to see NGOs near you, or browse all below."}
-            </p>
+            </Text>
 
             {/* Filter chips */}
-            <div className="flex gap-2">
+            <View style={styles.ngoChipsRow}>
               {(["All", "Humans", "Animals"] as const).map((f) => (
                 <Chip key={f} label={f} active={ngoFilter === f} onClick={() => setNgoFilter(f)} />
               ))}
-            </div>
+            </View>
 
             {nearbyNGOs.length === 0 ? (
-              <div className="text-center py-8 space-y-1">
-                <p className="text-3xl">🏢</p>
-                <p className="font-bold text-sm">No NGOs found nearby</p>
-                <p className="text-xs text-muted-foreground">Enable location or try a different filter.</p>
-              </div>
+              <View style={styles.ngoEmpty}>
+                <Text style={styles.emptyEmoji}>🏢</Text>
+                <Text style={styles.emptyTitle}>No NGOs found nearby</Text>
+                <Text style={styles.emptySubtitle}>Enable location or try a different filter.</Text>
+              </View>
             ) : (
-              <div className="space-y-3">
+              <View style={styles.foodListGap}>
                 {nearbyNGOs.map((ngo) => (
                   <NGOCard
                     key={ngo.id}
                     ngo={ngo}
                     distance={ngo.distance}
-                    onDonate={() => nav("/post")}
+                    onDonate={() => navigation.navigate("Post")}
                   />
                 ))}
-              </div>
+              </View>
             )}
-          </div>
+          </View>
         )}
-      </div>
+      </View>
 
-    </div>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f6f4ec',
+  },
+  content: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    gap: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headingTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  headingSubtitle: {
+    fontSize: 14,
+    color: '#5c7066',
+  },
+  refreshBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsBanner: {
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+  },
+  statsLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statsTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  statsSubtitle: {
+    fontSize: 12,
+    color: '#5c7066',
+  },
+  locationSection: {
+    gap: 8,
+  },
+  locBtn: {
+    width: '100%',
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#309267',
+    borderStyle: 'dashed',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  locBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#309267',
+  },
+  locLoadingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(246, 244, 236, 0.5)',
+  },
+  locLoadingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#5c7066',
+  },
+  locActiveBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: 'rgba(48, 146, 103, 0.1)',
+  },
+  locActiveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  locActiveText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#309267',
+  },
+  clearLocText: {
+    fontSize: 12,
+    color: '#5c7066',
+  },
+  locErrorBox: {
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+  },
+  locErrorText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#f59e0b',
+  },
+  foodListGap: {
+    gap: 16,
+  },
+  skeletonCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+  },
+  skeletonImage: {
+    height: 176,
+    backgroundColor: '#f6f4ec',
+  },
+  skeletonContent: {
+    padding: 16,
+    gap: 12,
+  },
+  skeletonLine1: {
+    height: 20,
+    backgroundColor: '#f6f4ec',
+    borderRadius: 8,
+    width: '66%',
+  },
+  skeletonLine2: {
+    height: 16,
+    backgroundColor: '#f6f4ec',
+    borderRadius: 8,
+    width: '50%',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 8,
+  },
+  emptyEmoji: {
+    fontSize: 40,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e382b',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#5c7066',
+    textAlign: 'center',
+  },
+  ngoSectionContainer: {
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#ffffff',
+  },
+  ngoHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  ngoHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ngoHeaderTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  ngoCountBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 9999,
+    backgroundColor: '#bbf7d0',
+  },
+  ngoCountText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#14532d',
+  },
+  ngoContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 12,
+  },
+  ngoSubtitle: {
+    fontSize: 12,
+    color: '#5c7066',
+  },
+  ngoChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  ngoEmpty: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    gap: 4,
+  },
+  ngoCard: {
+    backgroundColor: '#f6f4ec',
+    padding: 16,
+    borderRadius: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+  },
+  ngoHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  ngoTitleCol: {
+    flex: 1,
+  },
+  ngoName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  ngoDescription: {
+    fontSize: 12,
+    color: '#5c7066',
+    marginTop: 2,
+  },
+  distanceBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 9999,
+    backgroundColor: '#e8e6df',
+  },
+  distanceText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#5c7066',
+  },
+  ngoTypesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  typeChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    borderRadius: 9999,
+    backgroundColor: '#ffffff',
+  },
+  typeChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#5c7066',
+  },
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  addressText: {
+    fontSize: 12,
+    color: '#5c7066',
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  phoneText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#309267',
+  },
+  ngoActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  directionsBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  directionsBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1e382b',
+  },
+  donateBtn: {
+    flex: 2,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#309267',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  donateBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+});

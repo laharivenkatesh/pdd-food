@@ -1,6 +1,6 @@
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, PlusCircle, User, Leaf, Bell, BellOff, Trash2, CheckCheck, Volume2, VolumeX, Inbox, Clock } from "lucide-react";
-
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal } from 'react-native';
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useEffect, useState, useRef } from "react";
@@ -8,13 +8,6 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useAllFoods } from "@/hooks/useMyPosts";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // radius of Earth in km
@@ -51,10 +44,10 @@ function formatTimeAgo(dateStr: string) {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  const nav = useNavigate();
+  const navigation = useNavigation<any>();
+  const route = useRoute();
   const { user, logout } = useAuth();
-  const hideNav = location.pathname === "/auth";
+  const hideNav = route.name === "Auth";
 
   const { transactions, markCollected, markDonated } = useTransactions();
   const { foods } = useAllFoods();
@@ -107,22 +100,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [activeTab, setActiveTab] = useState<"all" | "unread">("unread");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    const handleViewNotif = (e: Event) => {
-      const notif = (e as CustomEvent).detail;
-      if (notif?.food_id) {
-        nav(`/food/${notif.food_id}`);
-        markAsRead(notif.id);
-        setDrawerOpen(false);
-      }
-    };
-    window.addEventListener("view-food-notification", handleViewNotif);
-    return () => window.removeEventListener("view-food-notification", handleViewNotif);
-  }, [nav, markAsRead]);
-
   const handleSignOut = async () => {
     await logout();
-    nav("/auth");
+    navigation.navigate("Auth");
   };
 
   const filteredNotifs = notifications.filter(
@@ -130,309 +110,174 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto relative shadow-card">
+    <View style={styles.container}>
       {!hideNav && (
-        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-2xl bg-primary-deep flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-primary-deep-foreground" />
-            </div>
-            <span className="font-extrabold text-xl text-foreground tracking-tight">Zerra</span>
-          </Link>
-          
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Home")}
+            style={styles.logoRow}
+            activeOpacity={0.8}
+          >
+            <View style={styles.logoIconBg}>
+              <Ionicons name="leaf" size={20} color="#ffffff" />
+            </View>
+            <Text style={styles.logoText}>Zerra</Text>
+          </TouchableOpacity>
+
           {user && (
-            <div className="flex items-center gap-2.5">
-              {/* Premium Notification Center Bell Button */}
-              <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-                <SheetTrigger asChild>
-                  <button className={`relative w-9 h-9 rounded-2xl flex items-center justify-center transition-all active:scale-95 group ${
-                    hasActiveBookings
-                      ? "bg-orange-500/15 border border-orange-500/30 ring-2 ring-orange-500 ring-offset-1 shadow-[0_0_12px_rgba(249,115,22,0.4)] animate-pulse"
-                      : "bg-muted/60 hover:bg-muted"
-                  }`}>
-                    <Bell className={`w-4.5 h-4.5 transition-colors ${
-                      hasActiveBookings
-                        ? "text-orange-500 animate-wiggle"
-                        : unreadCount > 0
-                        ? "text-primary-deep animate-wiggle"
-                        : "text-foreground/80 group-hover:text-primary-deep"
-                    }`} />
-                    {(unreadCount > 0 || hasActiveBookings) && (
-                      <span className={`absolute -top-1.5 -right-1.5 min-w-5 h-5 rounded-full text-white text-[10px] font-extrabold px-1 flex items-center justify-center border border-card shadow-soft animate-pulse ${
-                        hasActiveBookings ? "bg-orange-500" : "bg-urgent"
-                      }`}>
-                        {hasActiveBookings ? "!" : unreadCount}
-                      </span>
-                    )}
-                  </button>
-                </SheetTrigger>
-                
-                <SheetContent side="right" className="w-full max-w-sm flex flex-col p-0 border-l border-border bg-card">
-                  {/* Drawer Header */}
-                  <div className="px-5 pt-6 pb-4 border-b border-border bg-muted/20">
-                    <SheetHeader className="space-y-1 text-left sm:text-left">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-primary-deep/15 flex items-center justify-center">
-                            <Bell className="w-4 h-4 text-primary-deep" />
-                          </div>
-                          <SheetTitle className="text-lg font-extrabold text-foreground">Notifications</SheetTitle>
-                        </div>
-                        
-                        {/* Sound Setting Toggle */}
-                        <button
-                          onClick={() => setSoundEnabled(!soundEnabled)}
-                          className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
-                          title={soundEnabled ? "Mute alert sound" : "Unmute alert sound"}
-                        >
-                          {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-destructive" />}
-                        </button>
-                      </div>
-                      
-                      <div className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5 mt-1">
-                        <span>{unreadCount} unread food alert{unreadCount !== 1 && "s"}</span>
-                      </div>
-                    </SheetHeader>
-
-                    {/* Filter Tabs */}
-                    <div className="flex mt-4 bg-muted/60 p-1 rounded-xl">
-                      <button
-                        onClick={() => setActiveTab("unread")}
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                          activeTab === "unread" ? "bg-card shadow-soft text-foreground" : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        Unread ({unreadCount})
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("all")}
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                          activeTab === "all" ? "bg-card shadow-soft text-foreground" : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        All ({notifications.length})
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Drawer Action Tools */}
-                  {notifications.length > 0 && (
-                    <div className="px-5 py-2.5 bg-muted/10 border-b border-border flex items-center justify-between text-xs">
-                      {unreadCount > 0 ? (
-                        <button
-                          onClick={markAllAsRead}
-                          className="flex items-center gap-1 font-bold text-primary-deep hover:underline"
-                        >
-                          <CheckCheck className="w-3.5 h-3.5" /> Mark all read
-                        </button>
-                      ) : (
-                        <div />
-                      )}
-                      <button
-                        onClick={clearAll}
-                        className="flex items-center gap-1 font-bold text-destructive hover:underline"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" /> Clear all
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Notifications List */}
-                  <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-4 space-y-3">
-                    {filteredNotifs.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-center space-y-3 py-10 opacity-70">
-                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-2xl shadow-soft">
-                          🍱
-                        </div>
-                        <div>
-                          <p className="font-extrabold text-foreground text-sm">All caught up!</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {activeTab === "unread" ? "No unread food listings found." : "No notifications posted yet."}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      filteredNotifs.map((notif) => (
-                        <div
-                          key={notif.id}
-                          onClick={() => {
-                            nav(`/food/${notif.food_id}`);
-                            markAsRead(notif.id);
-                            setDrawerOpen(false);
-                          }}
-                          className={`group card-soft p-3.5 border transition-all cursor-pointer hover:border-primary-deep/30 active:scale-[0.99] relative flex items-start gap-3 ${
-                            notif.is_read
-                              ? "bg-card border-border/60 opacity-85 hover:opacity-100"
-                              : "bg-primary/5 border-primary-deep/15 hover:bg-primary/10 shadow-soft"
-                          }`}
-                        >
-                          {/* Unread indicator dot */}
-                          {!notif.is_read && (
-                            <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-success ring-4 ring-success/15" />
-                          )}
-                          
-                          <div className="flex-1 min-w-0 space-y-1 pr-4">
-                            <h4 className="font-extrabold text-sm leading-snug text-foreground flex items-center gap-1.5">
-                              {notif.title}
-                            </h4>
-                            <p className="text-xs leading-relaxed text-muted-foreground font-medium group-hover:text-foreground/90 transition-colors">
-                              {notif.message}
-                            </p>
-                            <span className="inline-block text-[10px] font-bold text-muted-foreground/80 pt-0.5">
-                              {formatTimeAgo(notif.created_at)}
-                            </span>
-
-                            {/* Live Booking & Distance tracking inside the notification card */}
-                            {(() => {
-                              const matchingTxs = transactions.filter(t => 
-                                t.food_id === notif.food_id && 
-                                t.status !== "cancelled" &&
-                                (t.donor_id === user.id || t.collector_id === user.id)
-                              );
-
-                              if (matchingTxs.length === 0) return null;
-
-                              return (
-                                <div className="mt-2.5 space-y-2">
-                                  {matchingTxs.map((t) => {
-                                    const isDonorCheck = t.donor_id === user.id;
-                                    const oppProfile = oppositeProfiles[isDonorCheck ? t.collector_id : t.donor_id];
-                                    const foodItem = foods.find(f => f.id === t.food_id);
-
-                                    let distanceText = "Location untracked";
-                                    let distanceIndicator = "";
-
-                                    if (t.collector_lat && t.collector_lng && foodItem?.lat && foodItem?.lng) {
-                                      const currentDist = calculateDistance(foodItem.lat, foodItem.lng, t.collector_lat, t.collector_lng);
-                                      const prevDist = bellDistancesRef.current[t.id];
-
-                                      if (prevDist !== undefined) {
-                                        if (currentDist < prevDist - 0.005) {
-                                          distanceIndicator = "Coming closer! 🟢";
-                                        } else if (currentDist > prevDist + 0.005) {
-                                          distanceIndicator = "Moving away 🔴";
-                                        } else {
-                                          distanceIndicator = "Stationary 🟡";
-                                        }
-                                      } else {
-                                        distanceIndicator = "Tracking 🟡";
-                                      }
-
-                                      bellDistancesRef.current[t.id] = currentDist;
-                                      distanceText = `${currentDist.toFixed(2)} km away`;
-                                    }
-
-                                    return (
-                                      <div 
-                                        key={t.id} 
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="p-2.5 rounded-xl bg-muted/65 border border-border/80 text-[11px] space-y-1.5 font-semibold text-foreground"
-                                      >
-                                        <div className="flex items-center justify-between border-b border-border/40 pb-1.5 mb-1">
-                                          <span className="text-[9px] uppercase font-bold text-muted-foreground">
-                                            {isDonorCheck ? "👤 Booked User" : "👤 Provider"}
-                                          </span>
-                                          <span className="badge-pill bg-primary-deep/10 text-primary-deep !text-[9px] font-extrabold normal-case py-0.5 px-1.5">
-                                            {t.portions} portions
-                                          </span>
-                                        </div>
-                                        
-                                        <div className="space-y-0.5 leading-normal">
-                                          <p className="font-extrabold text-foreground">{oppProfile?.name || (isDonorCheck ? "Loading..." : foodItem?.provider.name || "Unknown")}</p>
-                                          <p className="text-muted-foreground flex items-center gap-1">📞 {oppProfile?.phone || (isDonorCheck ? "No phone" : foodItem?.provider.phone || "No phone")}</p>
-                                          <p className="text-muted-foreground flex items-center gap-1 truncate max-w-[200px]">✉️ {oppProfile?.email || (isDonorCheck ? "No email" : foodItem?.provider.email || "No email")}</p>
-                                        </div>
-
-                                        {t.collector_lat && t.collector_lng && (
-                                          <div className="pt-1.5 border-t border-border/40 mt-1 flex items-center justify-between text-[10px] font-bold text-emerald-600">
-                                            <span>📍 {distanceText}</span>
-                                            <span className="text-[9px] font-extrabold bg-emerald-500/10 px-1 py-0.5 rounded tracking-wide">
-                                              {distanceIndicator}
-                                            </span>
-                                          </div>
-                                        )}
-
-                                        {/* Action confirmation buttons directly in the notification card */}
-                                        {t.status !== "completed" && (
-                                          <div className="pt-1.5 border-t border-border/40 mt-1 flex justify-end">
-                                            {!isDonorCheck && !t.collector_accepted && (
-                                              <button
-                                                onClick={async () => {
-                                                  await markCollected(t.id);
-                                                  toast.success("Marked as collected!");
-                                                }}
-                                                className="w-full py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] text-center transition-colors shadow-sm"
-                                              >
-                                                Yes Collected
-                                              </button>
-                                            )}
-                                            {isDonorCheck && !t.donor_accepted && (
-                                              <button
-                                                onClick={async () => {
-                                                  await markDonated(t.id);
-                                                  toast.success("Marked as donated!");
-                                                }}
-                                                className="w-full py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] text-center transition-colors shadow-sm"
-                                              >
-                                                Yes Donated
-                                              </button>
-                                            )}
-                                            {((!isDonorCheck && t.collector_accepted) || (isDonorCheck && t.donor_accepted)) && (
-                                              <span className="text-[10px] font-bold text-muted-foreground italic">
-                                                Waiting for confirmation...
-                                              </span>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              );
-                            })()}
-                          </div>
-
-                          {/* Quick delete button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteNotification(notif.id);
-                            }}
-                            className="text-muted-foreground hover:text-destructive p-1 rounded-lg hover:bg-muted transition-colors self-center opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            title="Delete alert"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-
-              <button
-                onClick={handleSignOut}
-                className="px-3 py-1.5 rounded-xl bg-destructive text-destructive-foreground text-xs font-extrabold shadow-sm hover:opacity-90 active:scale-95 transition-all"
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={() => setDrawerOpen(true)}
+                style={[styles.bellBtn, hasActiveBookings && styles.bellBtnActive]}
+                activeOpacity={0.8}
               >
-                Log Out
-              </button>
-            </div>
+                <Ionicons
+                  name={unreadCount > 0 || hasActiveBookings ? "notifications" : "notifications-outline"}
+                  size={20}
+                  color={hasActiveBookings ? "#f97316" : unreadCount > 0 ? "#309267" : "#1e382b"}
+                />
+                {(unreadCount > 0 || hasActiveBookings) && (
+                  <View style={[styles.badgeCount, hasActiveBookings ? styles.bgOrange : styles.bgUrgent]}>
+                    <Text style={styles.badgeCountText}>{hasActiveBookings ? "!" : unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSignOut}
+                style={styles.logoutBtn}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.logoutText}>Log Out</Text>
+              </TouchableOpacity>
+            </View>
           )}
-        </header>
+        </View>
       )}
 
-      <main className="flex-1 pb-24">{children}</main>
+      {/* Notification Drawer Modal */}
+      <Modal visible={drawerOpen} animationType="slide" transparent={true} onRequestClose={() => setDrawerOpen(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderTitleRow}>
+                <View style={styles.modalBellIconBg}>
+                  <Ionicons name="notifications" size={18} color="#309267" />
+                </View>
+                <Text style={styles.modalTitle}>Notifications</Text>
+              </View>
+              <View style={styles.modalHeaderRight}>
+                <TouchableOpacity onPress={() => setSoundEnabled(!soundEnabled)} style={styles.iconBtn}>
+                  <Ionicons name={soundEnabled ? "volume-high-outline" : "volume-mute-outline"} size={20} color="#5c7066" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setDrawerOpen(false)} style={styles.iconBtn}>
+                  <Ionicons name="close" size={24} color="#1e382b" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.tabsRow}>
+              <TouchableOpacity
+                onPress={() => setActiveTab("unread")}
+                style={[styles.tabBtn, activeTab === "unread" && styles.tabBtnActive]}
+              >
+                <Text style={[styles.tabBtnText, activeTab === "unread" && styles.tabBtnTextActive]}>
+                  Unread ({unreadCount})
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setActiveTab("all")}
+                style={[styles.tabBtn, activeTab === "all" && styles.tabBtnActive]}
+              >
+                <Text style={[styles.tabBtnText, activeTab === "all" && styles.tabBtnTextActive]}>
+                  All ({notifications.length})
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {notifications.length > 0 && (
+              <View style={styles.drawerActions}>
+                {unreadCount > 0 ? (
+                  <TouchableOpacity onPress={markAllAsRead}>
+                    <Text style={styles.actionTextPrimary}>Check all read</Text>
+                  </TouchableOpacity>
+                ) : <View />}
+                <TouchableOpacity onPress={clearAll}>
+                  <Text style={styles.actionTextDestructive}>Clear all</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <ScrollView style={styles.notifList} contentContainerStyle={styles.notifListContent}>
+              {filteredNotifs.length === 0 ? (
+                <View style={styles.emptyNotifContainer}>
+                  <Text style={styles.emptyEmoji}>🍱</Text>
+                  <Text style={styles.emptyTitle}>All caught up!</Text>
+                  <Text style={styles.emptySubtitle}>
+                    {activeTab === "unread" ? "No unread food listings found." : "No notifications posted yet."}
+                  </Text>
+                </View>
+              ) : (
+                filteredNotifs.map((notif) => (
+                  <TouchableOpacity
+                    key={notif.id}
+                    onPress={() => {
+                      navigation.navigate("FoodDetail", { id: notif.food_id });
+                      markAsRead(notif.id);
+                      setDrawerOpen(false);
+                    }}
+                    style={[styles.notifCard, !notif.is_read && styles.notifCardUnread]}
+                    activeOpacity={0.8}
+                  >
+                    {!notif.is_read && <View style={styles.unreadDot} />}
+                    <View style={styles.notifCardBody}>
+                      <Text style={styles.notifTitle}>{notif.title}</Text>
+                      <Text style={styles.notifMessage}>{notif.message}</Text>
+                      <Text style={styles.notifTime}>{formatTimeAgo(notif.created_at)}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => deleteNotification(notif.id)}>
+                      <Ionicons name="trash-outline" size={16} color="#dc2626" />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <View style={styles.main}>{children}</View>
 
       {!hideNav && (
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card border-t border-border px-4 py-2 flex items-center justify-around z-50 shadow-card">
-          <NavItem to="/" icon={<Home className="w-5 h-5" />} label="Home" />
-          <NavItem to="/expired" icon={<Clock className="w-5 h-5" />} label="Expired" />
-          <NavItem to="/post" icon={<PlusCircle className="w-7 h-7" />} label="Post" highlight />
-          <NavItem to="/activity" icon={<User className="w-5 h-5" />} label="Profile" />
-        </nav>
+        <View style={styles.bottomNav}>
+          <NavItem
+            to="Home"
+            icon={<Ionicons name="home-outline" size={22} color={route.name === "Home" ? "#309267" : "#5c7066"} />}
+            label="Home"
+            active={route.name === "Home"}
+          />
+          <NavItem
+            to="Expired"
+            icon={<Ionicons name="time-outline" size={22} color={route.name === "Expired" ? "#309267" : "#5c7066"} />}
+            label="Expired"
+            active={route.name === "Expired"}
+          />
+          <NavItem
+            to="Post"
+            icon={<Ionicons name="add-circle" size={32} color={route.name === "Post" ? "#309267" : "#309267"} />}
+            label="Post"
+            active={route.name === "Post"}
+            highlight
+          />
+          <NavItem
+            to="Activity"
+            icon={<Ionicons name="person-outline" size={22} color={route.name === "Activity" ? "#309267" : "#5c7066"} />}
+            label="Profile"
+            active={route.name === "Activity"}
+          />
+        </View>
       )}
-
-    </div>
+    </View>
   );
 }
 
@@ -440,24 +285,300 @@ function NavItem({
   to,
   icon,
   label,
+  active,
   highlight,
 }: {
   to: string;
   icon: React.ReactNode;
   label: string;
+  active?: boolean;
   highlight?: boolean;
 }) {
+  const navigation = useNavigation<any>();
+
   return (
-    <NavLink
-      to={to}
-      end
-      className={({ isActive }) =>
-        `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-all ${isActive ? "text-primary-deep" : "text-muted-foreground"
-        } ${highlight ? "scale-110" : ""}`
-      }
+    <TouchableOpacity
+      onPress={() => navigation.navigate(to)}
+      style={[styles.navItem, highlight && styles.navItemHighlight]}
+      activeOpacity={0.7}
     >
       {icon}
-      <span className="text-[10px] font-bold">{label}</span>
-    </NavLink>
+      <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+    </TouchableOpacity>
   );
-}
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f6f4ec',
+  },
+  header: {
+    backgroundColor: 'rgba(246, 244, 236, 0.95)',
+    borderBottomWidth: 1,
+    borderColor: '#e8e6df',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  logoIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 16,
+    backgroundColor: '#309267',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoText: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  bellBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 16,
+    backgroundColor: 'rgba(92, 112, 102, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  bellBtnActive: {
+    backgroundColor: 'rgba(249, 115, 22, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(249, 115, 22, 0.3)',
+  },
+  badgeCount: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  bgOrange: {
+    backgroundColor: '#f97316',
+  },
+  bgUrgent: {
+    backgroundColor: '#dc2626',
+  },
+  badgeCountText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  logoutBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: '#dc2626',
+  },
+  logoutText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  main: {
+    flex: 1,
+  },
+  bottomNav: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderColor: '#e8e6df',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  navItem: {
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  navItemHighlight: {
+    transform: [{ scale: 1.1 }],
+  },
+  navLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#5c7066',
+  },
+  navLabelActive: {
+    color: '#309267',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+    paddingBottom: 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderColor: '#e8e6df',
+  },
+  modalHeaderTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  modalBellIconBg: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    backgroundColor: 'rgba(48, 146, 103, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  modalHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconBtn: {
+    padding: 4,
+  },
+  tabsRow: {
+    flexDirection: 'row',
+    backgroundColor: '#f6f4ec',
+    marginHorizontal: 20,
+    marginTop: 12,
+    padding: 4,
+    borderRadius: 12,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  tabBtnActive: {
+    backgroundColor: '#ffffff',
+  },
+  tabBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#5c7066',
+  },
+  tabBtnTextActive: {
+    color: '#1e382b',
+  },
+  drawerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  actionTextPrimary: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#309267',
+  },
+  actionTextDestructive: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#dc2626',
+  },
+  notifList: {
+    paddingHorizontal: 20,
+  },
+  notifListContent: {
+    gap: 10,
+    paddingVertical: 12,
+  },
+  emptyNotifContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    gap: 4,
+  },
+  emptyEmoji: {
+    fontSize: 32,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  emptySubtitle: {
+    fontSize: 12,
+    color: '#5c7066',
+  },
+  notifCard: {
+    backgroundColor: '#ffffff',
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    position: 'relative',
+  },
+  notifCardUnread: {
+    backgroundColor: 'rgba(48, 146, 103, 0.05)',
+    borderColor: 'rgba(48, 146, 103, 0.2)',
+  },
+  unreadDot: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#309267',
+  },
+  notifCardBody: {
+    flex: 1,
+    gap: 2,
+  },
+  notifTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  notifMessage: {
+    fontSize: 12,
+    color: '#5c7066',
+  },
+  notifTime: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: 'rgba(92, 112, 102, 0.8)',
+    marginTop: 4,
+  },
+});
+

@@ -1,5 +1,6 @@
-import { Star } from "lucide-react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Review } from "@/types/food";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
@@ -15,15 +16,13 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
   const { user, profile } = useAuth();
   const [reviews, setReviews] = useState<Review[]>(initial);
   const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
 
   useEffect(() => {
     setReviews(initial);
   }, [initial]);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = async () => {
     if (!rating || !comment.trim()) return;
     if (!user || !profile) {
       toast.error("Please login to submit a review");
@@ -82,44 +81,144 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
   };
 
   return (
-    <section className="space-y-4">
-      <h2 className="font-extrabold text-lg">Reviews</h2>
+    <View style={styles.container}>
+      <Text style={styles.heading}>Reviews</Text>
 
-      <form onSubmit={submit} className="bg-muted/50 p-4 rounded-2xl space-y-3">
-        <div className="flex items-center gap-1">
-          {[1,2,3,4,5].map(i => (
-            <button key={i} type="button" onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(0)} onClick={()=>setRating(i)}>
-              <Star className={`w-7 h-7 transition-all ${i <= (hover||rating) ? "fill-warning text-warning" : "text-muted-foreground"}`} />
-            </button>
+      <View style={styles.formContainer}>
+        <View style={styles.starRow}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <TouchableOpacity key={i} onPress={() => setRating(i)} activeOpacity={0.7}>
+              <Ionicons
+                name={i <= rating ? "star" : "star-outline"}
+                size={28}
+                color={i <= rating ? "#f59e0b" : "#5c7066"}
+              />
+            </TouchableOpacity>
           ))}
-        </div>
-        <textarea
+        </View>
+        <TextInput
           value={comment}
-          onChange={e=>setComment(e.target.value)}
+          onChangeText={setComment}
           placeholder="Share your experience…"
-          rows={3}
-          className="input-field resize-none"
+          placeholderTextColor="rgba(30, 56, 43, 0.6)"
+          multiline={true}
+          numberOfLines={3}
+          style={styles.inputField}
         />
-        <button type="submit" className="btn-primary">Submit Review</button>
-      </form>
+        <TouchableOpacity onPress={submit} style={styles.submitBtn} activeOpacity={0.8}>
+          <Text style={styles.submitBtnText}>Submit Review</Text>
+        </TouchableOpacity>
+      </View>
 
-      <div className="space-y-3">
-        {reviews.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No reviews yet.</p>}
-        {reviews.map(r => (
-          <div key={r.id} className="bg-card p-4 rounded-2xl shadow-soft">
-            <div className="flex items-center justify-between">
-              <span className="font-bold">{r.user}</span>
-              <span className="text-xs text-muted-foreground">{r.date}</span>
-            </div>
-            <div className="flex gap-0.5 my-1">
-              {[1,2,3,4,5].map(i => (
-                <Star key={i} className={`w-4 h-4 ${i <= r.rating ? "fill-warning text-warning" : "text-muted-foreground"}`} />
+      <View style={styles.listContainer}>
+        {reviews.length === 0 && (
+          <Text style={styles.emptyText}>No reviews yet.</Text>
+        )}
+        {reviews.map((r) => (
+          <View key={r.id} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.userName}>{r.user}</Text>
+              <Text style={styles.reviewDate}>{r.date}</Text>
+            </View>
+            <View style={styles.ratingRow}>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Ionicons
+                  key={i}
+                  name={i <= r.rating ? "star" : "star-outline"}
+                  size={16}
+                  color={i <= r.rating ? "#f59e0b" : "#5c7066"}
+                />
               ))}
-            </div>
-            <p className="text-sm text-foreground">{r.comment}</p>
-          </div>
+            </View>
+            <Text style={styles.commentText}>{r.comment}</Text>
+          </View>
         ))}
-      </div>
-    </section>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: 16,
+  },
+  heading: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1e382b',
+  },
+  formContainer: {
+    backgroundColor: 'rgba(246, 244, 236, 0.5)',
+    padding: 16,
+    borderRadius: 16,
+    gap: 12,
+  },
+  starRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  inputField: {
+    width: '100%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: '#ededeb',
+    borderWidth: 1,
+    borderColor: '#e8e6df',
+    fontSize: 14,
+    color: '#1e382b',
+    textAlignVertical: 'top',
+  },
+  submitBtn: {
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: '#309267',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitBtnText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  listContainer: {
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#5c7066',
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  userName: {
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#1e382b',
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#5c7066',
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    gap: 2,
+    marginVertical: 4,
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#1e382b',
+  },
+});
+

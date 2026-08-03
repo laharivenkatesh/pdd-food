@@ -1,3 +1,4 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Platform } from 'react-native';
 import { useState, useEffect } from "react";
 
 export default function LiveCountdown({ postedAt, expiryHours, urgent }: { postedAt: string; expiryHours: number, urgent?: boolean }) {
@@ -32,8 +33,17 @@ export default function LiveCountdown({ postedAt, expiryHours, urgent }: { poste
   }, [postedAt, expiryHours]);
 
   return (
-    <span className="font-mono tabular-nums tracking-tight">
+    <Text style={styles.text}>
       {urgent ? `🔥 Urgent · ${timeLeft} left` : `⏳ Expires in ${timeLeft}`}
-    </span>
+    </Text>
   );
 }
+
+const styles = StyleSheet.create({
+  text: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontVariant: ['tabular-nums'],
+    letterSpacing: -0.5,
+  },
+});
+

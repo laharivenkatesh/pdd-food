@@ -1,5 +1,6 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import { useEffect, useState } from "react";
-import { Leaf } from "lucide-react";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function SplashScreen() {
   const [visible, setVisible] = useState(true);
@@ -12,74 +13,168 @@ export default function SplashScreen() {
     return () => clearTimeout(fadeTimer);
   }, []);
 
+  if (!visible) return null;
+
   return (
-    <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-950 transition-all duration-300 ${
-        visible ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
-      }`}
-    >
+    <View style={styles.overlay}>
       {/* Decorative background glow rings */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse" />
+      <View style={styles.glowTop} />
+      <View style={styles.glowBottom} />
 
       {/* Main glass card container */}
-      <div className="text-center space-y-6 max-w-sm px-6 py-10 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center animate-fade-up">
-        
+      <View style={styles.cardContainer}>
         {/* Animated Premium Logo Container */}
-        <div className="relative w-32 h-32 rounded-[40px] bg-emerald-800/40 border border-emerald-500/30 flex items-center justify-center p-3 shadow-inner hover:scale-105 transition-transform duration-500 group">
-          {/* Inner pulsating glow */}
-          <div className="absolute inset-0 rounded-[40px] bg-emerald-500/10 blur-md animate-ping opacity-60" />
-          
-          <img
-            src="/food_splash_logo.png"
-            alt="Zerra Logo"
-            className="w-full h-full object-contain rounded-[28px] relative z-10 animate-wiggle"
-            onError={(e) => {
-              // Fallback to high-quality SVG/Leaf if image fails to load
-              e.currentTarget.style.display = "none";
-              const parent = e.currentTarget.parentElement;
-              if (parent) {
-                const fallback = document.createElement("div");
-                fallback.className = "flex items-center justify-center w-full h-full text-5xl";
-                fallback.innerHTML = "🍱";
-                parent.appendChild(fallback);
-              }
-            }}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoGlow} />
+          <Image
+            source={require("../../public/food_splash_logo.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
           />
-        </div>
+        </View>
 
         {/* Text Details */}
-        <div className="space-y-2">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center justify-center gap-2">
-            <Leaf className="w-8 h-8 text-emerald-400 animate-bounce" />
-            <span className="bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
-              Zerra
-            </span>
-          </h1>
-          <p className="text-sm font-medium text-emerald-200/70 tracking-wide">
+        <View style={styles.textContainer}>
+          <View style={styles.titleRow}>
+            <Ionicons name="leaf" size={32} color="#34d399" />
+            <Text style={styles.titleText}>Zerra</Text>
+          </View>
+          <Text style={styles.subtitleText}>
             Connecting Communities, Saving Meals
-          </p>
-        </div>
+          </Text>
+        </View>
 
         {/* Premium Pulsing Loader */}
-        <div className="flex items-center gap-1.5 pt-4">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:-0.3s]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-bounce [animation-delay:-0.15s]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-bounce" />
-        </div>
-
-      </div>
+        <View style={styles.loaderRow}>
+          <View style={[styles.dot, { backgroundColor: '#34d399' }]} />
+          <View style={[styles.dot, { backgroundColor: '#6ee7b7' }]} />
+          <View style={[styles.dot, { backgroundColor: '#4ade80' }]} />
+        </View>
+      </View>
 
       {/* Footer Branding */}
-      <div className="absolute bottom-8 text-center space-y-1">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500/60">
+      <View style={styles.footerContainer}>
+        <Text style={styles.footerBranding}>
           SECURE GREEN TECHNOLOGY
-        </p>
-        <p className="text-[9px] text-emerald-200/40">
+        </Text>
+        <Text style={styles.footerCopyright}>
           © {new Date().getFullYear()} Zerra. All rights reserved.
-        </p>
-      </div>
-
-    </div>
+        </Text>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 9999,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#022c22',
+  },
+  glowTop: {
+    position: 'absolute',
+    top: '25%',
+    left: '25%',
+    width: 384,
+    height: 384,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: 192,
+  },
+  glowBottom: {
+    position: 'absolute',
+    bottom: '25%',
+    right: '25%',
+    width: 384,
+    height: 384,
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    borderRadius: 192,
+  },
+  cardContainer: {
+    alignItems: 'center',
+    maxWidth: 384,
+    width: '90%',
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  logoContainer: {
+    position: 'relative',
+    width: 128,
+    height: 128,
+    borderRadius: 40,
+    backgroundColor: 'rgba(6, 78, 59, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    marginBottom: 24,
+  },
+  logoGlow: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 40,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 28,
+  },
+  textContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  titleText: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#34d399',
+    letterSpacing: -0.5,
+  },
+  subtitleText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: 'rgba(167, 243, 208, 0.7)',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  loaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingTop: 16,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 32,
+    alignItems: 'center',
+    gap: 4,
+  },
+  footerBranding: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    color: 'rgba(16, 185, 129, 0.6)',
+  },
+  footerCopyright: {
+    fontSize: 9,
+    color: 'rgba(167, 243, 208, 0.4)',
+  },
+});
+
