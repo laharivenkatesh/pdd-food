@@ -44,6 +44,12 @@
     },
     "plugins": [
       "expo-updates"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "98c8025a-162c-423a-8572-f215243486e6"
+      }
+    },
+    "owner": "lahari19"
   }
 }
