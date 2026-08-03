@@ -6,18 +6,21 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "npmClient": "npm",
       "android": {
         "buildType": "apk"
       }
     },
     "preview": {
       "distribution": "internal",
+      "npmClient": "npm",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
       "autoIncrement": true,
+      "npmClient": "npm",
       "android": {
         "buildType": "apk"
       }
