@@ -104,6 +104,16 @@ export default function Activity() {
                   <View style={styles.foodInfo}>
                     <Text style={styles.foodTitle}>{food.name}</Text>
                     <Text style={styles.foodSub}>{remaining} / {food.feeds} left</Text>
+                    {food.postedAt && (
+                      <Text style={styles.foodDateText}>
+                        🕒 Posted: {new Date(food.postedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </Text>
+                    )}
+                    {food.preparedAt && (
+                      <Text style={styles.foodDateText}>
+                        🍳 Prep: {food.preparedAt}
+                      </Text>
+                    )}
                   </View>
                   <TouchableOpacity
                     onPress={() => {
@@ -331,6 +341,12 @@ const styles = StyleSheet.create({
   foodSub: {
     fontSize: 11,
     color: '#5c7066',
+  },
+  foodDateText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#309267',
+    marginTop: 2,
   },
   deleteBtn: {
     padding: 8,
