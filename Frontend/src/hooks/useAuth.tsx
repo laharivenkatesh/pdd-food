@@ -47,38 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const userId = session.user.id;
-        let avgScore: number | null = null;
-        let reviewCount = 0;
 
-        try {
-          const { data: foodsData } = await supabase
-            .from("foods")
-            .select("id, reviews(*)")
-            .eq("user_id", userId);
-
-          if (foodsData) {
-            let totalRating = 0;
-            foodsData.forEach((f: any) => {
-              if (Array.isArray(f.reviews)) {
-                f.reviews.forEach((r: any) => {
-                  if (typeof r.rating === "number") {
-                    totalRating += r.rating;
-                    reviewCount++;
-                  }
-                });
-              }
-            });
-            if (reviewCount > 0) {
-              avgScore = Number((totalRating / reviewCount).toFixed(1));
-            }
-          }
-        } catch (e) {}
-
+        // Set active user session & profile INSTANTLY (< 1ms)
         setUser({
           id: userId,
           email: session.user.email || "",
           phone: session.user.user_metadata?.phone || "",
         });
+
         setProfile({
           id: userId,
           name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
@@ -86,13 +62,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           phone: session.user.user_metadata?.phone || "",
           created_at: session.user.created_at,
           role: session.user.user_metadata?.role || "Community Member",
-          trustScore: avgScore,
-          reviewCount: reviewCount,
+          trustScore: null,
+          reviewCount: 0,
         });
+
+        // Unblock auth loading state immediately
+        setLoading(false);
+
+        // Perform non-blocking background fetch for user review ratings
+        (async () => {
+          try {
+            const { data: foodsData } = await supabase
+              .from("foods")
+              .select("id")
+              .eq("user_id", userId);
+
+            if (foodsData && foodsData.length > 0) {
+              const foodIds = foodsData.map((f: any) => f.id);
+              const { data: reviewsData } = await supabase
+                .from("reviews")
+                .select("rating")
+                .in("food_id", foodIds);
+
+              if (reviewsData && reviewsData.length > 0) {
+                const total = reviewsData.reduce((acc: number, curr: any) => acc + (curr.rating || 5), 0);
+                const avg = Number((total / reviewsData.length).toFixed(1));
+                setProfile((prev) => prev ? { ...prev, trustScore: avg, reviewCount: reviewsData.length } : null);
+              }
+            }
+          } catch (e) {
+            // Non-critical background computation error swallowed
+          }
+        })();
+      } else {
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
       }
     } catch (err) {
       console.error("Auth restoration error:", err);
-    } finally {
       setLoading(false);
     }
   };
@@ -103,7 +111,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen to Supabase auth changes dynamically in background
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        refreshProfile();
+        setUser({
+          id: session.user.id,
+          email: session.user.email || "",
+          phone: session.user.user_metadata?.phone || "",
+        });
+        setProfile((prev) => prev || {
+          id: session.user.id,
+          name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
+          email: session.user.email || "",
+          phone: session.user.user_metadata?.phone || "",
+          created_at: session.user.created_at,
+          role: session.user.user_metadata?.role || "Community Member",
+          trustScore: null,
+          reviewCount: 0,
+        });
+        setLoading(false);
 
         if (_event === "PASSWORD_RECOVERY") {
           window.location.href = "/auth?mode=reset";
@@ -111,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(null);
         setProfile(null);
+        setLoading(false);
       }
     });
 
@@ -119,8 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Separate async effect to load extended database profile attributes (like role)
-  // once the user is authenticated, without blocking/deadlocking the auth lifecycle.
+  // Separate async effect to load extended database profile attributes
   useEffect(() => {
     if (!user) return;
 
@@ -241,60 +264,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: true as const };
       }
     } catch (err: any) {
-      return { ok: false as const, error: err.message || "Failed to send OTP." };
+      return { ok: false as const, error: err.message || "Failed to send OTP code." };
     }
   };
 
   /**
-   * Verifies the OTP code via Supabase
+   * Verifies the 6-digit OTP code entered by the user
    */
-  const verifyOtp = async (
-    email: string,
-    otp: string,
-    type: "signup" | "recovery" | "magiclink"
-  ) => {
+  const verifyOtp = async (email: string, otp: string, type: "signup" | "recovery" | "magiclink" = "signup") => {
     try {
+      let verificationType: any = "signup";
+      if (type === "recovery") verificationType = "recovery";
+      else if (type === "magiclink") verificationType = "magiclink";
+      else verificationType = "email";
+
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
-        type: type,
+        type: verificationType,
       });
 
       if (error) throw error;
-      
-      // Auto-polling the page sign in logic is handled by onAuthStateChange!
+
+      if (data.session?.user) {
+        setUser({
+          id: data.session.user.id,
+          email: data.session.user.email || "",
+          phone: data.session.user.user_metadata?.phone || "",
+        });
+        setProfile({
+          id: data.session.user.id,
+          name: data.session.user.user_metadata?.name || "Community Member",
+          email: data.session.user.email || "",
+          phone: data.session.user.user_metadata?.phone || "",
+          created_at: data.session.user.created_at,
+          role: data.session.user.user_metadata?.role || "Community Member",
+          trustScore: null,
+          reviewCount: 0,
+        });
+      }
+
       return { ok: true as const };
     } catch (err: any) {
-      return { ok: false as const, error: err.message || "Verification failed." };
+      return { ok: false as const, error: err.message || "Invalid verification code." };
     }
   };
 
   /**
-   * Triggers a password reset email
+   * Resets user password by sending a reset link
    */
   const resetPassword = async (email: string) => {
     try {
-      if (!email) throw new Error("Email is required.");
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + "/auth?mode=reset",
+        redirectTo: `${window.location.origin}/auth?mode=reset`,
       });
       if (error) throw error;
       return { ok: true as const };
     } catch (err: any) {
-      return { ok: false as const, error: err.message || "Failed to send reset email." };
+      return { ok: false as const, error: err.message || "Failed to send password reset link." };
     }
   };
 
-
-
   /**
-   * Purges session and log out
+   * Logs out the user from the current session
    */
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    toast.success("Logged out successfully");
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      toast.success("Successfully logged out.");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
 
   return (
@@ -317,7 +359,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 }
