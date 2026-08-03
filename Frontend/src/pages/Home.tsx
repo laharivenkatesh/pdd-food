@@ -267,10 +267,10 @@ export default function Home() {
       )}
 
       {!loading && (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {list.map((f) => <FoodCard key={f.id} food={f} />)}
           {list.length === 0 && (
-            <div className="text-center py-14 space-y-2">
+            <div className="col-span-full text-center py-14 space-y-2">
               <p className="text-4xl">🍱</p>
               <p className="font-bold text-foreground">No food listings found</p>
               <p className="text-sm text-muted-foreground">
@@ -317,7 +317,7 @@ export default function Home() {
                 <p className="text-xs text-muted-foreground">Enable location or try a different filter.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {nearbyNGOs.map((ngo) => (
                   <NGOCard
                     key={ngo.id}

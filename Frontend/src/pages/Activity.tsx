@@ -42,7 +42,7 @@ export default function Activity() {
   };
 
   return (
-    <div className="px-5 py-6 space-y-6 max-w-md mx-auto animate-fade-up">
+    <div className="px-5 py-6 space-y-6 max-w-4xl w-full mx-auto animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between pt-2">
         <h1 className="text-3xl font-extrabold font-serif tracking-tight text-foreground">Profile</h1>
@@ -85,7 +85,7 @@ export default function Activity() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard value={userStats.mealsCollected.toString()} label="Meals Collected" />
         <StatCard value={userStats.animalsFed.toString()} label="Animals Fed" />
         <StatCard value={userStats.postsMade.toString()} label="Posts Made" />
