@@ -1,373 +1,281 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
-import React from "react";
-import { useNavigation } from "@react-navigation/native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Leaf,
+  Calendar,
+  Flame,
+  MapPin,
+  ChevronRight,
+  Star,
+  Trash2,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useMyPosts } from "@/hooks/useMyPosts";
 import { toast } from "sonner";
 
 export default function Activity() {
-  const navigation = useNavigation<any>();
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { userStats } = useTransactions();
   const { posts, removePost } = useMyPosts();
 
   if (!profile) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading secure session profile...</Text>
-      </View>
+      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+        <div className="space-y-4">
+          <p className="text-muted-foreground animate-pulse font-semibold">Loading secure session profile...</p>
+        </div>
+      </div>
     );
   }
 
+  // Format UTC dates nicely
   const formatDate = (isoStr: string) => {
     const d = new Date(isoStr);
     return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.headerTitle}>Profile</Text>
+    <div className="px-5 py-6 space-y-6 max-w-md mx-auto animate-fade-up">
+      {/* Header */}
+      <div className="flex items-center justify-between pt-2">
+        <h1 className="text-3xl font-extrabold font-serif tracking-tight text-foreground">Profile</h1>
+      </div>
 
-      {/* Main Profile Banner */}
-      <View style={styles.profileCard}>
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarBox}>
-            <Ionicons name="leaf" size={28} color="#6ee7b7" />
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{profile.name}</Text>
-            <Text style={styles.profileSub}>Community Member • ⭐ {profile.trustScore}</Text>
-            {profile.phone && <Text style={styles.profileMeta}>📍 {profile.phone}</Text>}
-            {profile.created_at && <Text style={styles.profileMeta}>📅 Reg: {formatDate(profile.created_at)}</Text>}
-          </View>
-        </View>
+      {/* Main Card */}
+      <div className="bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-950 rounded-[32px] p-5 relative overflow-hidden shadow-soft border border-emerald-800 text-white">
+        <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -z-10" />
+        
+        <div className="flex items-center gap-4 mb-6 relative z-10">
+          <div className="w-16 h-16 rounded-[20px] bg-emerald-800/40 border border-emerald-500/30 flex items-center justify-center shadow-inner shrink-0 backdrop-blur">
+            <Leaf className="w-8 h-8 text-emerald-300" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold text-white truncate">{profile.name}</h2>
+            <p className="text-xs text-emerald-300 font-semibold mt-0.5 flex items-center gap-1.5">
+              <span>Community Member</span> 
+              <span className="text-[10px]">•</span> 
+              <span className="flex items-center gap-0.5"><Star className="w-3.5 h-3.5 fill-warning text-warning" /> {profile.trustScore}</span>
+            </p>
+            {profile.phone && (
+              <p className="text-[11px] text-emerald-200/80 font-semibold mt-1 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5" /> {profile.phone}
+              </p>
+            )}
+            {profile.created_at && (
+              <p className="text-[10px] text-emerald-200/60 font-semibold mt-0.5 flex items-center gap-1.5">
+                <Calendar className="w-3 h-3" /> Reg: {formatDate(profile.created_at)}
+              </p>
+            )}
+          </div>
+        </div>
 
-        <View style={styles.streakBox}>
-          <Text style={styles.streakText}>🔥 {profile.streak} Day Streak</Text>
-          <Text style={styles.streakSub}>Keep it going!</Text>
-        </View>
-      </View>
+        <div className="bg-emerald-950/50 backdrop-blur-md rounded-[20px] py-3 px-4 flex items-center justify-between shadow-sm relative z-10 border border-emerald-800/50">
+          <div className="flex items-center gap-2 font-bold text-sm text-emerald-100">
+            <Flame className="w-4 h-4 text-orange-400 animate-pulse" /> {profile.streak} Day Streak
+          </div>
+          <span className="text-xs text-emerald-300 font-bold">Keep it going!</span>
+        </div>
+      </div>
 
       {/* Stats Grid */}
-      <View style={styles.statsGrid}>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{userStats.mealsCollected}</Text>
-          <Text style={styles.statLabel}>Meals Collected</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{userStats.animalsFed}</Text>
-          <Text style={styles.statLabel}>Animals Fed</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{userStats.postsMade}</Text>
-          <Text style={styles.statLabel}>Posts Made</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{userStats.pickupSuccess}%</Text>
-          <Text style={styles.statLabel}>Pickup Success</Text>
-        </View>
-      </View>
+      <div className="grid grid-cols-2 gap-4">
+        <StatCard value={userStats.mealsCollected.toString()} label="Meals Collected" />
+        <StatCard value={userStats.animalsFed.toString()} label="Animals Fed" />
+        <StatCard value={userStats.postsMade.toString()} label="Posts Made" />
+        <StatCard value={`${userStats.pickupSuccess}%`} label="Pickup Success" />
+      </div>
 
       {/* My Listings */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>My Listings</Text>
-          <View style={styles.countBadge}>
-            <Text style={styles.countBadgeText}>{posts.length} Total</Text>
-          </View>
-        </View>
+      <div className="space-y-3 pt-1">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-extrabold font-serif text-foreground">My Listings</h3>
+          <span className="badge-pill bg-primary/10 text-primary-deep font-extrabold text-xs">
+            {posts.length} Total
+          </span>
+        </div>
 
         {posts.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>📤</Text>
-            <Text style={styles.emptyText}>You haven't posted any food yet.</Text>
-          </View>
+          <div className="text-center py-6 bg-card rounded-[24px] border border-dashed border-border/80 space-y-1">
+            <p className="text-2xl">📤</p>
+            <p className="text-xs font-bold text-muted-foreground">You haven't posted any food yet.</p>
+          </div>
         ) : (
-          <View style={styles.postsList}>
+          <div className="space-y-3">
             {posts.map((food) => {
               const remaining = food.feeds - (food.bookedPortions || 0);
+              const isCollected = food.status === "collected";
+              const isReserved = food.status === "reserved";
+              const isFullyBooked = remaining <= 0;
+
+              let statusText = food.status as string;
+              let statusColorClass = "bg-success/10 text-success border border-success/20";
+              if (isCollected) {
+                statusText = "collected";
+                statusColorClass = "bg-muted text-muted-foreground border border-border";
+              } else if (isReserved || isFullyBooked) {
+                statusText = isFullyBooked ? "booked" : "reserved";
+                statusColorClass = isFullyBooked 
+                  ? "bg-destructive/10 text-destructive border border-destructive/20" 
+                  : "bg-warning/10 text-warning border border-warning/20";
+              }
 
               return (
-                <TouchableOpacity
+                <div 
                   key={food.id}
-                  onPress={() => navigation.navigate("FoodDetail", { id: food.id })}
-                  style={styles.foodRow}
-                  activeOpacity={0.8}
+                  className="bg-card rounded-[24px] p-4 shadow-sm border border-border/60 flex items-center justify-between gap-3 hover:border-primary-deep/30 transition-all cursor-pointer"
+                  onClick={() => navigate(`/food/${food.id}`)}
                 >
-                  <Image source={{ uri: food.image }} style={styles.foodThumb} />
-                  <View style={styles.foodInfo}>
-                    <Text style={styles.foodTitle}>{food.name}</Text>
-                    <Text style={styles.foodSub}>{remaining} / {food.feeds} left</Text>
-                    {food.postedAt && (
-                      <Text style={styles.foodDateText}>
-                        🕒 Posted: {new Date(food.postedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                      </Text>
-                    )}
-                    {food.preparedAt && (
-                      <Text style={styles.foodDateText}>
-                        🍳 Prep: {food.preparedAt}
-                      </Text>
-                    )}
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => {
-                      Alert.alert(
-                        "Delete Listing",
-                        `Are you sure you want to delete "${food.name}"?`,
-                        [
-                          { text: "Cancel", style: "cancel" },
-                          {
-                            text: "Delete",
-                            style: "destructive",
-                            onPress: async () => {
-                              await removePost(food.id);
-                              toast.success("Listing deleted successfully!");
-                            },
-                          },
-                        ]
-                      );
-                    }}
-                    style={styles.deleteBtn}
-                  >
-                    <Feather name="trash-2" size={16} color="#dc2626" />
-                  </TouchableOpacity>
-                </TouchableOpacity>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img 
+                      src={food.image} 
+                      alt={food.name} 
+                      className="w-12 h-12 rounded-xl object-cover shrink-0"
+                      onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80"; }}
+                    />
+                    <div className="min-w-0">
+                      <p className="font-extrabold text-foreground text-sm truncate">{food.name}</p>
+                      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                        <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${statusColorClass}`}>
+                          {statusText}
+                        </span>
+                        <span className="text-[10px] font-bold text-muted-foreground">
+                          {remaining} / {food.feeds} left
+                        </span>
+                      </div>
+                      {food.postedAt && (
+                        <p className="text-[10px] font-semibold text-emerald-700 mt-1 flex items-center gap-1">
+                          🕒 Posted: {new Date(food.postedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      )}
+                      {food.preparedAt && (
+                        <p className="text-[10px] font-semibold text-emerald-700 mt-0.5 flex items-center gap-1">
+                          🍳 Prep: {food.preparedAt}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (window.confirm(`Are you sure you want to delete "${food.name}"?`)) {
+                          await removePost(food.id);
+                          toast.success("Listing deleted successfully!");
+                        }
+                      }}
+                      className="w-8 h-8 rounded-lg bg-destructive/10 hover:bg-destructive hover:text-white text-destructive flex items-center justify-center transition-all"
+                      title="Delete listing"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </div>
               );
             })}
-          </View>
+          </div>
         )}
-      </View>
+      </div>
 
       {/* Badges */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Badges</Text>
-        <View style={styles.badgesRow}>
+      <div className="space-y-3 pt-1">
+        <h3 className="text-lg font-extrabold font-serif text-foreground">Badges</h3>
+        <div className="flex flex-wrap gap-2">
           {userStats.badges.length > 0 ? (
-            userStats.badges.map((b) => (
-              <View key={b.text} style={styles.badgePill}>
-                <Text style={styles.badgeText}>{b.icon} {b.text}</Text>
-              </View>
+            userStats.badges.map(b => (
+              <Badge key={b.text} icon={b.icon} text={b.text} />
             ))
           ) : (
-            <Text style={styles.emptyText}>Complete transactions to earn badges!</Text>
+            <p className="text-sm text-muted-foreground font-bold">Complete transactions to earn badges!</p>
           )}
-        </View>
-      </View>
-    </ScrollView>
+        </div>
+      </div>
+
+      {/* Sharing Metrics Section */}
+      <div className="space-y-4 pt-2">
+        <div className="card-soft p-4 border border-border bg-card space-y-3">
+          <h3 className="text-sm font-extrabold text-foreground">Your Contribution Summary</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            By participating in Zerra's food redistribution network, you are directly mitigating waste and supporting local communities.
+          </p>
+          
+          <div className="space-y-3 pt-1">
+            <div>
+              <div className="flex justify-between text-xs font-bold text-muted-foreground mb-1">
+                <span>Community Meals Saved</span>
+                <span>14 / 20 Saved</span>
+              </div>
+              <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border">
+                <div className="bg-emerald-500 h-full rounded-full" style={{ width: "70%" }} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-xs font-bold text-muted-foreground mb-1">
+                <span>CO2 Offset (Carbon reduction)</span>
+                <span>8.5 kg Offset</span>
+              </div>
+              <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border">
+                <div className="bg-emerald-400 h-full rounded-full" style={{ width: "45%" }} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-xs font-bold text-muted-foreground mb-1">
+                <span>NGO Partnerships Supported</span>
+                <span>4 Partners</span>
+              </div>
+              <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border">
+                <div className="bg-emerald-600 h-full rounded-full" style={{ width: "90%" }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card-soft p-4 border border-border bg-card space-y-3">
+          <h3 className="text-sm font-extrabold text-foreground">Next Action Steps</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => navigate("/")}
+              className="py-3 px-2 rounded-xl bg-primary-deep text-white font-bold text-[11px] text-center hover:opacity-95 transition-all shadow-sm flex items-center justify-center gap-1"
+            >
+              Browse Food <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              onClick={() => navigate("/post")}
+              className="py-3 px-2 rounded-xl bg-muted text-foreground border border-border font-bold text-[11px] text-center hover:bg-muted/70 transition-all flex items-center justify-center gap-1"
+            >
+              Post Food <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f6f4ec',
-  },
-  content: {
-    padding: 16,
-    gap: 16,
-    paddingBottom: 32,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#5c7066',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#1e382b',
-  },
-  profileCard: {
-    backgroundColor: '#064e3b',
-    borderRadius: 24,
-    padding: 18,
-    gap: 14,
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  avatarBox: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: 'rgba(6, 78, 59, 0.6)',
-    borderWidth: 1,
-    borderColor: 'rgba(110, 231, 183, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  profileSub: {
-    fontSize: 12,
-    color: '#6ee7b7',
-    fontWeight: '600',
-  },
-  profileMeta: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  streakBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
-  },
-  streakText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#fbbf24',
-  },
-  streakSub: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#6ee7b7',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  statCard: {
-    width: '48%',
-    backgroundColor: '#ffffff',
-    padding: 14,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-    gap: 4,
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#309267',
-  },
-  statLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#5c7066',
-  },
-  section: {
-    gap: 10,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#1e382b',
-  },
-  countBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 9999,
-    backgroundColor: 'rgba(48, 146, 103, 0.1)',
-  },
-  countBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#309267',
-  },
-  emptyCard: {
-    backgroundColor: '#ffffff',
-    padding: 24,
-    borderRadius: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-    borderStyle: 'dashed',
-    gap: 6,
-  },
-  emptyIcon: {
-    fontSize: 24,
-  },
-  emptyText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#5c7066',
-  },
-  postsList: {
-    gap: 8,
-  },
-  foodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-    gap: 12,
-  },
-  foodThumb: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-  },
-  foodInfo: {
-    flex: 1,
-  },
-  foodTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1e382b',
-  },
-  foodSub: {
-    fontSize: 11,
-    color: '#5c7066',
-  },
-  foodDateText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#309267',
-    marginTop: 2,
-  },
-  deleteBtn: {
-    padding: 8,
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  badgePill: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 9999,
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#1e382b',
-  },
-});
+function StatCard({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="bg-card rounded-[24px] p-5 shadow-sm border border-border/50">
+      <div className="text-[28px] font-extrabold text-primary-deep mb-0.5">{value}</div>
+      <div className="text-[13px] text-muted-foreground font-bold leading-tight">{label}</div>
+    </div>
+  );
+}
 
+function Badge({ icon, text }: { key?: React.Key; icon: string; text: string }) {
+  return (
+    <div className="bg-card px-3.5 py-2.5 rounded-full flex items-center gap-2 shadow-sm border border-border/50 text-sm font-extrabold text-foreground">
+      <span>{icon}</span> {text}
+    </div>
+  );
+}

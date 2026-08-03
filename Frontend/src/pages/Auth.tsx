@@ -1,26 +1,33 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Leaf, Mail, Phone, Lock, ArrowLeft, ArrowRight, ShieldCheck, RefreshCw, KeyRound, User as UserIcon, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
 export default function Auth() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { login, sendOtp, verifyOtp, resetPassword, user } = useAuth();
 
-  const [authMode, setAuthMode] = useState<"login" | "signup" | "reset">("login");
+  // Navigation redirect destination
+  const from = location.state?.from?.pathname || "/";
 
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "reset">(
+    new URLSearchParams(location.search).get("mode") === "reset" ? "reset" : "login"
+  );
+
+  // If already authenticated, redirect away from auth page
   useEffect(() => {
     if (user && authMode !== "reset") {
-      navigation.navigate("Home");
+      navigate(from, { replace: true });
     }
-  }, [user, navigation, authMode]);
+  }, [user, navigate, from, authMode]);
 
+  // Auth flow states
   const [step, setStep] = useState<"email" | "otp">("email");
   
+  // Signup/Login fields
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -30,17 +37,21 @@ export default function Auth() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [busy, setBusy] = useState(false);
-  const [agreed, setAgreed] = useState(true);
+  const [agreed, setAgreed] = useState(true); // default agreed
 
+  // OTP inputs state (6 digits)
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(""));
-  const inputRefs = useRef<any[]>([]);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Expiration and Resend Timers
   const [resendTimer, setResendTimer] = useState(30);
-  const [expiryTimer, setExpiryTimer] = useState(300);
+  const [expiryTimer, setExpiryTimer] = useState(300); // 5 minutes in seconds
 
+  // Interval references
   const resendIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const expiryIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Start the 30s resend timer
   const startResendTimer = () => {
     setResendTimer(30);
     if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
@@ -55,6 +66,7 @@ export default function Auth() {
     }, 1000);
   };
 
+  // Start the 5m expiry timer
   const startExpiryTimer = () => {
     setExpiryTimer(300);
     if (expiryIntervalRef.current) clearInterval(expiryIntervalRef.current);
@@ -63,7 +75,7 @@ export default function Auth() {
         if (prev <= 1) {
           if (expiryIntervalRef.current) clearInterval(expiryIntervalRef.current);
           toast.error("Your verification code has expired. Please request a new one.");
-          setStep("email");
+          setStep("email"); // bounce back
           return 0;
         }
         return prev - 1;
@@ -71,6 +83,7 @@ export default function Auth() {
     }, 1000);
   };
 
+  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (resendIntervalRef.current) clearInterval(resendIntervalRef.current);
@@ -78,6 +91,7 @@ export default function Auth() {
     };
   }, []);
 
+  // Formats expiry time as MM:SS
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -100,7 +114,8 @@ export default function Auth() {
     toast.success("Password reset email sent! Check your inbox.");
   };
 
-  const handleUpdatePassword = async () => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!password) {
       toast.error("Please enter a new password.");
       return;
@@ -118,11 +133,14 @@ export default function Auth() {
       toast.error(error.message);
     } else {
       toast.success("Password updated successfully!");
-      navigation.navigate("Home");
+      // Redirect to home dashboard
+      navigate("/", { replace: true });
     }
   };
 
-  const handleSendOtp = async () => {
+  // Step 1: Submit Email to receive OTP
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!email) {
       toast.error("Please enter a valid email address.");
       return;
@@ -171,6 +189,7 @@ export default function Auth() {
         return;
       }
       toast.success("Login successful!");
+      // The useEffect will catch the user state change and redirect
       return;
     }
 
@@ -194,9 +213,14 @@ export default function Auth() {
     setStep("otp");
     startResendTimer();
     startExpiryTimer();
+    // Clear out any old values
     setOtpValues(Array(6).fill(""));
+    setTimeout(() => {
+      inputRefs.current[0]?.focus();
+    }, 100);
   };
 
+  // Trigger Resend OTP
   const handleResendOtp = async () => {
     if (resendTimer > 0) return;
     setBusy(true);
@@ -219,21 +243,61 @@ export default function Auth() {
     startResendTimer();
     startExpiryTimer();
     setOtpValues(Array(6).fill(""));
+    inputRefs.current[0]?.focus();
   };
 
+  // Handles input box typing, focusing next element automatically
   const handleOtpChange = (index: number, val: string) => {
-    if (/[^0-9]/.test(val)) return;
+    if (/[^0-9]/.test(val)) return; // Allow only numeric entries
 
     const newValues = [...otpValues];
     newValues[index] = val;
     setOtpValues(newValues);
 
     if (val && index < 5) {
+      // Shift focus to the next field
       inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleVerifyOtp = async () => {
+  // Handles backspace and backward navigation
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (!otpValues[index] && index > 0) {
+        const newValues = [...otpValues];
+        newValues[index - 1] = "";
+        setOtpValues(newValues);
+        inputRefs.current[index - 1]?.focus();
+      } else {
+        const newValues = [...otpValues];
+        newValues[index] = "";
+        setOtpValues(newValues);
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handles pasting of full 6-digit verification code
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData("text").trim();
+    if (!/^\d{6}$/.test(pastedText)) {
+      toast.error("Please paste a valid 6-digit numeric verification code.");
+      return;
+    }
+
+    const digits = pastedText.split("");
+    setOtpValues(digits);
+    // Focus last cell
+    inputRefs.current[5]?.focus();
+  };
+
+  // Submit entered OTP code for verification
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const otpCode = otpValues.join("");
 
     if (otpCode.length < 6) {
@@ -255,9 +319,10 @@ export default function Auth() {
     }
 
     toast.success("Access authorized. Redirecting to home dashboard...");
-    navigation.navigate("Home");
+    navigate(from, { replace: true });
   };
 
+  // Auto-submit OTP when all 6 cells are filled
   useEffect(() => {
     if (otpValues.join("").length === 6) {
       handleVerifyOtp();
@@ -265,450 +330,398 @@ export default function Auth() {
   }, [otpValues]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.card}>
-        <View style={styles.header}>
-          <View style={styles.logoBg}>
-            <Ionicons name="leaf" size={28} color="#ffffff" />
-          </View>
-          <Text style={styles.title}>Zerra Food Hub</Text>
-          <Text style={styles.subtitle}>
+    <div className="min-h-screen bg-hero flex items-center justify-center p-4 transition-all duration-300 relative overflow-hidden">
+      {/* Decorative Floating Blobs for eco-branding */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[60px] pointer-events-none animate-pulse-soft" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/30 blur-[60px] pointer-events-none animate-pulse-soft" style={{ animationDelay: "1s" }} />
+
+      <div className="w-full max-w-sm bg-card/90 backdrop-blur-md border border-border p-6 rounded-3xl shadow-card space-y-6 animate-fade-up relative z-10">
+        
+        {/* Logo and Header */}
+        <div className="text-center space-y-2">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-primary-deep flex items-center justify-center shadow-soft transform hover:scale-105 transition-all">
+            <Leaf className="w-8 h-8 text-primary-deep-foreground" />
+          </div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">
+            Zerra Food Hub
+          </h1>
+          <p className="text-xs text-muted-foreground leading-relaxed px-4">
             {authMode === "reset"
               ? "Reset your account password. Choose a strong new password."
               : step === "email"
               ? "Share leftover food, save the planet. Authenticate to continue."
               : "We have dispatched a 6-digit security code."}
-          </Text>
-        </View>
+          </p>
+        </div>
 
         {authMode === "reset" ? (
-          <View style={styles.form}>
-            <View>
-              <Text style={styles.label}>New Password</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={16} color="#5c7066" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
+          <form onSubmit={handleUpdatePassword} className="space-y-4">
+            {/* New Password field */}
+            <div>
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                New Password
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-3 text-muted-foreground">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <input
+                  className="input-field pl-10 pr-10 py-2.5 text-sm rounded-xl focus:ring-1 focus:ring-primary-deep focus:border-primary-deep"
                   placeholder="••••••••"
-                  placeholderTextColor="#5c7066"
-                  secureTextEntry={!showPassword}
+                  type={showPassword ? "text" : "password"}
                   value={password}
-                  onChangeText={setPassword}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-                  <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={16} color="#5c7066" />
-                </TouchableOpacity>
-              </View>
-            </View>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
-            <View>
-              <Text style={styles.label}>Confirm New Password</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={16} color="#5c7066" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
+            {/* Confirm Password field */}
+            <div>
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-3 text-muted-foreground">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <input
+                  className="input-field pl-10 pr-10 py-2.5 text-sm rounded-xl focus:ring-1 focus:ring-primary-deep focus:border-primary-deep"
                   placeholder="••••••••"
-                  placeholderTextColor="#5c7066"
-                  secureTextEntry={!showConfirmPassword}
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
                 />
-                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
-                  <Ionicons name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} size={16} color="#5c7066" />
-                </TouchableOpacity>
-              </View>
-            </View>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
-            <TouchableOpacity onPress={handleUpdatePassword} disabled={busy} style={styles.submitBtn} activeOpacity={0.8}>
-              <Text style={styles.submitBtnText}>{busy ? "Updating..." : "Update Password"}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setAuthMode("login")} style={styles.backBtn}>
-              <Text style={styles.backBtnText}>Back to Login</Text>
-            </TouchableOpacity>
-          </View>
-        ) : step === "email" ? (
-          <View style={styles.form}>
-            <View style={styles.tabContainer}>
-              <TouchableOpacity
-                onPress={() => setAuthMode("login")}
-                style={[styles.tab, authMode === "login" && styles.activeTab]}
-              >
-                <Text style={[styles.tabText, authMode === "login" && styles.activeTabText]}>Log In</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setAuthMode("signup")}
-                style={[styles.tab, authMode === "signup" && styles.activeTab]}
-              >
-                <Text style={[styles.tabText, authMode === "signup" && styles.activeTabText]}>Sign Up</Text>
-              </TouchableOpacity>
-            </View>
-
-            {authMode === "signup" && (
-              <>
-                <View>
-                  <Text style={styles.label}>Full Name</Text>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons name="person-outline" size={16} color="#5c7066" style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="John Doe"
-                      placeholderTextColor="#5c7066"
-                      value={name}
-                      onChangeText={setName}
-                    />
-                  </View>
-                </View>
-
-                <View>
-                  <Text style={styles.label}>Phone Number</Text>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons name="call-outline" size={16} color="#5c7066" style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="9876543210"
-                      placeholderTextColor="#5c7066"
-                      keyboardType="phone-pad"
-                      value={phone}
-                      onChangeText={setPhone}
-                    />
-                  </View>
-                </View>
-              </>
-            )}
-
-            <View>
-              <Text style={styles.label}>Email Address</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="mail-outline" size={16} color="#5c7066" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="yourname@example.com"
-                  placeholderTextColor="#5c7066"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
-                />
-              </View>
-            </View>
-
-            <View>
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>Password</Text>
-                {authMode === "login" && (
-                  <TouchableOpacity onPress={handleForgotPassword}>
-                    <Text style={styles.forgotText}>Forgot password?</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={16} color="#5c7066" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="••••••••"
-                  placeholderTextColor="#5c7066"
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-                  <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={16} color="#5c7066" />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {authMode === "signup" && (
-              <View>
-                <Text style={styles.label}>Confirm Password</Text>
-                <View style={styles.inputWrapper}>
-                  <Ionicons name="lock-closed-outline" size={16} color="#5c7066" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="••••••••"
-                    placeholderTextColor="#5c7066"
-                    secureTextEntry={!showConfirmPassword}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                  />
-                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
-                    <Ionicons name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} size={16} color="#5c7066" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            <TouchableOpacity
-              onPress={handleSendOtp}
+            <button
+              type="submit"
               disabled={busy}
-              style={styles.submitBtn}
-              activeOpacity={0.8}
+              className="btn-primary flex items-center justify-center gap-2 mt-2 h-11 text-sm rounded-xl"
             >
-              <Text style={styles.submitBtnText}>
-                {busy ? "Dispatching..." : authMode === "login" ? "Log In" : "Register & Get OTP"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.form}>
-            <View style={styles.otpHeaderCard}>
-              <View style={styles.otpHeaderLeft}>
-                <Text style={styles.otpHeaderLabel}>Sending OTP to</Text>
-                <Text style={styles.otpHeaderEmail}>{email}</Text>
-              </View>
-              <TouchableOpacity onPress={() => setStep("email")} style={styles.editBtn}>
-                <Text style={styles.editBtnText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
+              {busy ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" /> Updating...
+                </>
+              ) : (
+                <>
+                  Update Password <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
 
-            <View>
-              <Text style={styles.labelCenter}>6-Digit OTP Code</Text>
-              <View style={styles.otpGrid}>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("login");
+                navigate("/auth", { replace: true });
+              }}
+              className="w-full text-center text-xs font-bold text-muted-foreground hover:text-foreground pt-2"
+            >
+              Back to Login
+            </button>
+          </form>
+        ) : step === "email" ? (
+          <div className="space-y-5">
+            {/* Tab Selector */}
+            <div className="relative flex p-1 bg-muted rounded-2xl border border-border">
+              {/* Active slider background */}
+              <div 
+                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-xl bg-card shadow-soft transition-all duration-300 ease-out transform ${
+                  authMode === "signup" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
+                }`} 
+              />
+              
+              <button
+                type="button"
+                onClick={() => setAuthMode("login")}
+                className={`relative z-10 flex-1 py-2 text-center text-xs font-bold transition-colors duration-200 ${
+                  authMode === "login" ? "text-primary-deep" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode("signup")}
+                className={`relative z-10 flex-1 py-2 text-center text-xs font-bold transition-colors duration-200 ${
+                  authMode === "signup" ? "text-primary-deep" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            {/* Form Content */}
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              {authMode === "signup" && (
+                <div className="space-y-4 animate-fade-up">
+                  {/* Name field */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-3 text-muted-foreground">
+                        <UserIcon className="w-4 h-4" />
+                      </span>
+                      <input
+                        className="input-field pl-10 py-2.5 text-sm rounded-xl focus:ring-1 focus:ring-primary-deep focus:border-primary-deep"
+                        placeholder="John Doe"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required={authMode === "signup"}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone Number field */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-3 text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                      </span>
+                      <input
+                        className="input-field pl-10 py-2.5 text-sm rounded-xl focus:ring-1 focus:ring-primary-deep focus:border-primary-deep"
+                        placeholder="9876543210"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required={authMode === "signup"}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Email Address field */}
+              <div>
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3 text-muted-foreground font-bold text-sm">
+                    <Mail className="w-4 h-4" />
+                  </span>
+                  <input
+                    className="input-field pl-10 py-2.5 text-sm rounded-xl focus:ring-1 focus:ring-primary-deep focus:border-primary-deep"
+                    placeholder="yourname@example.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password field (Both login and signup) */}
+              <div className="animate-fade-up">
+                <div className="flex justify-between items-end mb-1.5">
+                  <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Password
+                  </label>
+                  {authMode === "login" && (
+                    <button 
+                      type="button" 
+                      onClick={handleForgotPassword}
+                      className="text-[10px] font-bold text-primary-deep hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3 text-muted-foreground">
+                    <Lock className="w-4 h-4" />
+                  </span>
+                  <input
+                    className="input-field pl-10 pr-10 py-2.5 text-sm rounded-xl focus:ring-1 focus:ring-primary-deep focus:border-primary-deep"
+                    placeholder="••••••••"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {authMode === "signup" && (
+                <div className="space-y-4 animate-fade-up">
+                  {/* Confirm Password field */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-3 text-muted-foreground">
+                        <Lock className="w-4 h-4" />
+                      </span>
+                      <input
+                        className="input-field pl-10 pr-10 py-2.5 text-sm rounded-xl focus:ring-1 focus:ring-primary-deep focus:border-primary-deep"
+                        placeholder="••••••••"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required={authMode === "signup"}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 animate-fade-up">
+                    <label className="flex items-start gap-2.5 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={agreed}
+                        onChange={(e) => setAgreed(e.target.checked)}
+                        className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-primary-deep focus:ring-primary-deep cursor-pointer shrink-0"
+                      />
+                      <span className="text-[10px] text-muted-foreground leading-snug select-none">
+                        I accept the food quality and sharing guidelines.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={busy || (authMode === "signup" && !agreed)}
+                className="btn-primary flex items-center justify-center gap-2 group mt-2 h-11 text-sm rounded-xl"
+              >
+                {busy ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" /> Dispatching...
+                  </>
+                ) : (
+                  <>
+                    {authMode === "login" ? "Log In" : "Register & Get OTP"}{" "}
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        ) : (
+          /* OTP VERIFICATION STEP */
+          <form onSubmit={handleVerifyOtp} className="space-y-5 animate-fade-up">
+            {/* Target Email display card */}
+            <div className="flex items-center justify-between p-3 bg-muted rounded-xl border border-border">
+              <div className="min-w-0 flex-1 mr-2">
+                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Sending OTP to</p>
+                <p className="text-xs font-extrabold text-foreground truncate">{email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("email");
+                }}
+                className="px-2.5 py-1 text-[10px] font-semibold text-primary-deep hover:text-emerald-700 bg-card border border-border rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-1 shrink-0"
+              >
+                <ArrowLeft className="w-3 h-3" /> Edit
+              </button>
+            </div>
+
+            {/* OTP Grid */}
+            <div className="space-y-2">
+              <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
+                6-Digit OTP Code
+              </label>
+              <div className="flex justify-between gap-1.5">
                 {otpValues.map((val, idx) => (
-                  <TextInput
+                  <input
                     key={idx}
                     ref={(el) => (inputRefs.current[idx] = el)}
-                    style={styles.otpCell}
-                    keyboardType="number-pad"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={1}
                     value={val}
-                    onChangeText={(v) => handleOtpChange(idx, v)}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    onPaste={idx === 0 ? handleOtpPaste : undefined}
+                    className="w-9 h-11 text-center text-lg font-extrabold text-foreground bg-input hover:bg-input/80 focus:bg-white focus:ring-1 focus:ring-primary-deep focus:border-primary-deep border border-border rounded-lg transition-all shadow-sm focus:outline-none"
+                    autoFocus={idx === 0}
                   />
                 ))}
-              </View>
-            </View>
+              </div>
+            </div>
 
-            <View style={styles.timerRow}>
-              <Text style={styles.timerText}>Expires in: {formatTime(expiryTimer)}</Text>
+            {/* Expiry and Resend Timer */}
+            <div className="flex items-center justify-between text-[10px] font-bold px-0.5">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <KeyRound className="w-3.5 h-3.5 text-muted-foreground/80" />
+                <span>Expires in:</span>
+                <span className="text-urgent">{formatTime(expiryTimer)}</span>
+              </div>
+
               {resendTimer > 0 ? (
-                <Text style={styles.timerText}>Resend in {resendTimer}s</Text>
+                <span className="text-muted-foreground">Resend in {resendTimer}s</span>
               ) : (
-                <TouchableOpacity onPress={handleResendOtp} disabled={busy}>
-                  <Text style={styles.resendText}>Resend OTP</Text>
-                </TouchableOpacity>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={busy}
+                  className="text-primary-deep hover:underline transition-colors flex items-center gap-1"
+                >
+                  <RefreshCw className="w-2.5 h-2.5 animate-pulse" /> Resend OTP
+                </button>
               )}
-            </View>
+            </div>
 
-            <TouchableOpacity
-              onPress={() => handleVerifyOtp()}
+            {/* No sandbox for Supabase */}
+
+            <button
+              type="submit"
               disabled={busy || otpValues.join("").length < 6}
-              style={styles.submitBtn}
-              activeOpacity={0.8}
+              className="btn-primary flex items-center justify-center gap-2 h-11 text-sm rounded-xl"
             >
-              <Text style={styles.submitBtnText}>{busy ? "Verifying..." : "Verify & Access"}</Text>
-            </TouchableOpacity>
-          </View>
+              {busy ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" /> Verifying...
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4" /> Verify & Access
+                </>
+              )}
+            </button>
+          </form>
         )}
-      </View>
-    </ScrollView>
+      </div>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f6f4ec',
-  },
-  content: {
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100%',
-  },
-  card: {
-    width: '100%',
-    maxWidth: 384,
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-    gap: 20,
-  },
-  header: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoBg: {
-    width: 56,
-    height: 56,
-    borderRadius: 20,
-    backgroundColor: '#309267',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#1e382b',
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#5c7066',
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  form: {
-    gap: 14,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#f6f4ec',
-    borderRadius: 16,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  activeTab: {
-    backgroundColor: '#ffffff',
-  },
-  tabText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#5c7066',
-  },
-  activeTabText: {
-    color: '#309267',
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#5c7066',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  labelCenter: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#5c7066',
-    textTransform: 'uppercase',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  forgotText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#309267',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f6f4ec',
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 44,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    color: '#1e382b',
-  },
-  eyeBtn: {
-    padding: 4,
-  },
-  submitBtn: {
-    width: '100%',
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#309267',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  submitBtnText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  backBtn: {
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  backBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#5c7066',
-  },
-  otpHeaderCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#f6f4ec',
-    padding: 12,
-    borderRadius: 12,
-  },
-  otpHeaderLeft: {
-    flex: 1,
-  },
-  otpHeaderLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#5c7066',
-    textTransform: 'uppercase',
-  },
-  otpHeaderEmail: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#1e382b',
-  },
-  editBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-  },
-  editBtnText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#309267',
-  },
-  otpGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 6,
-  },
-  otpCell: {
-    width: 44,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#f6f4ec',
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1e382b',
-  },
-  timerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  timerText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#5c7066',
-  },
-  resendText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#309267',
-  },
-});

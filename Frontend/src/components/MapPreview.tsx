@@ -1,5 +1,17 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking } from 'react-native';
-import MapView, { Marker } from "react-native-maps";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import iconUrl from "leaflet/dist/images/marker-icon.png";
+import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
+import shadowUrl from "leaflet/dist/images/marker-shadow.png";
+
+const DefaultIcon = L.icon({
+  iconUrl,
+  iconRetinaUrl,
+  shadowUrl,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapPreviewProps {
   lat: number;
@@ -9,53 +21,36 @@ interface MapPreviewProps {
   interactive?: boolean;
 }
 
-const getHeightValue = (h?: string) => {
-  if (h === "h-48") return 192;
-  if (h === "h-64") return 256;
-  if (h === "h-full") return "100%";
-  return 128; // default h-32
-};
-
 export default function MapPreview({ lat, lng, label, height = "h-32", interactive = false }: MapPreviewProps) {
-  const mapHeight = getHeightValue(height);
-
   return (
-    <View style={[styles.container, { height: mapHeight }]}>
-      <MapView
-        initialRegion={{
-          latitude: lat,
-          longitude: lng,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-        scrollEnabled={interactive}
-        zoomEnabled={interactive}
-        rotateEnabled={interactive}
-        pitchEnabled={interactive}
-        style={styles.map}
+    <div className={`${height} w-full rounded-2xl overflow-hidden border border-border`}>
+      <MapContainer
+        center={[lat, lng]}
+        zoom={14}
+        scrollWheelZoom={interactive}
+        dragging={interactive}
+        doubleClickZoom={interactive}
+        zoomControl={interactive}
+        style={{ height: "100%", width: "100%" }}
       >
-        <Marker coordinate={{ latitude: lat, longitude: lng }} title={label} />
-      </MapView>
-    </View>
+        <TileLayer
+          attribution='&copy; OpenStreetMap'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <Marker position={[lat, lng]}>{label && <Popup>{label}</Popup>}</Marker>
+      </MapContainer>
+    </div>
   );
 }
 
 export function openInGoogleMaps(lat: number, lng: number) {
   const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-  Linking.openURL(url);
+  // Use an anchor click to bypass iframe popup blockers (e.g. Lovable preview sandbox)
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#e8e6df',
-  },
-  map: {
-    width: '100%',
-    height: '100%',
-  },
-});
-

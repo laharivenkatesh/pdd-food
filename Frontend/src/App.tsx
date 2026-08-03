@@ -1,8 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "./components/Layout";
@@ -22,7 +20,6 @@ import Expired from "./pages/Expired";
 import SplashScreen from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
-const Stack = createNativeStackNavigator();
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -39,73 +36,31 @@ const App = () => {
       <TooltipProvider>
         <Sonner position="top-center" />
         {showSplash && <SplashScreen />}
-        <NavigationContainer>
+        <BrowserRouter>
           <AuthProvider>
             <NotificationProvider>
               <TransactionProvider>
                 <Layout>
-                  <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="Auth" component={Auth} />
-                    <Stack.Screen name="Home">
-                      {(props) => (
-                        <RequireAuth>
-                          <Home {...props} />
-                        </RequireAuth>
-                      )}
-                    </Stack.Screen>
-                    <Stack.Screen name="Expired">
-                      {(props) => (
-                        <RequireAuth>
-                          <Expired {...props} />
-                        </RequireAuth>
-                      )}
-                    </Stack.Screen>
-                    <Stack.Screen name="FoodDetail">
-                      {(props) => (
-                        <RequireAuth>
-                          <FoodDetail {...props} />
-                        </RequireAuth>
-                      )}
-                    </Stack.Screen>
-                    <Stack.Screen name="Post">
-                      {(props) => (
-                        <RequireAuth>
-                          <PostFood {...props} />
-                        </RequireAuth>
-                      )}
-                    </Stack.Screen>
-                    <Stack.Screen name="Activity">
-                      {(props) => (
-                        <RequireAuth>
-                          <Activity {...props} />
-                        </RequireAuth>
-                      )}
-                    </Stack.Screen>
-                    <Stack.Screen name="NGOs">
-                      {(props) => (
-                        <RequireAuth>
-                          <NGOs {...props} />
-                        </RequireAuth>
-                      )}
-                    </Stack.Screen>
-                    <Stack.Screen name="Dashboard">
-                      {(props) => (
-                        <RequireAuth>
-                          <Dashboard {...props} />
-                        </RequireAuth>
-                      )}
-                    </Stack.Screen>
-                    <Stack.Screen name="NotFound" component={NotFound} />
-                  </Stack.Navigator>
+                  <Routes>
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
+                    <Route path="/expired" element={<RequireAuth><Expired /></RequireAuth>} />
+                    <Route path="/food/:id" element={<RequireAuth><FoodDetail /></RequireAuth>} />
+                    <Route path="/post" element={<RequireAuth><PostFood /></RequireAuth>} />
+                    <Route path="/activity" element={<RequireAuth><Activity /></RequireAuth>} />
+                    <Route path="/ngos" element={<RequireAuth><NGOs /></RequireAuth>} />
+                    <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
                 </Layout>
               </TransactionProvider>
             </NotificationProvider>
           </AuthProvider>
-        </NavigationContainer>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
 };
 
 export default App;
-
+// Rebuilt: restored original React JS web application
