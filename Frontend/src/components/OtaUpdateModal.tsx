@@ -7,9 +7,21 @@ export default function OtaUpdateModal() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    // Trigger update check popup 3 seconds (3000ms) after app is opened
+    // Strictly restrict OTA Update Popup ONLY to Expo Native Mobile App environment!
+    // NEVER show on normal desktop or laptop web browsers.
+    const isExpoNative =
+      typeof window !== "undefined" &&
+      (Boolean((window as any).ExpoUpdates) ||
+        Boolean((window as any).expo) ||
+        Boolean((window as any).ReactNativeWebView) ||
+        navigator.userAgent.includes("Expo") ||
+        navigator.userAgent.includes("ReactNative"));
+
+    if (!isExpoNative) {
+      return; // Exit completely for standard web browsers
+    }
+
     const timer = setTimeout(() => {
-      // Check if update was recently dismissed in this session
       const dismissed = sessionStorage.getItem("zerra_ota_dismissed");
       if (!dismissed) {
         setShowModal(true);
@@ -24,7 +36,6 @@ export default function OtaUpdateModal() {
     toast.info("Downloading latest Over-The-Air (OTA) update package...");
 
     try {
-      // Check for Expo Updates API if running in Expo native environment
       if (typeof window !== "undefined" && (window as any).ExpoUpdates) {
         const ExpoUpdates = (window as any).ExpoUpdates;
         await ExpoUpdates.fetchUpdateAsync();
@@ -35,7 +46,6 @@ export default function OtaUpdateModal() {
       console.warn("Expo updates SDK fallback:", e);
     }
 
-    // Simulate download & reload for Web / PWA / Development mode
     setTimeout(() => {
       toast.success("OTA update applied! Restarting application...");
       setTimeout(() => {
