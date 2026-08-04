@@ -21,7 +21,16 @@ import { supabase } from "@/lib/supabase";
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, sendOtp, verifyOtp, resetPassword, user } = useAuth();
+  const { login, sendOtp, verifyOtp, resetPassword, loginWithOAuth, user } = useAuth();
+
+  const handleSocialAuth = async (provider: "google" | "facebook" | "apple") => {
+    setBusy(true);
+    const res = await loginWithOAuth(provider);
+    if (!res.ok) {
+      toast.error("error" in res ? res.error : `Failed to sign in with ${provider}`);
+      setBusy(false);
+    }
+  };
 
   const from = location.state?.from?.pathname || "/";
 
@@ -71,8 +80,9 @@ export default function Auth() {
   const [resendTimer, setResendTimer] = useState(30);
   const [expiryTimer, setExpiryTimer] = useState(300);
 
-  const resendIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const expiryIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Interval references
+  const resendIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const expiryIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startResendTimer = () => {
     setResendTimer(30);
@@ -709,7 +719,7 @@ export default function Auth() {
                   <div className="grid grid-cols-3 gap-1.5">
                     <button 
                       type="button"
-                      onClick={handleGoogleSignIn}
+                      onClick={() => handleSocialAuth("google")}
                       disabled={busy}
                       className="py-1 px-2 border border-[#e2e0d8] rounded-lg flex items-center justify-center gap-1 bg-white hover:bg-[#faf8f5] transition-colors shadow-sm text-[10px] font-extrabold text-[#1e382b]"
                       title="Sign in with Google"
@@ -725,7 +735,8 @@ export default function Auth() {
 
                     <button 
                       type="button"
-                      onClick={() => toast.info("Facebook authentication in progress")}
+                      onClick={() => handleSocialAuth("facebook")}
+                      disabled={busy}
                       className="py-1 px-2 border border-[#e2e0d8] rounded-lg flex items-center justify-center gap-1 bg-white hover:bg-[#faf8f5] transition-colors shadow-sm text-[10px] font-extrabold text-[#1877F2]"
                       title="Sign in with Facebook"
                     >
@@ -737,7 +748,8 @@ export default function Auth() {
 
                     <button 
                       type="button"
-                      onClick={() => toast.info("Apple authentication in progress")}
+                      onClick={() => handleSocialAuth("apple")}
+                      disabled={busy}
                       className="py-1 px-2 border border-[#e2e0d8] rounded-lg flex items-center justify-center gap-1 bg-white hover:bg-[#faf8f5] transition-colors shadow-sm text-[10px] font-extrabold text-black"
                       title="Sign in with Apple"
                     >

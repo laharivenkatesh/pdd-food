@@ -31,6 +31,7 @@ interface AuthContextValue {
     type: "signup" | "recovery" | "magiclink"
   ) => Promise<{ ok: true } | { ok: false; error: string }>;
   resetPassword: (email: string) => Promise<{ ok: true } | { ok: false; error: string }>;
+  loginWithOAuth: (provider: "google" | "facebook" | "apple") => Promise<{ ok: true } | { ok: false; error: string }>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -326,6 +327,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /**
+   * Triggers social OAuth login via Supabase (Google, Facebook, Apple)
+   */
+  const loginWithOAuth = async (provider: "google" | "facebook" | "apple") => {
+    try {
+      const redirectTo = `${window.location.origin}/auth`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo,
+        },
+      });
+      if (error) throw error;
+      return { ok: true as const };
+    } catch (err: any) {
+      return { ok: false as const, error: err.message || `Failed to sign in with ${provider}` };
+    }
+  };
+
+  /**
    * Logs out the user from the current session
    */
   const logout = async () => {
@@ -349,6 +369,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         sendOtp,
         verifyOtp,
         resetPassword,
+        loginWithOAuth,
         logout,
         refreshProfile,
       }}
