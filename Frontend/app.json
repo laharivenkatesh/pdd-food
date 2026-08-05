@@ -4,10 +4,10 @@
     "slug": "zerra-food-hub",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./public/favicon.ico",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./public/favicon.ico",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#1c7b50"
     },
@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./public/favicon.ico",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1c7b50"
       },
       "package": "com.zerra.foodhub",
