@@ -12,7 +12,13 @@ buildscript {
   dependencies {
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
-    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+  }
+  configurations.all {
+    resolutionStrategy {
+      force "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+      force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    }
   }
 }
 
@@ -21,6 +27,11 @@ allprojects {
     google()
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
+  }
+  configurations.all {
+    resolutionStrategy {
+      force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    }
   }
 }
 
