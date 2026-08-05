@@ -1,21 +1,16 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
 import { FoodItem } from "@/types/food";
-import { Link } from "react-router-dom";
-import { MapPin, Users, AlertTriangle, Star, Navigation, Trash2 } from "lucide-react";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from '@expo/vector-icons';
 import MapPreview, { openInGoogleMaps } from "./MapPreview";
 import LiveCountdown from "./LiveCountdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyPosts } from "@/hooks/useMyPosts";
-import { toast } from "sonner";
 
 const purposeIcon = (p: string) => (p === "humans" ? "🧑 Humans" : p === "animals" ? "🐾 Animals" : "♻️ Both");
 
-const statusStyles: Record<string, string> = {
-  available: "bg-success text-success-foreground",
-  reserved: "bg-warning text-warning-foreground",
-  collected: "bg-muted-foreground/30 text-foreground",
-};
-
 export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) {
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { posts, removePost } = useMyPosts();
   const isDonor = user?.id === food.provider.id || posts.some((p) => p.id === food.id);
@@ -28,149 +23,359 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   const remaining = Math.max(0, total - booked);
   const isFullyBooked = remaining <= 0;
 
-  // Custom status configuration
   let statusText = food.status as string;
-  let statusColorClass = "bg-success text-success-foreground";
+  let statusBg = "#16A34A";
+  let statusTextColor = "#FFFFFF";
 
   if (isCollected) {
     statusText = "collected";
-    statusColorClass = "bg-muted-foreground/30 text-foreground";
+    statusBg = "#9CA3AF";
   } else if (isReserved || isFullyBooked) {
     statusText = isFullyBooked ? "booked" : "reserved";
-    statusColorClass = isFullyBooked ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground";
-  } else {
-    statusText = "available";
-    statusColorClass = "bg-success text-success-foreground";
+    statusBg = isFullyBooked ? "#EF4444" : "#F59E0B";
   }
 
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Listing",
+      `Are you sure you want to delete "${food.name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await removePost(food.id);
+            Alert.alert("Success", "Listing deleted successfully!");
+          },
+        },
+      ]
+    );
+  };
+
   return (
-    <article className="card-soft animate-fade-up">
-      <Link to={`/food/${food.id}`} className="block overflow-hidden">
-        <div className="relative">
-          <img 
-            src={food.image} 
-            alt={food.name} 
-            className="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" 
-            loading="lazy" 
-            onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80"; }}
-          />
-          <span className={`absolute top-3 right-3 badge-pill ${statusColorClass}`}>
-            {statusText}
-          </span>
-          {food.purpose === "animals" && (
-            <span className="absolute top-3 left-3 badge-pill bg-secondary text-secondary-foreground">
-              🐾 Animal Priority
-            </span>
-          )}
-        </div>
-      </Link>
+    <View style={styles.card}>
+      <TouchableOpacity 
+        onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
+        style={styles.imageContainer}
+      >
+        <Image
+          source={{ uri: food.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80" }}
+          style={styles.image}
+        />
+        <View style={[styles.badge, { backgroundColor: statusBg }]}>
+          <Text style={[styles.badgeText, { color: statusTextColor }]}>{statusText}</Text>
+        </View>
+        {food.purpose === "animals" && (
+          <View style={[styles.badge, styles.animalBadge]}>
+            <Text style={styles.animalBadgeText}>🐾 Animal Priority</Text>
+          </View>
+        )}
+      </TouchableOpacity>
 
-      <div className="p-4 space-y-3">
-        <Link to={`/food/${food.id}`} className="block hover:opacity-90 transition-opacity">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-extrabold text-lg leading-tight text-foreground truncate">{food.name}</h3>
-              <div className="text-xs font-bold text-muted-foreground flex flex-col gap-1 mt-1">
-                <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> Feeds {total} people</span>
-                <span className="text-primary-deep flex items-center gap-1 font-extrabold">📊 {remaining} / {total} portions left</span>
-              </div>
-              {/* Portions Progress Bar */}
-              <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden border border-border/40 mt-1.5">
-                <div 
-                  className="bg-primary-deep h-full transition-all duration-500" 
-                  style={{ width: `${(remaining / total) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div className="text-right shrink-0">
+      <View style={styles.body}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
+        >
+          <View style={styles.titleRow}>
+            <View style={styles.titleCol}>
+              <Text style={styles.title}>{food.name}</Text>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoText}>👥 Feeds {total} people</Text>
+                <Text style={styles.remainingText}>📊 {remaining} / {total} portions left</Text>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressBar, { width: `${(remaining / total) * 100}%` }]} />
+              </View>
+            </View>
+            <View>
               {food.price === 0 ? (
-                <span className="badge-pill bg-success text-success-foreground">FREE</span>
+                <View style={styles.freeBadge}>
+                  <Text style={styles.freeText}>FREE</Text>
+                </View>
               ) : (
-                <span className="font-extrabold text-lg text-foreground">₹{food.price}</span>
+                <Text style={styles.priceText}>₹{food.price}</Text>
               )}
-            </div>
-          </div>
-        </Link>
+            </View>
+          </View>
+        </TouchableOpacity>
 
-
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`badge-pill ${isUrgent ? 'bg-urgent text-urgent-foreground animate-pulse-soft' : 'bg-muted text-muted-foreground'}`}>
+        <View style={styles.tagsRow}>
+          <View style={styles.countdownBadge}>
             <LiveCountdown postedAt={food.postedAt} expiryHours={food.expiryHours} urgent={isUrgent} />
-          </span>
-          <span className="badge-pill bg-accent text-accent-foreground">{purposeIcon(food.purpose)}</span>
-          {food.safeForAnimals ? (
-            <span className="badge-pill bg-primary text-primary-foreground">✔ Safe for animals</span>
-          ) : (
-            <span className="badge-pill bg-muted text-muted-foreground">⚠️ Not for animals</span>
-          )}
-        </div>
+          </View>
+          <View style={styles.pillAccent}>
+            <Text style={styles.pillText}>{purposeIcon(food.purpose)}</Text>
+          </View>
+          <View style={styles.pillMuted}>
+            <Text style={styles.pillText}>
+              {food.safeForAnimals ? "✔ Safe for animals" : "⚠️ Not for animals"}
+            </Text>
+          </View>
+        </View>
 
-        <p className="text-sm text-muted-foreground flex items-start gap-1.5 line-clamp-2">
-          <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-          {food.address}
-        </p>
+        <Text style={styles.addressText} numberOfLines={2}>
+          📍 {food.address}
+        </Text>
 
         <MapPreview lat={food.lat} lng={food.lng} label={food.name} />
 
-        <button
-          onClick={() => openInGoogleMaps(food.lat, food.lng)}
-          className="w-full py-2 rounded-xl bg-muted text-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-muted/70 transition-all"
-        >
-          <Navigation className="w-4 h-4" /> Open in Maps
-        </button>
+        <TouchableOpacity onPress={() => openInGoogleMaps(food.lat, food.lng)} style={styles.mapsBtn}>
+          <Ionicons name="navigate-outline" size={16} color="#1F2937" />
+          <Text style={styles.mapsBtnText}>Open in Maps</Text>
+        </TouchableOpacity>
 
-        <div className="flex flex-wrap gap-1.5">
+        <View style={styles.chipRow}>
           {food.tags.map((t) => (
-            <span key={t} className="chip chip-default !py-1">{t}</span>
+            <View key={t} style={styles.chipItem}>
+              <Text style={styles.chipText}>{t}</Text>
+            </View>
           ))}
-        </div>
+        </View>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center gap-1 text-sm">
-            <Star className="w-4 h-4 fill-warning text-warning" />
-            <span className="font-bold">{food.trustScore}</span>
-            <span className="text-muted-foreground">·</span>
-            <span className={`text-xs font-semibold ${food.confidence === "High" ? "text-success" : food.confidence === "Medium" ? "text-warning" : "text-destructive"}`}>
-              {food.confidence}
-            </span>
-          </div>
-          {food.provider.reliability === "low" && (
-            <span className="text-[10px] text-destructive font-semibold flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" /> Low reliability
-            </span>
-          )}
-        </div>
+        <View style={styles.trustRow}>
+          <View style={styles.trustScore}>
+            <Ionicons name="star" size={16} color="#F59E0B" />
+            <Text style={styles.trustScoreText}>{food.trustScore}</Text>
+            <Text style={styles.dot}>·</Text>
+            <Text style={styles.confidenceText}>{food.confidence}</Text>
+          </View>
+        </View>
 
-        {isReserved && (
-          <div className="bg-warning/20 text-warning-foreground p-2 rounded-xl text-xs font-semibold text-center">
-            ⚠️ Already Reserved
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <Link
-            to={`/food/${food.id}`}
-            className={`flex-1 btn-primary block text-center ${isCollected ? "bg-muted text-muted-foreground hover:bg-muted/80 border border-border/80" : ""}`}
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
+            style={[styles.btnPrimary, isCollected && styles.btnCollected]}
           >
-            {isCollected ? "Collected" : "View Details"}
-          </Link>
+            <Text style={styles.btnPrimaryText}>{isCollected ? "Collected" : "View Details"}</Text>
+          </TouchableOpacity>
           {isDonor && (
-            <button
-              onClick={async () => {
-                if (window.confirm(`Are you sure you want to delete "${food.name}"?`)) {
-                  await removePost(food.id);
-                  toast.success("Listing deleted successfully!");
-                }
-              }}
-              className="px-3.5 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive hover:text-white transition-all flex items-center justify-center shrink-0"
-              title="Delete Listing"
-            >
-              <Trash2 className="w-4.5 h-4.5" />
-            </button>
+            <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
+              <Ionicons name="trash-outline" size={18} color="#EF4444" />
+            </TouchableOpacity>
           )}
-        </div>
-      </div>
-    </article>
+        </View>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  imageContainer: {
+    height: 176,
+    width: '100%',
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  badge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  animalBadge: {
+    left: 12,
+    right: undefined,
+    backgroundColor: '#E0E7FF',
+  },
+  animalBadgeText: {
+    color: '#3730A3',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  body: {
+    padding: 16,
+    gap: 12,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  titleCol: {
+    flex: 1,
+    marginRight: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  infoRow: {
+    marginTop: 4,
+    gap: 2,
+  },
+  infoText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  remainingText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
+  progressTrack: {
+    height: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 3,
+    marginTop: 6,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#16A34A',
+  },
+  freeBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  freeText: {
+    color: '#15803D',
+    fontWeight: '800',
+    fontSize: 12,
+  },
+  priceText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  countdownBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pillAccent: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pillMuted: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pillText: {
+    fontSize: 12,
+    color: '#4B5563',
+  },
+  addressText: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  mapsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 6,
+  },
+  mapsBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  chipItem: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  chipText: {
+    fontSize: 12,
+    color: '#4B5563',
+  },
+  trustRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  trustScore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  trustScoreText: {
+    fontWeight: '700',
+    fontSize: 13,
+    color: '#111827',
+  },
+  dot: {
+    color: '#9CA3AF',
+  },
+  confidenceText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#16A34A',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  btnPrimary: {
+    flex: 1,
+    backgroundColor: '#16A34A',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  btnCollected: {
+    backgroundColor: '#9CA3AF',
+  },
+  btnPrimaryText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  deleteBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

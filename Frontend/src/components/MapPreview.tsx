@@ -1,56 +1,66 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import iconUrl from "leaflet/dist/images/marker-icon.png";
-import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
-import shadowUrl from "leaflet/dist/images/marker-shadow.png";
-
-const DefaultIcon = L.icon({
-  iconUrl,
-  iconRetinaUrl,
-  shadowUrl,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking } from 'react-native';
+import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 interface MapPreviewProps {
   lat: number;
   lng: number;
   label?: string;
-  height?: string;
+  height?: number;
   interactive?: boolean;
 }
 
-export default function MapPreview({ lat, lng, label, height = "h-32", interactive = false }: MapPreviewProps) {
+export default function MapPreview({ lat, lng, label, height = 128, interactive = false }: MapPreviewProps) {
   return (
-    <div className={`${height} w-full rounded-2xl overflow-hidden border border-border`}>
-      <MapContainer
-        center={[lat, lng]}
-        zoom={14}
-        scrollWheelZoom={interactive}
-        dragging={interactive}
-        doubleClickZoom={interactive}
-        zoomControl={interactive}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Marker position={[lat, lng]}>{label && <Popup>{label}</Popup>}</Marker>
-      </MapContainer>
-    </div>
+    <TouchableOpacity 
+      onPress={() => openInGoogleMaps(lat, lng)}
+      style={[styles.container, { height }]}
+    >
+      <View style={styles.content}>
+        <Ionicons name="location-sharp" size={28} color="#16A34A" />
+        <Text style={styles.label}>{label || "View Location on Google Maps"}</Text>
+        <Text style={styles.subtext}>Coordinates: {lat.toFixed(4)}, {lng.toFixed(4)}</Text>
+        <Text style={styles.actionText}>Tap to open Maps ↗</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
 export function openInGoogleMaps(lat: number, lng: number) {
   const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-  // Use an anchor click to bypass iframe popup blockers (e.g. Lovable preview sandbox)
-  const a = document.createElement("a");
-  a.href = url;
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  Linking.openURL(url).catch((err) => console.error("Couldn't load page", err));
 }
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 12,
+  },
+  content: {
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 4,
+  },
+  subtext: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  actionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#16A34A',
+    marginTop: 6,
+  },
+});

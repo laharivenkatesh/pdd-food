@@ -1,9 +1,9 @@
-import { Star } from "lucide-react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
 import { useState, useEffect } from "react";
 import { Review } from "@/types/food";
-import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { Ionicons } from '@expo/vector-icons';
 
 interface ReviewSectionProps {
   foodId: string;
@@ -15,23 +15,20 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
   const { user, profile } = useAuth();
   const [reviews, setReviews] = useState<Review[]>(initial);
   const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
 
   useEffect(() => {
     setReviews(initial);
   }, [initial]);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = async () => {
     if (!rating || !comment.trim()) return;
     if (!user || !profile) {
-      toast.error("Please login to submit a review");
+      Alert.alert("Login Required", "Please login to submit a review");
       return;
     }
 
     try {
-      // 1. Insert review into Supabase
       const { data, error } = await supabase
         .from("reviews")
         .insert({
@@ -46,11 +43,10 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
 
       if (error) {
         console.error("Error submitting review:", error);
-        toast.error("Failed to submit review");
+        Alert.alert("Error", "Failed to submit review");
         return;
       }
 
-      // 2. Insert notification for provider (only if reviewer is not the provider themselves)
       if (providerId && providerId !== user.id) {
         await supabase.from("notifications").insert({
           user_id: providerId,
@@ -60,7 +56,6 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
         });
       }
 
-      // 3. Update local state
       setReviews([
         {
           id: data.id,
@@ -74,52 +69,153 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
 
       setRating(0);
       setComment("");
-      toast.success("✅ Feedback submitted");
+      Alert.alert("Success", "✅ Feedback submitted");
     } catch (err) {
       console.error("Exception submitting review:", err);
-      toast.error("An error occurred. Please try again.");
+      Alert.alert("Error", "An error occurred. Please try again.");
     }
   };
 
   return (
-    <section className="space-y-4">
-      <h2 className="font-extrabold text-lg">Reviews</h2>
+    <View style={styles.container}>
+      <Text style={styles.heading}>Reviews</Text>
 
-      <form onSubmit={submit} className="bg-muted/50 p-4 rounded-2xl space-y-3">
-        <div className="flex items-center gap-1">
-          {[1,2,3,4,5].map(i => (
-            <button key={i} type="button" onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(0)} onClick={()=>setRating(i)}>
-              <Star className={`w-7 h-7 transition-all ${i <= (hover||rating) ? "fill-warning text-warning" : "text-muted-foreground"}`} />
-            </button>
+      <View style={styles.formContainer}>
+        <View style={styles.starsRow}>
+          {[1, 2, 3, 4, 5].map(i => (
+            <TouchableOpacity key={i} onPress={() => setRating(i)}>
+              <Ionicons 
+                name={i <= rating ? "star" : "star-outline"} 
+                size={28} 
+                color={i <= rating ? "#F59E0B" : "#9CA3AF"} 
+              />
+            </TouchableOpacity>
           ))}
-        </div>
-        <textarea
+        </View>
+        <TextInput
           value={comment}
-          onChange={e=>setComment(e.target.value)}
+          onChangeText={setComment}
           placeholder="Share your experience…"
-          rows={3}
-          className="input-field resize-none"
+          multiline
+          numberOfLines={3}
+          style={styles.inputField}
         />
-        <button type="submit" className="btn-primary">Submit Review</button>
-      </form>
+        <TouchableOpacity onPress={submit} style={styles.btnPrimary}>
+          <Text style={styles.btnText}>Submit Review</Text>
+        </TouchableOpacity>
+      </View>
 
-      <div className="space-y-3">
-        {reviews.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No reviews yet.</p>}
+      <View style={styles.reviewsList}>
+        {reviews.length === 0 && (
+          <Text style={styles.emptyText}>No reviews yet.</Text>
+        )}
         {reviews.map(r => (
-          <div key={r.id} className="bg-card p-4 rounded-2xl shadow-soft">
-            <div className="flex items-center justify-between">
-              <span className="font-bold">{r.user}</span>
-              <span className="text-xs text-muted-foreground">{r.date}</span>
-            </div>
-            <div className="flex gap-0.5 my-1">
-              {[1,2,3,4,5].map(i => (
-                <Star key={i} className={`w-4 h-4 ${i <= r.rating ? "fill-warning text-warning" : "text-muted-foreground"}`} />
+          <View key={r.id} style={styles.reviewCard}>
+            <View style={styles.reviewHeader}>
+              <Text style={styles.userName}>{r.user}</Text>
+              <Text style={styles.dateText}>{r.date}</Text>
+            </View>
+            <View style={styles.starsRowSmall}>
+              {[1, 2, 3, 4, 5].map(i => (
+                <Ionicons 
+                  key={i} 
+                  name={i <= r.rating ? "star" : "star-outline"} 
+                  size={16} 
+                  color={i <= r.rating ? "#F59E0B" : "#D1D5DB"} 
+                />
               ))}
-            </div>
-            <p className="text-sm text-foreground">{r.comment}</p>
-          </div>
+            </View>
+            <Text style={styles.commentText}>{r.comment}</Text>
+          </View>
         ))}
-      </div>
-    </section>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: 16,
+  },
+  heading: {
+    fontWeight: '800',
+    fontSize: 18,
+    color: '#111827',
+  },
+  formContainer: {
+    backgroundColor: '#F3F4F6',
+    padding: 16,
+    borderRadius: 16,
+    gap: 12,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  inputField: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    textAlignVertical: 'top',
+    fontSize: 14,
+    minHeight: 80,
+  },
+  btnPrimary: {
+    backgroundColor: '#16A34A',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  btnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  reviewsList: {
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
+  reviewCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userName: {
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#1F2937',
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  starsRowSmall: {
+    flexDirection: 'row',
+    marginVertical: 4,
+    gap: 2,
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+});

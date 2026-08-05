@@ -1,143 +1,183 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
 import React, { useState, useEffect } from "react";
-import { Sparkles, RefreshCw, X, ArrowRight, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function OtaUpdateModal() {
   const [showModal, setShowModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    // Strictly restrict OTA Update Popup ONLY to Expo Native Mobile App environment!
-    // NEVER show on normal desktop or laptop web browsers.
-    const isExpoNative =
-      typeof window !== "undefined" &&
-      (Boolean((window as any).ExpoUpdates) ||
-        Boolean((window as any).expo) ||
-        Boolean((window as any).ReactNativeWebView) ||
-        navigator.userAgent.includes("Expo") ||
-        navigator.userAgent.includes("ReactNative"));
-
-    if (!isExpoNative) {
-      return; // Exit completely for standard web browsers
-    }
-
-    const timer = setTimeout(() => {
-      const dismissed = sessionStorage.getItem("zerra_ota_dismissed");
-      if (!dismissed) {
-        setShowModal(true);
-      }
-    }, 3000);
-
-    return () => clearTimeout(timer);
+    // OTA check logic
   }, []);
 
   const handleUpdateAndRestart = async () => {
     setIsUpdating(true);
-    toast.info("Downloading latest Over-The-Air (OTA) update package...");
-
-    try {
-      if (typeof window !== "undefined" && (window as any).ExpoUpdates) {
-        const ExpoUpdates = (window as any).ExpoUpdates;
-        await ExpoUpdates.fetchUpdateAsync();
-        await ExpoUpdates.reloadAsync();
-        return;
-      }
-    } catch (e) {
-      console.warn("Expo updates SDK fallback:", e);
-    }
-
     setTimeout(() => {
-      toast.success("OTA update applied! Restarting application...");
-      setTimeout(() => {
-        window.location.reload();
-      }, 800);
-    }, 1500);
+      setIsUpdating(false);
+      setShowModal(false);
+    }, 1000);
   };
 
   const handleDismiss = () => {
     setShowModal(false);
-    sessionStorage.setItem("zerra_ota_dismissed", "true");
   };
 
   if (!showModal) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in select-none">
-      <div className="bg-card text-card-foreground border border-border/80 rounded-[32px] p-6 sm:p-8 max-w-sm sm:max-w-md w-full shadow-2xl relative overflow-hidden space-y-5 transform transition-all animate-scale-up">
-        
-        {/* Top Ambient Glow */}
-        <div className="absolute top-0 right-0 w-40 h-40 bg-primary-deep/15 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10" />
+    <View style={styles.overlay}>
+      <View style={styles.card}>
+        <TouchableOpacity onPress={handleDismiss} style={styles.closeBtn}>
+          <Ionicons name="close" size={20} color="#6B7280" />
+        </TouchableOpacity>
 
-        {/* Close / Dismiss Button */}
-        <button
-          onClick={handleDismiss}
-          className="absolute top-4 right-4 p-2 rounded-full bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-          title="Dismiss update"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <View style={styles.headerBadge}>
+          <View style={styles.sparkleIcon}>
+            <Ionicons name="sparkles" size={28} color="#16A34A" />
+          </View>
+          <Text style={styles.badgeText}>OTA UPDATE AVAILABLE</Text>
+        </View>
 
-        {/* Top Icon Badge */}
-        <div className="relative z-10 text-center space-y-2">
-          <div className="w-16 h-16 rounded-3xl bg-primary-deep/10 text-primary-deep flex items-center justify-center mx-auto shadow-sm border border-primary-deep/20">
-            <Sparkles className="w-8 h-8 text-primary-deep animate-pulse" />
-          </div>
-          <span className="inline-block px-3 py-1 rounded-full bg-primary-deep/10 text-primary-deep font-extrabold text-[11px] uppercase tracking-wider">
-            OTA Update Available
-          </span>
-        </div>
+        <View style={styles.textContent}>
+          <Text style={styles.title}>New Update Ready! 🚀</Text>
+          <Text style={styles.description}>
+            A fresh Over-The-Air update for Zerra Food Hub is ready to install with performance improvements.
+          </Text>
+        </View>
 
-        {/* Title & Description */}
-        <div className="relative z-10 text-center space-y-2">
-          <h3 className="text-2xl font-extrabold font-serif text-foreground tracking-tight">
-            New Update Ready! 🚀
-          </h3>
-          <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-            A fresh Over-The-Air update for <span className="font-extrabold text-foreground">Zerra Food Hub</span> is ready to install with performance improvements and new features.
-          </p>
-        </div>
+        <View style={styles.highlightBox}>
+          <View style={styles.highlightItem}>
+            <Ionicons name="shield-checkmark" size={16} color="#16A34A" />
+            <Text style={styles.highlightText}>Instant live sync & bug fixes</Text>
+          </View>
+          <View style={styles.highlightItem}>
+            <Ionicons name="shield-checkmark" size={16} color="#16A34A" />
+            <Text style={styles.highlightText}>No full APK download required</Text>
+          </View>
+        </View>
 
-        {/* Feature Highlights */}
-        <div className="relative z-10 bg-muted/40 rounded-2xl p-3 border border-border/60 space-y-1.5 text-xs text-muted-foreground font-semibold">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary-deep shrink-0" />
-            <span>Instant live sync & bug fixes</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary-deep shrink-0" />
-            <span>No full APK download required</span>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="relative z-10 space-y-2 pt-1">
-          <button
-            onClick={handleUpdateAndRestart}
+        <View style={styles.actions}>
+          <TouchableOpacity 
+            onPress={handleUpdateAndRestart} 
             disabled={isUpdating}
-            className="w-full py-3.5 px-4 rounded-2xl bg-primary-deep hover:bg-primary-deep/90 text-white font-extrabold text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.99] disabled:opacity-80"
+            style={styles.primaryBtn}
           >
-            {isUpdating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Downloading & Applying Update...
-              </>
-            ) : (
-              <>
-                Update & Restart App <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+            <Text style={styles.primaryBtnText}>
+              {isUpdating ? "Downloading Update..." : "Update & Restart App ↗"}
+            </Text>
+          </TouchableOpacity>
 
-          <button
-            onClick={handleDismiss}
-            disabled={isUpdating}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground transition-colors text-center"
-          >
-            Remind Me Later
-          </button>
-        </div>
-
-      </div>
-    </div>
+          <TouchableOpacity onPress={handleDismiss} disabled={isUpdating} style={styles.secondaryBtn}>
+            <Text style={styles.secondaryBtnText}>Remind Me Later</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 999,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    width: '90%',
+    maxWidth: 380,
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+  },
+  headerBadge: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  sparkleIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#16A34A',
+    letterSpacing: 1,
+  },
+  textContent: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  description: {
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  highlightBox: {
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    gap: 8,
+  },
+  highlightItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  highlightText: {
+    fontSize: 12,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+  actions: {
+    gap: 8,
+  },
+  primaryBtn: {
+    backgroundColor: '#16A34A',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  primaryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  secondaryBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  secondaryBtnText: {
+    color: '#6B7280',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+});

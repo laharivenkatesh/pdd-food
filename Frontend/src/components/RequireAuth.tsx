@@ -1,24 +1,67 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import { useAuth } from "@/hooks/useAuth";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { useNavigation } from "@react-navigation/native";
+import { useEffect } from "react";
 
 export default function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-  const location = useLocation();
+  const navigation = useNavigation<any>();
+
+  useEffect(() => {
+    if (!loading && !user && isSupabaseConfigured) {
+      navigation.navigate("Auth" as never);
+    }
+  }, [user, loading, navigation]);
 
   if (!isSupabaseConfigured && !user) {
     return (
-      <div className="p-8 text-center mt-20">
-        <h2 className="text-xl font-bold text-destructive mb-2">Configuration Missing</h2>
-        <p className="text-muted-foreground text-sm">
-          It looks like your Vercel deployment is missing the Supabase environment variables.
-          Please go to your Vercel Project Settings, add <code className="font-bold">VITE_SUPABASE_URL</code> and <code className="font-bold">VITE_SUPABASE_ANON_KEY</code>, and then <b>Redeploy</b>.
-        </p>
-      </div>
+      <View style={styles.container}>
+        <Text style={styles.errorTitle}>Configuration Missing</Text>
+        <Text style={styles.description}>
+          It looks like your deployment is missing the Supabase environment variables.
+          Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your env configuration.
+        </Text>
+      </View>
     );
   }
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground font-bold animate-pulse">Loading…</div>;
-  if (!user) return <Navigate to="/auth" state={{ from: location }} replace />;
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>Loading…</Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return children;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 32,
+    alignItems: 'center',
+    marginTop: 80,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#EF4444',
+    marginBottom: 8,
+  },
+  description: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#6B7280',
+  },
+});

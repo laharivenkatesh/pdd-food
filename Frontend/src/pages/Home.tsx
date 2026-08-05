@@ -1,14 +1,14 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking } from 'react-native';
 import { useEffect, useMemo, useState, useCallback } from "react";
 import FoodCard from "@/components/FoodCard";
 import Chip from "@/components/Chip";
-import { Flame, Award, MapPin, RefreshCw, Navigation, Phone, Heart, ChevronDown, ChevronUp } from "lucide-react";
 import { useAllFoods } from "@/hooks/useMyPosts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { openInGoogleMaps } from "@/components/MapPreview";
-import { useNavigate } from "react-router-dom";
+import { useNavigation } from "@react-navigation/native";
 import { getFoodTimes } from "@/lib/utils";
+import { Ionicons } from '@expo/vector-icons';
 
-// ─── NGO data ─────────────────────────────────────────────────────────────────
 interface NGO {
   id: string;
   name: string;
@@ -38,7 +38,6 @@ const ngosList: NGO[] = [
   { id: "h1", name: "Sarv Seva Samithi", address: "Secunderabad, Hyderabad", lat: 17.4401, lng: 78.4985, phone: "9848012345", types: ["Humans", "Animals"] },
 ];
 
-// ─── Utils ────────────────────────────────────────────────────────────────────
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -53,106 +52,52 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-// ─── NGO Card ─────────────────────────────────────────────────────────────────
 function NGOCard({ ngo, distance, onDonate }: { key?: React.Key; ngo: NGO; distance: number | null; onDonate: () => void }) {
   return (
-    <article className="card-soft animate-fade-up p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-extrabold text-base leading-tight text-foreground truncate">{ngo.name}</h3>
-          {ngo.description && <p className="text-xs text-muted-foreground mt-0.5">{ngo.description}</p>}
-        </div>
+    <View style={styles.ngoCard}>
+      <View style={styles.ngoCardHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.ngoCardTitle}>{ngo.name}</Text>
+          {ngo.description && <Text style={styles.ngoCardDesc}>{ngo.description}</Text>}
+        </View>
         {distance !== null && (
-          <span className="badge-pill bg-muted text-muted-foreground shrink-0">{distance.toFixed(1)} km</span>
+          <View style={styles.distBadge}>
+            <Text style={styles.distText}>{distance.toFixed(1)} km</Text>
+          </View>
         )}
-      </div>
+      </View>
 
-      <div className="flex gap-1.5 flex-wrap">
-        {ngo.types.map((t) => (
-          <span key={t} className="chip chip-default !py-0.5 !text-xs">{t}</span>
-        ))}
-      </div>
+      <Text style={styles.ngoAddress}>📍 {ngo.address}</Text>
 
-      <p className="text-xs text-muted-foreground flex items-start gap-1.5">
-        <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-        {ngo.address}
-      </p>
+      <TouchableOpacity onPress={() => Linking.openURL(`tel:${ngo.phone}`)}>
+        <Text style={styles.ngoPhone}>📞 {ngo.phone}</Text>
+      </TouchableOpacity>
 
-      <p className="text-sm font-semibold flex items-center gap-1.5">
-        <Phone className="w-4 h-4 shrink-0 text-primary-deep" />
-        <a href={`tel:${ngo.phone}`} className="text-primary-deep hover:underline">{ngo.phone}</a>
-      </p>
-
-      <div className="flex gap-2">
-        <button
-          onClick={() => openInGoogleMaps(ngo.lat, ngo.lng)}
-          className="flex-1 py-2 rounded-xl bg-muted text-foreground font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-muted/70 transition-all"
-        >
-          <Navigation className="w-3.5 h-3.5" /> Directions
-        </button>
-        <button
-          onClick={onDonate}
-          className="flex-[2] py-2 rounded-xl bg-primary-deep text-primary-deep-foreground font-semibold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-all shadow-soft"
-        >
-          <Heart className="w-3.5 h-3.5" /> Donate Food
-        </button>
-      </div>
-    </article>
+      <View style={styles.ngoBtnRow}>
+        <TouchableOpacity onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)} style={styles.btnNav}>
+          <Ionicons name="navigate-outline" size={14} color="#1F2937" />
+          <Text style={styles.btnNavText}>Directions</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onDonate} style={styles.btnDonate}>
+          <Ionicons name="heart" size={14} color="#FFFFFF" />
+          <Text style={styles.btnDonateText}>Donate Food</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
-// ─── Main Home ────────────────────────────────────────────────────────────────
 export default function Home() {
   const { foods: dbFoods, loading, refresh } = useAllFoods();
   const { userStats } = useTransactions();
-  const nav = useNavigate();
+  const navigation = useNavigation<any>();
 
-  // Location state — no localStorage, purely in-memory
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [locError, setLocError] = useState("");
-  const [locLoading, setLocLoading] = useState(false);
-  const [locGranted, setLocGranted] = useState(false);
-
-  // NGO section state
   const [showNGOs, setShowNGOs] = useState(true);
   const [ngoFilter, setNgoFilter] = useState<"All" | "Humans" | "Animals">("All");
 
-  // Request location on load
-  const requestLocation = useCallback(() => {
-    if (!("geolocation" in navigator)) {
-      setLocError("Geolocation not supported by your browser.");
-      return;
-    }
-    setLocLoading(true);
-    setLocError("");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocGranted(true);
-        setLocLoading(false);
-      },
-      (err) => {
-        if (err.code === err.PERMISSION_DENIED) {
-          setLocError("Location permission denied. Displaying nearby NGOs.");
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          setLocError("Location unavailable. Showing all food.");
-        } else {
-          setLocError("Location request timed out. Showing all food.");
-        }
-        setLocLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  }, []);
-
-  useEffect(() => {
-    requestLocation();
-  }, [requestLocation]);
-
   const list = useMemo(() => {
     let arr = [...dbFoods];
-    
-    // Filter out expired items (show only active ones)
     const now = Date.now();
     arr = arr.filter((f) => {
       const { primaryExpiry } = getFoodTimes(f);
@@ -168,7 +113,6 @@ export default function Home() {
     return arr;
   }, [dbFoods, userLoc]);
 
-
   const nearbyNGOs = useMemo(() => {
     let filtered = ngosList;
     if (ngoFilter !== "All") filtered = filtered.filter((n) => n.types.includes(ngoFilter));
@@ -183,155 +127,285 @@ export default function Home() {
   }, [userLoc, ngoFilter]);
 
   return (
-    <div className="px-4 py-5 space-y-5">
-
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Available Food</h1>
-          <p className="text-sm text-muted-foreground">Rescue meals near you, today.</p>
-        </div>
-        <button
-          onClick={() => refresh()}
-          disabled={loading}
-          className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center shadow-sm hover:bg-muted transition-all"
-          title="Refresh"
-        >
-          <RefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
-        </button>
-      </div>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Available Food</Text>
+          <Text style={styles.subtitle}>Rescue meals near you, today.</Text>
+        </View>
+        <TouchableOpacity onPress={() => refresh()} style={styles.refreshBtn}>
+          <Ionicons name="refresh" size={18} color="#374151" />
+        </TouchableOpacity>
+      </View>
 
-      {/* Stats banner */}
-      <div className="bg-hero p-4 rounded-2xl flex items-center justify-between shadow-soft">
-        <div className="flex items-center gap-3">
-          <Flame className="w-6 h-6 text-urgent" />
-          <div>
-            <p className="font-extrabold text-foreground">
+      {/* Stats Banner */}
+      <View style={styles.statsBanner}>
+        <View style={styles.statsLeft}>
+          <Ionicons name="flame" size={24} color="#EF4444" />
+          <View>
+            <Text style={styles.statsTitle}>
               {userStats.postsMade > 0 ? `${userStats.postsMade} Posts Made` : "Start Sharing Food"}
-            </p>
-            <p className="text-xs text-muted-foreground">Keep saving food!</p>
-          </div>
-        </div>
-        <Award className="w-6 h-6 text-primary-deep" />
-      </div>
+            </Text>
+            <Text style={styles.statsSubtitle}>Keep saving food!</Text>
+          </View>
+        </View>
+        <Ionicons name="trophy" size={24} color="#16A34A" />
+      </View>
 
-      {/* Location section */}
-      <div className="space-y-2">
-        {!locGranted && !locLoading && !locError && (
-          <button
-            onClick={requestLocation}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-primary-deep text-primary-deep font-semibold text-sm hover:bg-primary/5 transition-all"
-          >
-            <MapPin className="w-4 h-4" /> Use My Location (within 50 km)
-          </button>
-        )}
-        {locLoading && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 p-2.5 rounded-xl">
-            <MapPin className="w-4 h-4 animate-pulse" /> Detecting your location…
-          </div>
-        )}
-        {locGranted && userLoc && (
-          <div className="flex items-center justify-between text-xs font-semibold text-primary-deep bg-primary/10 px-3 py-2 rounded-xl">
-            <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> Showing items within 50 km</span>
-            <button
-              onClick={() => { setUserLoc(null); setLocGranted(false); setLocError(""); }}
-              className="text-muted-foreground hover:text-destructive transition-colors text-xs"
-            >
-              Clear
-            </button>
-          </div>
-        )}
-        {locError && (
-          <div className="text-xs font-semibold text-warning bg-warning/10 p-2.5 rounded-xl">
-            {locError}
-          </div>
-        )}
-      </div>
-
-      {/* Categories chips and sort dropdown removed */}
-
-      {/* Food list */}
-      {loading && (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="card-soft animate-pulse">
-              <div className="w-full h-44 bg-muted rounded-t-2xl" />
-              <div className="p-4 space-y-3">
-                <div className="h-5 bg-muted rounded-xl w-2/3" />
-                <div className="h-4 bg-muted rounded-xl w-1/2" />
-                <div className="h-4 bg-muted rounded-xl w-3/4" />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Food Listings */}
+      {loading ? (
+        <Text style={styles.loadingText}>Loading available food...</Text>
+      ) : (
+        <View style={styles.listContainer}>
           {list.map((f) => <FoodCard key={f.id} food={f} />)}
           {list.length === 0 && (
-            <div className="col-span-full text-center py-14 space-y-2">
-              <p className="text-4xl">🍱</p>
-              <p className="font-bold text-foreground">No food listings found</p>
-              <p className="text-sm text-muted-foreground">
-                {userLoc ? "No available food within 50 km. Check back soon!" : "No items match your filters."}
-              </p>
-            </div>
+            <View style={styles.emptyBox}>
+              <Text style={{ fontSize: 40 }}>🍱</Text>
+              <Text style={styles.emptyTitle}>No food listings found</Text>
+              <Text style={styles.emptySubtitle}>Check back soon for fresh listings!</Text>
+            </View>
           )}
-        </div>
+        </View>
       )}
 
-      {/* ── NGO Section (inline, collapsible) ───────────────────────────────── */}
-      <div className="border border-border rounded-2xl overflow-hidden">
-        <button
-          onClick={() => setShowNGOs((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-card hover:bg-muted/50 transition-all"
-        >
-          <div className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-primary-deep" />
-            <span className="font-extrabold text-base">Nearby NGOs</span>
-            <span className="badge-pill bg-primary text-primary-foreground text-xs">
-              {nearbyNGOs.length}
-            </span>
-          </div>
-          {showNGOs ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-        </button>
+      {/* NGO Section */}
+      <View style={styles.ngoSection}>
+        <TouchableOpacity onPress={() => setShowNGOs(!showNGOs)} style={styles.ngoHeader}>
+          <View style={styles.ngoHeaderLeft}>
+            <Ionicons name="heart" size={20} color="#16A34A" />
+            <Text style={styles.ngoHeaderTitle}>Nearby NGOs</Text>
+            <View style={styles.ngoCountBadge}>
+              <Text style={styles.ngoCountText}>{nearbyNGOs.length}</Text>
+            </View>
+          </View>
+          <Ionicons name={showNGOs ? "chevron-up" : "chevron-down"} size={20} color="#6B7280" />
+        </TouchableOpacity>
 
         {showNGOs && (
-          <div className="px-4 pb-4 space-y-4 bg-background">
-            <p className="text-xs text-muted-foreground pt-2">
-              {userLoc ? "Showing NGOs within 50 km of your location." : "Enable location to see NGOs near you, or browse all below."}
-            </p>
-
-            {/* Filter chips */}
-            <div className="flex gap-2">
+          <View style={styles.ngoBody}>
+            <View style={styles.chipRow}>
               {(["All", "Humans", "Animals"] as const).map((f) => (
                 <Chip key={f} label={f} active={ngoFilter === f} onClick={() => setNgoFilter(f)} />
               ))}
-            </div>
+            </View>
 
-            {nearbyNGOs.length === 0 ? (
-              <div className="text-center py-8 space-y-1">
-                <p className="text-3xl">🏢</p>
-                <p className="font-bold text-sm">No NGOs found nearby</p>
-                <p className="text-xs text-muted-foreground">Enable location or try a different filter.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {nearbyNGOs.map((ngo) => (
-                  <NGOCard
-                    key={ngo.id}
-                    ngo={ngo}
-                    distance={ngo.distance}
-                    onDonate={() => nav("/post")}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+            <View style={styles.ngoList}>
+              {nearbyNGOs.map((ngo) => (
+                <NGOCard
+                  key={ngo.id}
+                  ngo={ngo}
+                  distance={ngo.distance}
+                  onDonate={() => navigation.navigate("PostFood" as never)}
+                />
+              ))}
+            </View>
+          </View>
         )}
-      </div>
-
-    </div>
+      </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  subtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  refreshBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsBanner: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  statsLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statsTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  statsSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: '#6B7280',
+    paddingVertical: 32,
+  },
+  listContainer: {
+    gap: 16,
+  },
+  emptyBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  ngoSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+  },
+  ngoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  ngoHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ngoHeaderTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  ngoCountBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  ngoCountText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#15803D',
+  },
+  ngoBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 12,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  ngoList: {
+    gap: 12,
+  },
+  ngoCard: {
+    backgroundColor: '#F9FAFB',
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 6,
+  },
+  ngoCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  ngoCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  ngoCardDesc: {
+    fontSize: 11,
+    color: '#6B7280',
+  },
+  distBadge: {
+    backgroundColor: '#E5E7EB',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  distText: {
+    fontSize: 11,
+    color: '#4B5563',
+  },
+  ngoAddress: {
+    fontSize: 12,
+    color: '#4B5563',
+  },
+  ngoPhone: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
+  ngoBtnRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  btnNav: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E5E7EB',
+    paddingVertical: 8,
+    borderRadius: 10,
+    gap: 4,
+  },
+  btnNavText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  btnDonate: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#16A34A',
+    paddingVertical: 8,
+    borderRadius: 10,
+    gap: 4,
+  },
+  btnDonateText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+});

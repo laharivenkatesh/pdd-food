@@ -1,197 +1,265 @@
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Leaf,
-  Calendar,
-  Flame,
-  MapPin,
-  ChevronRight,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/hooks/useAuth";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useMyPosts } from "@/hooks/useMyPosts";
-import { toast } from "sonner";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Activity() {
-  const navigate = useNavigate();
+  const navigation = useNavigation<any>();
   const { profile } = useAuth();
   const { userStats } = useTransactions();
   const { posts, removePost } = useMyPosts();
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center">
-        <div className="space-y-4">
-          <p className="text-muted-foreground animate-pulse font-semibold">Loading secure session profile...</p>
-        </div>
-      </div>
+      <View style={styles.centerContainer}>
+        <Text style={styles.loadingText}>Loading profile...</Text>
+      </View>
     );
   }
 
-  // Format UTC dates nicely
-  const formatDate = (isoStr: string) => {
-    const d = new Date(isoStr);
-    return d.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert(
+      "Delete Listing",
+      `Are you sure you want to delete "${name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await removePost(id);
+            Alert.alert("Success", "Listing deleted successfully!");
+          },
+        },
+      ]
+    );
   };
 
   return (
-    <div className="px-5 py-6 space-y-6 max-w-4xl w-full mx-auto animate-fade-up">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-2">
-        <h1 className="text-3xl font-extrabold font-serif tracking-tight text-foreground">Profile</h1>
-      </div>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <Text style={styles.title}>Profile</Text>
 
-      {/* Main Card */}
-      <div className="bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-950 rounded-[32px] p-5 relative overflow-hidden shadow-soft border border-emerald-800 text-white">
-        <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -z-10" />
-        
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="w-16 h-16 rounded-[20px] bg-emerald-800/40 border border-emerald-500/30 flex items-center justify-center shadow-inner shrink-0 backdrop-blur">
-            <Leaf className="w-8 h-8 text-emerald-300" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-white truncate">{profile.name}</h2>
-            <div className="text-xs text-emerald-300 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
-              <span>Community Member</span> 
-              <span className="text-[10px]">•</span> 
-              {profile.trustScore !== null && profile.reviewCount > 0 ? (
-                <span className="flex items-center gap-0.5 text-amber-300 font-bold">
-                  <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" /> {profile.trustScore} ({profile.reviewCount} {profile.reviewCount === 1 ? "review" : "reviews"})
-                </span>
-              ) : (
-                <span className="text-emerald-200/80 font-medium">New Member (0 reviews)</span>
-              )}
-            </div>
-            {profile.phone && (
-              <p className="text-[11px] text-emerald-200/80 font-semibold mt-1 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" /> {profile.phone}
-              </p>
-            )}
-            {profile.created_at && (
-              <p className="text-[10px] text-emerald-200/60 font-semibold mt-0.5 flex items-center gap-1.5">
-                <Calendar className="w-3 h-3" /> Reg: {formatDate(profile.created_at)}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Profile Banner */}
+      <View style={styles.profileCard}>
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarBox}>
+            <Ionicons name="leaf" size={32} color="#6EE7B7" />
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.userName}>{profile.name}</Text>
+            <Text style={styles.userRole}>Community Member</Text>
+            {profile.phone && <Text style={styles.userPhone}>📞 {profile.phone}</Text>}
+          </View>
+        </View>
+      </View>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard value={userStats.mealsCollected.toString()} label="Meals Collected" />
-        <StatCard value={userStats.animalsFed.toString()} label="Animals Fed" />
-        <StatCard value={userStats.postsMade.toString()} label="Posts Made" />
-        <StatCard value={`${userStats.pickupSuccess}%`} label="Pickup Success" />
-      </div>
+      <View style={styles.statsGrid}>
+        <View style={styles.statCard}>
+          <Text style={styles.statVal}>{userStats.mealsCollected}</Text>
+          <Text style={styles.statLabel}>Meals Collected</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statVal}>{userStats.animalsFed}</Text>
+          <Text style={styles.statLabel}>Animals Fed</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statVal}>{userStats.postsMade}</Text>
+          <Text style={styles.statLabel}>Posts Made</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statVal}>{userStats.pickupSuccess}%</Text>
+          <Text style={styles.statLabel}>Pickup Success</Text>
+        </View>
+      </View>
 
       {/* My Listings */}
-      <div className="space-y-3 pt-1">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-extrabold font-serif text-foreground">My Listings</h3>
-          <span className="badge-pill bg-primary/10 text-primary-deep font-extrabold text-xs">
-            {posts.length} Total
-          </span>
-        </div>
+      <View style={styles.listingsSection}>
+        <View style={styles.listingsHeader}>
+          <Text style={styles.listingsTitle}>My Listings</Text>
+          <Text style={styles.listingsCount}>{posts.length} Total</Text>
+        </View>
 
         {posts.length === 0 ? (
-          <div className="text-center py-6 bg-card rounded-[24px] border border-dashed border-border/80 space-y-1">
-            <p className="text-2xl">📤</p>
-            <p className="text-xs font-bold text-muted-foreground">You haven't posted any food yet.</p>
-          </div>
+          <View style={styles.emptyBox}>
+            <Text style={{ fontSize: 32 }}>📤</Text>
+            <Text style={styles.emptyText}>You haven't posted any food yet.</Text>
+          </View>
         ) : (
-          <div className="space-y-3">
-            {posts.map((food) => {
-              const remaining = food.feeds - (food.bookedPortions || 0);
-              const isCollected = food.status === "collected";
-              const isReserved = food.status === "reserved";
-              const isFullyBooked = remaining <= 0;
-
-              let statusText = food.status as string;
-              let statusColorClass = "bg-success/10 text-success border border-success/20";
-              if (isCollected) {
-                statusText = "collected";
-                statusColorClass = "bg-muted text-muted-foreground border border-border";
-              } else if (isReserved || isFullyBooked) {
-                statusText = isFullyBooked ? "booked" : "reserved";
-                statusColorClass = isFullyBooked 
-                  ? "bg-destructive/10 text-destructive border border-destructive/20" 
-                  : "bg-warning/10 text-warning border border-warning/20";
-              }
-
-              return (
-                <div 
-                  key={food.id}
-                  className="bg-card rounded-[24px] p-4 shadow-sm border border-border/60 flex items-center justify-between gap-3 hover:border-primary-deep/30 transition-all cursor-pointer"
-                  onClick={() => navigate(`/food/${food.id}`)}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <img 
-                      src={food.image} 
-                      alt={food.name} 
-                      className="w-12 h-12 rounded-xl object-cover shrink-0"
-                      onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80"; }}
-                    />
-                    <div className="min-w-0">
-                      <p className="font-extrabold text-foreground text-sm truncate">{food.name}</p>
-                      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                        <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${statusColorClass}`}>
-                          {statusText}
-                        </span>
-                        <span className="text-[10px] font-bold text-muted-foreground">
-                          {remaining} / {food.feeds} left
-                        </span>
-                      </div>
-                      {food.postedAt && (
-                        <p className="text-[10px] font-semibold text-emerald-700 mt-1 flex items-center gap-1">
-                          🕒 Posted: {new Date(food.postedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                        </p>
-                      )}
-                      {food.preparedAt && (
-                        <p className="text-[10px] font-semibold text-emerald-700 mt-0.5 flex items-center gap-1">
-                          🍳 Prep: {food.preparedAt}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        if (window.confirm(`Are you sure you want to delete "${food.name}"?`)) {
-                          await removePost(food.id);
-                          toast.success("Listing deleted successfully!");
-                        }
-                      }}
-                      className="w-8 h-8 rounded-lg bg-destructive/10 hover:bg-destructive hover:text-white text-destructive flex items-center justify-center transition-all"
-                      title="Delete listing"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <View style={styles.listingsList}>
+            {posts.map((food) => (
+              <TouchableOpacity
+                key={food.id}
+                onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
+                style={styles.postCard}
+              >
+                <Image
+                  source={{ uri: food.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80" }}
+                  style={styles.postImage}
+                />
+                <View style={styles.postInfo}>
+                  <Text style={styles.postName}>{food.name}</Text>
+                  <Text style={styles.postSub}>
+                    {food.feeds - (food.bookedPortions || 0)} / {food.feeds} left
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => handleDelete(food.id, food.name)} style={styles.deleteBtn}>
+                  <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))}
+          </View>
         )}
-      </div>
-    </div>
+      </View>
+    </ScrollView>
   );
 }
 
-function StatCard({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="bg-card rounded-[24px] p-5 shadow-sm border border-border/50">
-      <div className="text-[28px] font-extrabold text-primary-deep mb-0.5">{value}</div>
-      <div className="text-[13px] text-muted-foreground font-bold leading-tight">{label}</div>
-    </div>
-  );
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 16,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#6B7280',
+    fontSize: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  profileCard: {
+    backgroundColor: '#022C22',
+    padding: 20,
+    borderRadius: 24,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  avatarBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(6, 78, 59, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInfo: {
+    gap: 2,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  userRole: {
+    fontSize: 12,
+    color: '#A7F3D0',
+  },
+  userPhone: {
+    fontSize: 11,
+    color: '#6EE7B7',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  statVal: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  listingsSection: {
+    gap: 12,
+  },
+  listingsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  listingsTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  listingsCount: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
+  emptyBox: {
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    gap: 8,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  listingsList: {
+    gap: 8,
+  },
+  postCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  postImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+  },
+  postInfo: {
+    flex: 1,
+  },
+  postName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  postSub: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  deleteBtn: {
+    padding: 8,
+  },
+});
