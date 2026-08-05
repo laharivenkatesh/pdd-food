@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setProfile({
           id: userId,
-          name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
           email: session.user.email || "",
           phone: session.user.user_metadata?.phone || "",
           created_at: session.user.created_at,
@@ -107,7 +107,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    refreshProfile();
+    // Handle OAuth PKCE code exchange if redirected with ?code=
+    const handleInitialAuth = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        try {
+          await supabase.auth.exchangeCodeForSession(code);
+        } catch (e) {
+          console.error("OAuth code exchange error:", e);
+        }
+      }
+      await refreshProfile();
+    };
+
+    handleInitialAuth();
 
     // Listen to Supabase auth changes dynamically in background
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -119,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         setProfile((prev) => prev || {
           id: session.user.id,
-          name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
           email: session.user.email || "",
           phone: session.user.user_metadata?.phone || "",
           created_at: session.user.created_at,

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/hooks/useAuth";
