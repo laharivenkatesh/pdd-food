@@ -1,8 +1,5 @@
 package com.zerra.foodhub
 
-import com.zerra.foodhub.R
-import com.zerra.foodhub.BuildConfig
-
 import android.os.Build
 import android.os.Bundle
 
