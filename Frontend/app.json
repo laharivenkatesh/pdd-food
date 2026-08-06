@@ -29,6 +29,11 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "POST_NOTIFICATIONS",
+        "INTERNET",
+        "CAMERA",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS",
         "INTERNET"
       ]
     },
@@ -38,7 +43,8 @@
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/72a47116-021e-4252-aed3-908ed09f8ab8"
     },
     "runtimeVersion": "1.0.0",
     "plugins": [
