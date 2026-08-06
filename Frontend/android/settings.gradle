@@ -12,15 +12,6 @@ plugins {
   id("com.facebook.react.settings")
 }
 
-def expoAutolinkingScript = new File(
-  providers.exec {
-    workingDir(rootDir)
-    commandLine("node", "--print", "require.resolve('expo/package.json')")
-  }.standardOutput.asText.get().trim(),
-  "../scripts/autolinking.gradle"
-)
-apply from: expoAutolinkingScript.absolutePath
-
 useExpoModules()
 
 def autolinkingPackageJson = new File(
