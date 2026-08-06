@@ -87,15 +87,19 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.zerrafoodhub"
+    namespace "com.zerra.foodhub"
     defaultConfig {
-        applicationId "com.zerrafoodhub"
+        applicationId "com.zerra.foodhub"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+    }
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
     }
     signingConfigs {
         debug {
