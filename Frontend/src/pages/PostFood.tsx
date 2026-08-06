@@ -5,6 +5,7 @@ import Chip from "@/components/Chip";
 import { Category, Purpose } from "@/types/food";
 import { useMyPosts } from "@/hooks/useMyPosts";
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 const purposes: { key: Purpose; label: string }[] = [
@@ -29,10 +30,52 @@ export default function PostFood() {
   const [paid, setPaid] = useState(false);
   const [price, setPrice] = useState("");
   const [notes, setNotes] = useState("");
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [lat, setLat] = useState<number>(13.0827);
   const [lng, setLng] = useState<number>(80.2707);
   const [detectingLoc, setDetectingLoc] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const pickImageFromGallery = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission Needed", "Please grant photo gallery permissions to upload food pictures.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.7,
+        aspect: [4, 3],
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setImageUri(result.assets[0].uri);
+      }
+    } catch (err) {
+      console.warn("Gallery pick error:", err);
+    }
+  };
+
+  const takePhotoWithCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission Needed", "Please grant camera permissions to take food photos.");
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.7,
+        aspect: [4, 3],
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setImageUri(result.assets[0].uri);
+      }
+    } catch (err) {
+      console.warn("Camera pick error:", err);
+    }
+  };
 
   const detectLocation = () => {
     setDetectingLoc(true);
@@ -46,14 +89,26 @@ export default function PostFood() {
             setLng(currentLng);
 
             try {
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLng}`);
+              // Try BigDataCloud reverse geocode first
+              const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${currentLat}&longitude=${currentLng}&localityLanguage=en`);
               const data = await res.json();
-              if (data && data.display_name) {
-                setAddress(data.display_name);
-                Alert.alert("Address Located! 📍", data.display_name);
+              if (data && (data.locality || data.city || data.principalSubdivision)) {
+                const fullAddr = [data.locality || data.city, data.principalSubdivision, data.countryName].filter(Boolean).join(", ");
+                setAddress(fullAddr);
+                Alert.alert("Address Located! 📍", fullAddr);
               } else {
-                setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-                Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+                // Fallback to Nominatim
+                const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLng}`, {
+                  headers: { 'User-Agent': 'ZerraFoodHub/1.0' }
+                });
+                const nomData = await nomRes.json();
+                if (nomData && nomData.display_name) {
+                  setAddress(nomData.display_name);
+                  Alert.alert("Address Located! 📍", nomData.display_name);
+                } else {
+                  setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+                  Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+                }
               }
             } catch {
               setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
@@ -65,7 +120,7 @@ export default function PostFood() {
           (err) => {
             console.warn("Location fetch error:", err);
             setDetectingLoc(false);
-            Alert.alert("Location Error", "Could not fetch GPS coordinates. Please check your phone's GPS location settings.");
+            Alert.alert("Location Error", "Could not fetch GPS coordinates. Please ensure phone location is enabled.");
           },
           { enableHighAccuracy: true, timeout: 15000 }
         );
@@ -78,15 +133,34 @@ export default function PostFood() {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !quantity.trim() || !feeds || !expiryHours || !address.trim()) {
-      Alert.alert("Missing Fields", "Please fill in all required fields.");
+    if (!name.trim()) {
+      Alert.alert("Missing Field", "Please enter food name.");
       return;
     }
+    if (!quantity.trim()) {
+      Alert.alert("Missing Field", "Please enter food quantity.");
+      return;
+    }
+    if (!feeds) {
+      Alert.alert("Missing Field", "Please enter number of people it feeds.");
+      return;
+    }
+    if (!expiryHours) {
+      Alert.alert("Missing Field", "Please enter expiry hours.");
+      return;
+    }
+    if (!address.trim()) {
+      Alert.alert("Missing Field", "Please enter or detect your address.");
+      return;
+    }
+
     setBusy(true);
+
+    const defaultFallbackImage = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
 
     const res = await addPost({
       name: name.trim(),
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80",
+      image: imageUri || defaultFallbackImage,
       feeds: Number(feeds) || 1,
       price: paid ? Number(price) || 0 : 0,
       expiry_hours: Number(expiryHours) || 4,
@@ -107,10 +181,10 @@ export default function PostFood() {
 
     setBusy(false);
     if (!res.ok) {
-      Alert.alert("Error", res.error || "Failed to post food.");
+      Alert.alert("Error Posting Food", res.error || "Failed to post food.");
       return;
     }
-    Alert.alert("Success", "Food posted! Helping the world 🌱");
+    Alert.alert("Success! 🥗", "Food post published successfully!");
     navigation.navigate("Home" as never);
   };
 
@@ -119,6 +193,30 @@ export default function PostFood() {
       <Text style={styles.title}>Post Leftover Food</Text>
 
       <View style={styles.formContainer}>
+        {/* Food Photo Picker */}
+        <View style={styles.fieldSection}>
+          <Text style={styles.sectionLabel}>Food Photo</Text>
+          {imageUri ? (
+            <View style={styles.imagePreviewWrapper}>
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+              <TouchableOpacity onPress={() => setImageUri(null)} style={styles.removeImageBtn}>
+                <Ionicons name="close-circle" size={24} color="#EF4444" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.imageBtnRow}>
+              <TouchableOpacity onPress={takePhotoWithCamera} style={styles.imageBtn}>
+                <Ionicons name="camera" size={20} color="#16A34A" />
+                <Text style={styles.imageBtnText}>Take Photo</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={pickImageFromGallery} style={styles.imageBtn}>
+                <Ionicons name="images" size={20} color="#16A34A" />
+                <Text style={styles.imageBtnText}>Choose Gallery</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
         <TextInput
           style={styles.input}
           placeholder="Food name (e.g. Biryani, Rotis)"
@@ -313,5 +411,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#16A34A',
+  },
+  imageBtnRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  imageBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F0FDF4',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  imageBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
+  imagePreviewWrapper: {
+    position: 'relative',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: '100%',
+    height: 160,
+    borderRadius: 12,
+  },
+  removeImageBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
   },
 });

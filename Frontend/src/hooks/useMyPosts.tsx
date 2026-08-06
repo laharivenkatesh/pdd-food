@@ -177,6 +177,18 @@ export function useMyPosts() {
     async (input: any) => {
       if (!user) return { ok: false as const, error: "Not authenticated" };
 
+      // Ensure profile exists in public.profiles table before inserting food
+      try {
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          name: user.name || user.email?.split("@")[0] || "Community Member",
+          email: user.email || null,
+          phone: user.phone || null
+        }, { onConflict: "id" });
+      } catch (e) {
+        console.warn("Profile auto-sync notice:", e);
+      }
+
       const { data, error } = await supabase
         .from("foods")
         .insert({
