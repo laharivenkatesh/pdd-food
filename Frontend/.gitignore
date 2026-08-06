@@ -26,3 +26,13 @@ dist-ssr
 .env
 .vercel
 .env*.local
+
+# Expo / Android build files
+.gradle
+.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+android/app/.cxx/
+.expo/
+
