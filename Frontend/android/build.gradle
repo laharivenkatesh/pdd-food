@@ -2,6 +2,11 @@
 
 buildscript {
   ext {
+    buildToolsVersion = "35.0.0"
+    minSdkVersion = 24
+    compileSdkVersion = 35
+    targetSdkVersion = 34
+    ndkVersion = "26.1.10909125"
     kotlinVersion = "1.9.24"
     kspVersion = "1.9.24-1.0.20"
   }
@@ -14,12 +19,6 @@ buildscript {
     classpath('com.facebook.react:react-native-gradle-plugin')
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
   }
-  configurations.all {
-    resolutionStrategy {
-      force "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-      force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    }
-  }
 }
 
 allprojects {
@@ -30,10 +29,8 @@ allprojects {
   }
   configurations.all {
     resolutionStrategy {
-      force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+      force "androidx.core:core:1.15.0"
+      force "androidx.core:core-ktx:1.15.0"
     }
   }
 }
-
-apply plugin: "expo-root-project"
-apply plugin: "com.facebook.react.rootproject"
