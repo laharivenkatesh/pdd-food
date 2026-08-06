@@ -1,5 +1,8 @@
 package com.zerra.foodhub
 
+import com.zerra.foodhub.R
+import com.zerra.foodhub.BuildConfig
+
 import android.app.Application
 import android.content.res.Configuration
 
