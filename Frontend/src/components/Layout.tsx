@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal } from 'react-native';
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -44,9 +44,17 @@ function formatTimeAgo(dateStr: string) {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const navigation = useNavigation<any>();
-  const route = useRoute();
+  const currentRouteName = useNavigationState(state => {
+    try {
+      if (!state || !state.routes || state.routes.length === 0) return "Home";
+      const currentRoute = state.routes[state.index];
+      return currentRoute ? currentRoute.name : "Home";
+    } catch {
+      return "Home";
+    }
+  });
   const { user, logout } = useAuth();
-  const hideNav = route.name === "Auth";
+  const hideNav = currentRouteName === "Auth";
 
   const { transactions } = useTransactions();
   const { foods } = useAllFoods();
@@ -167,23 +175,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {!hideNav && (
         <View style={styles.bottomNav}>
           <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.navItem}>
-            <Ionicons name="home-outline" size={22} color={route.name === "Home" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, route.name === "Home" && styles.navLabelActive]}>Home</Text>
+            <Ionicons name="home-outline" size={22} color={currentRouteName === "Home" ? "#16A34A" : "#6B7280"} />
+            <Text style={[styles.navLabel, currentRouteName === "Home" && styles.navLabelActive]}>Home</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate("Expired" as never)} style={styles.navItem}>
-            <Ionicons name="time-outline" size={22} color={route.name === "Expired" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, route.name === "Expired" && styles.navLabelActive]}>Expired</Text>
+            <Ionicons name="time-outline" size={22} color={currentRouteName === "Expired" ? "#16A34A" : "#6B7280"} />
+            <Text style={[styles.navLabel, currentRouteName === "Expired" && styles.navLabelActive]}>Expired</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={[styles.navItem, styles.navHighlight]}>
             <Ionicons name="add-circle" size={32} color="#16A34A" />
-            <Text style={[styles.navLabel, route.name === "PostFood" && styles.navLabelActive]}>Post</Text>
+            <Text style={[styles.navLabel, currentRouteName === "PostFood" && styles.navLabelActive]}>Post</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate("Activity" as never)} style={styles.navItem}>
-            <Ionicons name="person-outline" size={22} color={route.name === "Activity" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, route.name === "Activity" && styles.navLabelActive]}>Profile</Text>
+            <Ionicons name="person-outline" size={22} color={currentRouteName === "Activity" ? "#16A34A" : "#6B7280"} />
+            <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>Profile</Text>
           </TouchableOpacity>
         </View>
       )}
