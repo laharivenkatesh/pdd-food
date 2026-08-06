@@ -43,6 +43,11 @@
     "plugins": [
       "expo-updates"
     ],
-    "owner": "lahari19"
+    "extra": {
+      "eas": {
+        "projectId": "72a47116-021e-4252-aed3-908ed09f8ab8"
+      }
+    },
+    "owner": "bunny-palagiri"
   }
 }
