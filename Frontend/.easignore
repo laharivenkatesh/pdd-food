@@ -1,0 +1,12 @@
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Ignore local Gradle build cache & intermediate build outputs
+android/.gradle/
+android/build/
+android/app/build/
+android/app/.cxx/
+android/.idea/
+*.log
