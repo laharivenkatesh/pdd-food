@@ -3,8 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 // These are read from .env (Vite). After connecting Supabase, add to a .env file:
 // VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 // VITE_SUPABASE_ANON_KEY=eyJhbGciOi... (anon/publishable key — safe to expose)
-const DEFAULT_SUPABASE_URL = "https://uyjvckvhsbfvlpffhefy.supabase.co";
-const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5anZja3Zoc2JmdmxwZmZoZWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3ODc3MzQsImV4cCI6MjA5MjM2MzczNH0.FizI5YxINmGT68NlkfZ9RuO46enAPcB6NTRklZ1vZMo";
+const DEFAULT_SUPABASE_URL = "https://ulxjsvznpwokczrruipr.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVseGpzdnpucHdva2N6cnJ1aXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMzEwNDEsImV4cCI6MjEwMTYwNzA0MX0.-5E-3YKN-s4dQ_2ikGauOz78bwJJ4uWNJ3WBA7TyK60";
 
 const getEnvVar = (key: string): string | undefined => {
   if (typeof process !== 'undefined' && process.env && process.env[key]) {

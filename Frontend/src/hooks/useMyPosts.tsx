@@ -58,6 +58,32 @@ function mapRow(row: any): FoodItem {
   };
 }
 
+async function cleanupExpiredImages(rawData: any[]) {
+  if (!rawData || rawData.length === 0) return;
+  const fallback = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
+  const now = Date.now();
+
+  for (const item of rawData) {
+    const preparedTime = new Date(item.prepared_at || item.created_at).getTime();
+    const expiryTime = preparedTime + (item.expiry_hours || 4) * 3600 * 1000;
+    const isExpired = now >= expiryTime || item.status === "expired";
+
+    if (isExpired && item.image && item.image !== fallback) {
+      try {
+        if (!item.image.startsWith("http") && !item.image.startsWith("data:")) {
+          await supabase.storage.from("food-images").remove([item.image]);
+        }
+        await supabase
+          .from("foods")
+          .update({ image: fallback, status: "expired" })
+          .eq("id", item.id);
+      } catch (err) {
+        console.warn("Storage cleanup notice:", err);
+      }
+    }
+  }
+}
+
 async function fetchFoodsQuery(userId?: string) {
   let query = supabase.from("foods").select("*, profiles(*)");
   if (userId) {
@@ -66,16 +92,20 @@ async function fetchFoodsQuery(userId?: string) {
   query = query.order("created_at", { ascending: false });
 
   const res = await query;
+  let result = res;
   if (res.error) {
-    // Fail-safe fallback to simple select("*") if foreign key relation string is missing
     let fallbackQuery = supabase.from("foods").select("*");
     if (userId) {
       fallbackQuery = fallbackQuery.eq("user_id", userId);
     }
     fallbackQuery = fallbackQuery.order("created_at", { ascending: false });
-    return await fallbackQuery;
+    result = await fallbackQuery;
   }
-  return res;
+
+  if (result.data) {
+    cleanupExpiredImages(result.data);
+  }
+  return result;
 }
 
 let globalMyPostsCache: FoodItem[] = [];
