@@ -109,13 +109,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Handle OAuth PKCE code exchange if redirected with ?code=
     const handleInitialAuth = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (code) {
-        try {
-          await supabase.auth.exchangeCodeForSession(code);
-        } catch (e) {
-          console.error("OAuth code exchange error:", e);
+      if (typeof window !== "undefined" && window.location) {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        if (code) {
+          try {
+            await supabase.auth.exchangeCodeForSession(code);
+          } catch (e) {
+            console.error("OAuth code exchange error:", e);
+          }
         }
       }
       await refreshProfile();
@@ -143,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         setLoading(false);
 
-        if (_event === "PASSWORD_RECOVERY") {
+        if (_event === "PASSWORD_RECOVERY" && typeof window !== "undefined") {
           window.location.href = "/auth?mode=reset";
         }
       } else {
@@ -330,8 +332,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const resetPassword = async (email: string) => {
     try {
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?mode=reset`,
+        redirectTo: `${origin}/auth?mode=reset`,
       });
       if (error) throw error;
       return { ok: true as const };
@@ -345,7 +348,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const loginWithOAuth = async (provider: "google" | "facebook" | "apple") => {
     try {
-      const redirectTo = `${window.location.origin}/auth`;
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const redirectTo = `${origin}/auth`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

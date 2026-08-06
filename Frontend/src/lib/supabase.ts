@@ -29,6 +29,31 @@ if (!isSupabaseConfigured) {
   );
 }
 
+const CustomStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      if (typeof localStorage !== "undefined") {
+        return localStorage.getItem(key);
+      }
+    } catch {}
+    return null;
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(key, value);
+      }
+    } catch {}
+  },
+  removeItem: (key: string): void => {
+    try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.removeItem(key);
+      }
+    } catch {}
+  },
+};
+
 export const supabase = createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
@@ -36,7 +61,7 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      storage: localStorage,
+      storage: CustomStorage,
     },
   },
 );

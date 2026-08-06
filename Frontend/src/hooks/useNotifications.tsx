@@ -31,7 +31,10 @@ const NotificationContext = createContext<NotificationContextValue | null>(null)
 // Synthesize a beautiful double-tone chime using Web Audio API
 export const playNotificationSound = () => {
   try {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (typeof window === "undefined") return;
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const audioCtx = new AudioCtx();
     
     const playTone = (freq: number, startTime: number, duration: number) => {
       const osc = audioCtx.createOscillator();
@@ -54,7 +57,7 @@ export const playNotificationSound = () => {
     playTone(523.25, now, 0.35); // C5
     playTone(659.25, now + 0.08, 0.45); // E5
   } catch (e) {
-    console.warn("Web Audio API is not supported or was blocked by the browser", e);
+    console.warn("Web Audio API is not supported", e);
   }
 };
 
@@ -64,6 +67,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [soundEnabled, setSoundEnabledState] = useState<boolean>(() => {
     try {
+      if (typeof localStorage === "undefined") return true;
       const saved = localStorage.getItem("zerra-notification-sound");
       return saved === null ? true : saved === "true";
     } catch {
@@ -74,7 +78,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const setSoundEnabled = useCallback((enabled: boolean) => {
     setSoundEnabledState(enabled);
     try {
-      localStorage.setItem("zerra-notification-sound", String(enabled));
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("zerra-notification-sound", String(enabled));
+      }
     } catch {}
   }, []);
 
