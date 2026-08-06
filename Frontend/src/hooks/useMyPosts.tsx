@@ -123,7 +123,7 @@ export function useMyPosts() {
 
     const pollInterval = setInterval(() => {
       refresh(true);
-    }, 2000);
+    }, 1000);
 
     const channelId = `my-posts-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
@@ -241,7 +241,7 @@ export function useAllFoods() {
 
     const pollInterval = setInterval(() => {
       refresh(true);
-    }, 2000);
+    }, 1000);
 
     const channelId = `foods-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
