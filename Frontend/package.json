@@ -53,7 +53,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
-    "expo": "~52.0.37",
+    "expo": "~56.0.18",
     "expo-dev-client": "~5.0.12",
     "expo-updates": "~0.26.15",
     "firebase": "^12.13.0",
