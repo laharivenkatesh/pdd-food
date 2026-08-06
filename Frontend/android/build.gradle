@@ -33,4 +33,14 @@ allprojects {
       force "androidx.core:core-ktx:1.15.0"
     }
   }
+
+  afterEvaluate { project ->
+    if (project.name == 'app') {
+      project.tasks.matching { it.name.startsWith("check") && it.name.endsWith("AarMetadata") }.configureEach {
+        dependsOn(rootProject.subprojects.collect { sub ->
+          sub.tasks.matching { t -> t.name.startsWith("write") && t.name.endsWith("AarMetadata") }
+        })
+      }
+    }
+  }
 }
