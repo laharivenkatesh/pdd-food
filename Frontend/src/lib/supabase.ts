@@ -13,8 +13,8 @@ const getEnvVar = (key: string): string | undefined => {
   return undefined;
 };
 
-const SUPABASE_URL = getEnvVar("EXPO_PUBLIC_SUPABASE_URL") || getEnvVar("VITE_SUPABASE_URL") || DEFAULT_SUPABASE_URL;
-const SUPABASE_ANON_KEY = getEnvVar("EXPO_PUBLIC_SUPABASE_ANON_KEY") || getEnvVar("VITE_SUPABASE_ANON_KEY") || DEFAULT_SUPABASE_ANON_KEY;
+const SUPABASE_URL = (typeof process !== 'undefined' && process.env && process.env.EXPO_PUBLIC_SUPABASE_URL) || (typeof process !== 'undefined' && process.env && process.env.VITE_SUPABASE_URL) || DEFAULT_SUPABASE_URL;
+const SUPABASE_ANON_KEY = (typeof process !== 'undefined' && process.env && process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) || (typeof process !== 'undefined' && process.env && process.env.VITE_SUPABASE_ANON_KEY) || DEFAULT_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = Boolean(
   SUPABASE_URL && 

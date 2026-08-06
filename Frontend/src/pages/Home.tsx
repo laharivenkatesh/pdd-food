@@ -96,6 +96,27 @@ export default function Home() {
   const [showNGOs, setShowNGOs] = useState(true);
   const [ngoFilter, setNgoFilter] = useState<"All" | "Humans" | "Animals">("All");
 
+  useEffect(() => {
+    try {
+      if (typeof navigator !== "undefined" && navigator?.geolocation?.getCurrentPosition) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          },
+          (err) => {
+            console.warn("Location fetch error:", err);
+            setUserLoc({ lat: 13.0827, lng: 80.2707 });
+          },
+          { enableHighAccuracy: false, timeout: 10000 }
+        );
+      } else {
+        setUserLoc({ lat: 13.0827, lng: 80.2707 });
+      }
+    } catch {
+      setUserLoc({ lat: 13.0827, lng: 80.2707 });
+    }
+  }, []);
+
   const list = useMemo(() => {
     let arr = [...dbFoods];
     const now = Date.now();

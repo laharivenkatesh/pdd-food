@@ -1,21 +1,38 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
 import React, { useState, useEffect } from "react";
 import { Ionicons } from '@expo/vector-icons';
+import * as Updates from 'expo-updates';
 
 export default function OtaUpdateModal() {
   const [showModal, setShowModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    // OTA check logic
+    async function checkOtaUpdate() {
+      try {
+        if (__DEV__) return;
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          setTimeout(() => {
+            setShowModal(true);
+          }, 2000);
+        }
+      } catch (e) {
+        console.warn("OTA update check error:", e);
+      }
+    }
+    checkOtaUpdate();
   }, []);
 
   const handleUpdateAndRestart = async () => {
     setIsUpdating(true);
-    setTimeout(() => {
+    try {
+      await Updates.reloadAsync();
+    } catch {
       setIsUpdating(false);
       setShowModal(false);
-    }, 1000);
+    }
   };
 
   const handleDismiss = () => {

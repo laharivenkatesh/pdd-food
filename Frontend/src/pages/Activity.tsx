@@ -14,7 +14,11 @@ export default function Activity() {
   if (!profile) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.loadingText}>Loading profile...</Text>
+        <Ionicons name="person-circle-outline" size={64} color="#9CA3AF" />
+        <Text style={styles.loadingText}>Please log in to view your profile</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Auth" as never)} style={styles.loginBtn}>
+          <Text style={styles.loginBtnText}>Log In or Sign Up</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -261,5 +265,17 @@ const styles = StyleSheet.create({
   },
   deleteBtn: {
     padding: 8,
+  },
+  loginBtn: {
+    backgroundColor: '#16A34A',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  loginBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

@@ -29,7 +29,36 @@ export default function PostFood() {
   const [paid, setPaid] = useState(false);
   const [price, setPrice] = useState("");
   const [notes, setNotes] = useState("");
+  const [lat, setLat] = useState<number>(13.0827);
+  const [lng, setLng] = useState<number>(80.2707);
+  const [detectingLoc, setDetectingLoc] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const detectLocation = () => {
+    setDetectingLoc(true);
+    try {
+      if (typeof navigator !== "undefined" && navigator?.geolocation?.getCurrentPosition) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setLat(pos.coords.latitude);
+            setLng(pos.coords.longitude);
+            setDetectingLoc(false);
+            Alert.alert("Location Found", `GPS coordinates updated: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+          },
+          (err) => {
+            console.warn("Location fetch error:", err);
+            setDetectingLoc(false);
+            Alert.alert("Location Error", "Could not fetch GPS coordinates.");
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      } else {
+        setDetectingLoc(false);
+      }
+    } catch {
+      setDetectingLoc(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!name.trim() || !quantity.trim() || !feeds || !expiryHours || !address.trim()) {
@@ -46,8 +75,8 @@ export default function PostFood() {
       expiry_hours: Number(expiryHours) || 4,
       prepared_at: preparedAt || new Date().toLocaleString(),
       address: address.trim(),
-      lat: 13.0827,
-      lng: 80.2707,
+      lat,
+      lng,
       category,
       tags: [],
       purpose,
@@ -112,6 +141,13 @@ export default function PostFood() {
           value={address}
           onChangeText={setAddress}
         />
+
+        <TouchableOpacity onPress={detectLocation} style={styles.detectBtn}>
+          <Ionicons name="location" size={16} color="#16A34A" />
+          <Text style={styles.detectBtnText}>
+            {detectingLoc ? "Detecting GPS..." : `Detect My Location (${lat.toFixed(2)}, ${lng.toFixed(2)})`}
+          </Text>
+        </TouchableOpacity>
 
         {/* Category */}
         <View style={styles.fieldSection}>
@@ -242,5 +278,23 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '800',
     fontSize: 15,
+  },
+  detectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  detectBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
   },
 });

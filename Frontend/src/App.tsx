@@ -30,7 +30,7 @@ const App = () => {
           <TransactionProvider>
             <NavigationContainer>
               <Layout>
-                <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
+                <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Auth">
                   <Stack.Screen name="Auth" component={Auth} />
                   <Stack.Screen name="Home" component={Home} />
                   <Stack.Screen name="Expired" component={Expired} />
