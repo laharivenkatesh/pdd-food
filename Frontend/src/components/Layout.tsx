@@ -48,13 +48,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     try {
       if (!state || !state.routes || state.routes.length === 0) return "Auth";
       const currentRoute = state.routes[state.index];
-      return currentRoute ? currentRoute.name : "Auth";
+      return currentRoute ? currentRoute.name : "";
     } catch {
-      return "Auth";
+      return "";
     }
   });
   const { user, logout } = useAuth();
-  const hideNav = currentRouteName === "Auth" || !user;
+  const hideNav = currentRouteName === "Auth";
 
   const { transactions } = useTransactions();
   const { foods } = useAllFoods();

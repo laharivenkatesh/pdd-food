@@ -6,16 +6,34 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function Auth() {
   const navigation = useNavigation<any>();
-  const { login, sendOtp } = useAuth();
+  const { login, sendOtp, verifyOtp } = useAuth();
 
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async () => {
+    if (authMode === "verify_otp") {
+      if (!otp.trim() || otp.trim().length < 6) {
+        Alert.alert("Invalid Code", "Please enter the 6-digit OTP code sent to your email.");
+        return;
+      }
+      setBusy(true);
+      const res = await verifyOtp(email, otp.trim(), "signup");
+      setBusy(false);
+      if (!res.ok) {
+        Alert.alert("Verification Failed", "error" in res ? res.error : "Invalid verification code.");
+        return;
+      }
+      Alert.alert("Success", "Account verified successfully!");
+      navigation.navigate("Home" as never);
+      return;
+    }
+
     if (!email || !password) {
       Alert.alert("Missing Fields", "Please enter your email and password.");
       return;
@@ -38,8 +56,8 @@ export default function Auth() {
         Alert.alert("Registration Failed", "error" in res ? res.error : "An error occurred.");
         return;
       }
-      Alert.alert("Success", "Account created successfully!");
-      navigation.navigate("Home" as never);
+      Alert.alert("Verification Code Sent", `Check ${email} for your 6-digit OTP verification code!`);
+      setAuthMode("verify_otp");
     }
   };
 
@@ -52,66 +70,95 @@ export default function Auth() {
           </View>
           <Text style={styles.title}>Zerra Food Hub</Text>
           <Text style={styles.subtitle}>
-            {authMode === "login" ? "Welcome back! Sign in to continue." : "Create an account to start sharing food."}
+            {authMode === "verify_otp"
+              ? `Enter the 6-digit OTP sent to ${email}`
+              : authMode === "login"
+              ? "Welcome back! Sign in to continue."
+              : "Create an account to start sharing food."}
           </Text>
         </View>
 
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            onPress={() => setAuthMode("login")}
-            style={[styles.tab, authMode === "login" && styles.activeTab]}
-          >
-            <Text style={[styles.tabText, authMode === "login" && styles.activeTabText]}>Log In</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setAuthMode("signup")}
-            style={[styles.tab, authMode === "signup" && styles.activeTab]}
-          >
-            <Text style={[styles.tabText, authMode === "signup" && styles.activeTabText]}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
+        {authMode !== "verify_otp" && (
+          <View style={styles.tabContainer}>
+            <TouchableOpacity
+              onPress={() => setAuthMode("login")}
+              style={[styles.tab, authMode === "login" && styles.activeTab]}
+            >
+              <Text style={[styles.tabText, authMode === "login" && styles.activeTabText]}>Log In</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setAuthMode("signup")}
+              style={[styles.tab, authMode === "signup" && styles.activeTab]}
+            >
+              <Text style={[styles.tabText, authMode === "signup" && styles.activeTabText]}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.form}>
-          {authMode === "signup" && (
+          {authMode === "verify_otp" ? (
             <>
               <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                value={name}
-                onChangeText={setName}
+                style={[styles.input, { textAlign: 'center', fontSize: 22, letterSpacing: 6, fontWeight: '800' }]}
+                placeholder="123456"
+                keyboardType="number-pad"
+                maxLength={6}
+                value={otp}
+                onChangeText={setOtp}
               />
+              <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
+                <Text style={styles.submitBtnText}>
+                  {busy ? "Verifying Code..." : "Verify Code & Sign In 🚀"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setAuthMode("login")} style={styles.secondaryBtn}>
+                <Text style={styles.secondaryBtnText}>Back to Log In</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              {authMode === "signup" && (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Full Name"
+                    value={name}
+                    onChangeText={setName}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Phone Number"
+                    keyboardType="phone-pad"
+                    value={phone}
+                    onChangeText={setPhone}
+                  />
+                </>
+              )}
+
               <TextInput
                 style={styles.input}
-                placeholder="Phone Number"
-                keyboardType="phone-pad"
-                value={phone}
-                onChangeText={setPhone}
+                placeholder="Email address"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
               />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
+
+              <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
+                <Text style={styles.submitBtnText}>
+                  {busy ? "Processing..." : authMode === "login" ? "Log In" : "Register Account"}
+                </Text>
+              </TouchableOpacity>
             </>
           )}
-
-          <TextInput
-            style={styles.input}
-            placeholder="Email address"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-
-          <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
-            <Text style={styles.submitBtnText}>
-              {busy ? "Processing..." : authMode === "login" ? "Log In" : "Register Account"}
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -202,5 +249,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '800',
     fontSize: 15,
+  },
+  secondaryBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  secondaryBtnText: {
+    color: '#6B7280',
+    fontWeight: '600',
+    fontSize: 13,
   },
 });

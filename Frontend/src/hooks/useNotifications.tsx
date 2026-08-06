@@ -2,6 +2,40 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
+import * as Notifications from 'expo-notifications';
+
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+} catch {}
+
+export async function sendNativeStatusBarNotification(title: string, body: string) {
+  try {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus === 'granted') {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          sound: true,
+        },
+        trigger: null,
+      });
+    }
+  } catch (err) {
+    console.warn("Native notification trigger notice:", err);
+  }
+}
 
 export interface DbNotification {
   id: string;
@@ -152,6 +186,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             if (soundEnabled) {
               playNotificationSound();
             }
+
+            // Trigger Android status bar push notification!
+            sendNativeStatusBarNotification("🍱 " + newNotif.title, newNotif.message);
 
             // Show interactive toast popup
             toast("🍱 " + newNotif.title, {

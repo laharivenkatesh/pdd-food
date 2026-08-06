@@ -48,7 +48,8 @@
     },
     "runtimeVersion": "1.0.0",
     "plugins": [
-      "expo-updates"
+      "expo-updates",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {

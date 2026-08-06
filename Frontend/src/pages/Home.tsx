@@ -61,9 +61,7 @@ function NGOCard({ ngo, distance, onDonate }: { key?: React.Key; ngo: NGO; dista
           {ngo.description && <Text style={styles.ngoCardDesc}>{ngo.description}</Text>}
         </View>
         {distance !== null && (
-          <View style={styles.distBadge}>
-            <Text style={styles.distText}>{distance.toFixed(1)} km</Text>
-          </View>
+          <Text style={styles.distText}>{distance.toFixed(1)} km</Text>
         )}
       </View>
 
@@ -375,15 +373,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#6B7280',
   },
-  distBadge: {
-    backgroundColor: '#E5E7EB',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
   distText: {
-    fontSize: 11,
-    color: '#4B5563',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
   },
   ngoAddress: {
     fontSize: 12,

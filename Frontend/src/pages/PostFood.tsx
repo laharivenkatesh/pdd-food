@@ -39,18 +39,35 @@ export default function PostFood() {
     try {
       if (typeof navigator !== "undefined" && navigator?.geolocation?.getCurrentPosition) {
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setLat(pos.coords.latitude);
-            setLng(pos.coords.longitude);
-            setDetectingLoc(false);
-            Alert.alert("Location Found", `GPS coordinates updated: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+          async (pos) => {
+            const currentLat = pos.coords.latitude;
+            const currentLng = pos.coords.longitude;
+            setLat(currentLat);
+            setLng(currentLng);
+
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLng}`);
+              const data = await res.json();
+              if (data && data.display_name) {
+                setAddress(data.display_name);
+                Alert.alert("Address Located! 📍", data.display_name);
+              } else {
+                setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+                Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+              }
+            } catch {
+              setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+              Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+            } finally {
+              setDetectingLoc(false);
+            }
           },
           (err) => {
             console.warn("Location fetch error:", err);
             setDetectingLoc(false);
-            Alert.alert("Location Error", "Could not fetch GPS coordinates.");
+            Alert.alert("Location Error", "Could not fetch GPS coordinates. Please check your phone's GPS location settings.");
           },
-          { enableHighAccuracy: true, timeout: 10000 }
+          { enableHighAccuracy: true, timeout: 15000 }
         );
       } else {
         setDetectingLoc(false);
