@@ -160,8 +160,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
               action: {
                 label: "View",
                 onClick: () => {
-                  window.location.hash = `#/food/${newNotif.food_id}`;
-                  window.dispatchEvent(new CustomEvent("view-food-notification", { detail: newNotif }));
+                  if (typeof window !== "undefined") {
+                    window.location.hash = `#/food/${newNotif.food_id}`;
+                    window.dispatchEvent(new CustomEvent("view-food-notification", { detail: newNotif }));
+                  }
                 },
               },
             });

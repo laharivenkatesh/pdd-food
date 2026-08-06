@@ -185,7 +185,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user || activeCollectorTxs.length === 0) return;
-    if (!("geolocation" in navigator)) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
 
     const updateLocation = async (pos: GeolocationPosition) => {
       const { latitude, longitude } = pos.coords;
