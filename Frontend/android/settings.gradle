@@ -21,10 +21,23 @@ def expoAutolinkingScript = new File(
 )
 apply from: expoAutolinkingScript.absolutePath
 
-extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
-  ex.autolinkLibrariesFromCommand()
-}
 useExpoModules()
+
+def autolinkingPackageJson = new File(
+  providers.exec {
+    workingDir(rootDir)
+    commandLine("node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
+  }.standardOutput.asText.get().trim()
+)
+def autolinkingJs = new File(autolinkingPackageJson.parentFile, "bin/expo-modules-autolinking.js").absolutePath
+
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+  if (System.getenv('EXPO_USE_COMMUNITY_AUTOLINKING') == '1') {
+    ex.autolinkLibrariesFromCommand()
+  } else {
+    ex.autolinkLibrariesFromCommand(["node", autolinkingJs, "react-native-config", "--json", "--platform", "android"])
+  }
+}
 
 rootProject.name = 'ZerraFoodHub'
 
