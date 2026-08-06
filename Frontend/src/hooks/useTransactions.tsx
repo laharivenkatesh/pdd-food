@@ -185,7 +185,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user || activeCollectorTxs.length === 0) return;
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    if (typeof navigator === "undefined" || !navigator?.geolocation) return;
 
     const updateLocation = async (pos: GeolocationPosition) => {
       const { latitude, longitude } = pos.coords;
@@ -207,24 +207,35 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // 1. Register watchPosition
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => updateLocation(pos),
-      (err) => console.warn("Global live location watch error:", err),
-      { enableHighAccuracy: false, timeout: 15000 }
-    );
+    let watchId: number | null = null;
+    try {
+      if (navigator?.geolocation?.watchPosition) {
+        watchId = navigator.geolocation.watchPosition(
+          (pos) => updateLocation(pos),
+          (err) => console.warn("Global live location watch error:", err),
+          { enableHighAccuracy: false, timeout: 15000 }
+        );
+      }
+    } catch {}
 
-    // 2. Backup polling interval (every 10 seconds)
     const intervalId = setInterval(() => {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => updateLocation(pos),
-        (err) => console.warn("Backup getCurrentPosition error:", err),
-        { enableHighAccuracy: false, timeout: 10000 }
-      );
+      try {
+        if (typeof navigator !== "undefined" && navigator?.geolocation?.getCurrentPosition) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => updateLocation(pos),
+            (err) => console.warn("Backup getCurrentPosition error:", err),
+            { enableHighAccuracy: false, timeout: 10000 }
+          );
+        }
+      } catch {}
     }, 10000);
 
     return () => {
-      navigator.geolocation.clearWatch(watchId);
+      try {
+        if (watchId !== null && typeof navigator !== "undefined" && navigator?.geolocation?.clearWatch) {
+          navigator.geolocation.clearWatch(watchId);
+        }
+      } catch {}
       clearInterval(intervalId);
     };
   }, [user, activeCollectorTxs.length > 0]);
