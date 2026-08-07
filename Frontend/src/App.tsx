@@ -41,36 +41,121 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+  checkingUpdate: boolean;
+  updateStatus: string;
 }
 
 class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   public state: ErrorBoundaryState = {
     hasError: false,
     error: null,
+    checkingUpdate: false,
+    updateStatus: "",
   };
 
   public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
+    return { hasError: true, error, checkingUpdate: false, updateStatus: "" };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught app error:", error, errorInfo);
+    this.autoCheckForUpdate();
   }
+
+  private autoCheckForUpdate = async () => {
+    try {
+      if (typeof Updates.checkForUpdateAsync === 'function') {
+        const update = await Updates.checkForUpdateAsync();
+        if (update && update.isAvailable) {
+          this.setState({ updateStatus: "New update found! Fetching..." });
+          if (typeof Updates.fetchUpdateAsync === 'function') {
+            await Updates.fetchUpdateAsync();
+          }
+          this.setState({ updateStatus: "Update ready! Tap below to apply." });
+        }
+      }
+    } catch (e) {
+      console.warn("ErrorBoundary update check notice:", e);
+    }
+  };
+
+  private handleForceUpdate = async () => {
+    this.setState({ checkingUpdate: true, updateStatus: "Checking for updates..." });
+    try {
+      if (typeof Updates.checkForUpdateAsync === 'function') {
+        const update = await Updates.checkForUpdateAsync();
+        if (update && update.isAvailable) {
+          if (typeof Updates.fetchUpdateAsync === 'function') {
+            await Updates.fetchUpdateAsync();
+          }
+          if (typeof Updates.reloadAsync === 'function') {
+            await Updates.reloadAsync();
+            return;
+          }
+        }
+      }
+      if (typeof Updates.reloadAsync === 'function') {
+        await Updates.reloadAsync();
+      } else if (typeof window !== 'undefined') {
+        window.location.reload();
+      } else {
+        this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "Reloaded!" });
+      }
+    } catch {
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      } else {
+        this.setState({ hasError: false, error: null, checkingUpdate: false });
+      }
+    }
+  };
 
   public render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#FFFFFF' }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: '#DC2626', marginBottom: 8 }}>App Notice</Text>
-          <Text style={{ fontSize: 13, color: '#4B5563', textAlign: 'center', marginBottom: 16 }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#FFFFFF', gap: 12 }}>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: '#DC2626', marginBottom: 4 }}>App Notice</Text>
+          <Text style={{ fontSize: 13, color: '#4B5563', textAlign: 'center', marginBottom: 8 }}>
             {this.state.error?.message || "An unexpected error occurred."}
           </Text>
-          <TouchableOpacity
-            onPress={() => this.setState({ hasError: false, error: null })}
-            style={{ backgroundColor: '#16A34A', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 14 }}>Restart View 🌱</Text>
-          </TouchableOpacity>
+
+          {this.state.updateStatus ? (
+            <Text style={{ fontSize: 12, fontWeight: '700', color: '#16A34A', textAlign: 'center' }}>
+              {this.state.updateStatus}
+            </Text>
+          ) : null}
+
+          <View style={{ flexDirection: 'column', gap: 10, width: '100%', maxWidth: 280 }}>
+            {Platform.OS !== 'web' ? (
+              <TouchableOpacity
+                onPress={this.handleForceUpdate}
+                disabled={this.state.checkingUpdate}
+                style={{ backgroundColor: '#16A34A', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
+                  {this.state.checkingUpdate ? "Updating..." : "Check & Apply Update ✨"}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  if (typeof window !== 'undefined') window.location.reload();
+                }}
+                style={{ backgroundColor: '#16A34A', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
+                  Reload Page 🔄
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              onPress={() => this.setState({ hasError: false, error: null })}
+              style={{ backgroundColor: '#F3F4F6', paddingVertical: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#E5E7EB' }}
+            >
+              <Text style={{ color: '#374151', fontWeight: '700', fontSize: 13 }}>Restart View 🌱</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       );
     }

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
 import React, { useState, useEffect } from "react";
 import { Ionicons } from '@expo/vector-icons';
 import * as Updates from 'expo-updates';
@@ -8,6 +8,7 @@ export default function OtaUpdateModal() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     let isMounted = true;
 
     const timer = setTimeout(async () => {
