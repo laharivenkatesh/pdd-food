@@ -65,6 +65,18 @@ export default defineConfig(({ mode }) => ({
     },
   },
   resolve: {
+    extensions: [
+      ".web.tsx",
+      ".web.ts",
+      ".web.jsx",
+      ".web.js",
+      ".tsx",
+      ".ts",
+      ".jsx",
+      ".js",
+      ".json",
+      ".mjs",
+    ],
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "react-native/Libraries/Utilities/codegenNativeComponent": path.resolve(__dirname, "./src/stubs/codegenNativeComponent.js"),
