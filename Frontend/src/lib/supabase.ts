@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { Platform } from "react-native";
 
 // These are read from .env (Vite). After connecting Supabase, add to a .env file:
 // VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
@@ -80,7 +81,7 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: typeof window !== 'undefined' && Boolean(window.location?.search),
+      detectSessionInUrl: Platform.OS === 'web' && typeof window !== 'undefined' && Boolean(window.location?.search),
       storage: CustomStorage,
     },
   },

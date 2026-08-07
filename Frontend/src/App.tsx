@@ -120,7 +120,7 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
       if (!reloaded) {
         if (typeof Updates.reloadAsync === 'function') {
           await Updates.reloadAsync();
-        } else if (typeof window !== 'undefined') {
+        } else if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.reload) {
           window.location.reload();
         } else {
           this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "" });
@@ -129,7 +129,7 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
     } catch {
       if (typeof Updates.reloadAsync === 'function') {
         try { await Updates.reloadAsync(); } catch {}
-      } else if (typeof window !== 'undefined') {
+      } else if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.reload) {
         window.location.reload();
       } else {
         this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "App reloaded!" });
@@ -148,7 +148,9 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
           <TouchableOpacity
             onPress={() => {
               this.setState({ hasError: false, error: null });
-              if (typeof window !== 'undefined' && window.location) window.location.reload();
+              if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.reload) {
+                window.location.reload();
+              }
             }}
             style={{ backgroundColor: '#16A34A', paddingVertical: 14, paddingHorizontal: 28, borderRadius: 16, alignItems: 'center' }}
           >

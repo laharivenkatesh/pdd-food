@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { Platform } from "react-native";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
@@ -213,7 +214,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
               action: {
                 label: "View",
                 onClick: () => {
-                  if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+                  if (Platform.OS === 'web' && typeof window !== "undefined" && window.location && typeof window.dispatchEvent === "function") {
                     try {
                       window.location.hash = `#/food/${newNotif.food_id}`;
                       const evt = typeof CustomEvent === 'function'
