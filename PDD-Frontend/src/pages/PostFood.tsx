@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Switch, Platform } from 'react-native';
 import { useState, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Chip from "@/components/Chip";
 import { Category, Purpose } from "@/types/food";
 import { useMyPosts } from "@/hooks/useMyPosts";
+import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -20,7 +21,8 @@ const purposes: { key: Purpose; label: string }[] = [
 
 export default function PostFood() {
   const navigation = useNavigation<any>();
-  const { addPost, user } = useMyPosts();
+  const { addPost } = useMyPosts();
+  const { user } = useAuth();
 
   const scrollViewRef = useRef<ScrollView>(null);
   const nameInputRef = useRef<TextInput>(null);
