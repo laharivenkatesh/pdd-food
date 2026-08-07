@@ -221,7 +221,7 @@ export default function Auth() {
               </View>
               <Text style={styles.resetSuccessTitle}>Password Reset Link Sent! ✉️</Text>
               <Text style={styles.resetSuccessMessage}>
-                We've sent a password reset link to <Text style={{ fontWeight: '800', color: '#111827' }}>{email}</Text>. Please check your inbox and click the link to reset your password.
+                We've sent a password reset link to <Text style={{ fontWeight: '800', color: '#111827' }}>{email}</Text>. Please check your inbox and spam folder, then tap the link to reset your password.
               </Text>
 
               <TouchableOpacity
