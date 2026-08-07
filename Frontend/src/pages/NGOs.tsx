@@ -106,7 +106,7 @@ export default function NGOs() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F7F5EC',
   },
   scrollContent: {
     padding: 16,

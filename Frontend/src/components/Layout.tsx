@@ -190,8 +190,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate("Activity" as never)} style={styles.navItem}>
-            <Ionicons name="person-outline" size={22} color={currentRouteName === "Activity" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>Profile</Text>
+            <Ionicons name="list-outline" size={22} color={currentRouteName === "Activity" ? "#16A34A" : "#6B7280"} />
+            <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>Activity</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate("NGOs" as never)} style={styles.navItem}>
+            <Ionicons name="heart-outline" size={22} color={currentRouteName === "NGOs" ? "#16A34A" : "#6B7280"} />
+            <Text style={[styles.navLabel, currentRouteName === "NGOs" && styles.navLabelActive]}>NGOs</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -202,7 +207,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F7F5EC',
   },
   header: {
     height: 60,

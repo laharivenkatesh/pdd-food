@@ -246,7 +246,7 @@ export default function Expired() {
 const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F7F5EC',
   },
   scrollContent: {
     padding: 16,
