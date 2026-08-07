@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd Frontend && npm run build",
-  "outputDirectory": "Frontend/dist",
+  "buildCommand": "if [ -d \"Frontend\" ]; then cd Frontend && npm run build; else npm run build; fi",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",
