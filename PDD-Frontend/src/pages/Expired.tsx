@@ -158,7 +158,7 @@ export default function Expired() {
 
     arr = arr.filter((f) => {
       const { primaryExpiry, secondaryExpiry } = getFoodTimes(f);
-      return now >= primaryExpiry && now < secondaryExpiry;
+      return (now >= primaryExpiry || f.status === "expired") && now < secondaryExpiry;
     });
 
     if (activeCats.length) {
