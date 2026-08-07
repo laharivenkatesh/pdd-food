@@ -115,24 +115,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {user && (
             <View style={styles.headerRight}>
-              <TouchableOpacity
-                onPress={() => {
-                  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-                    try {
-                      const evt = typeof CustomEvent === 'function'
-                        ? new CustomEvent('trigger_app_update')
-                        : { type: 'trigger_app_update' };
-                      window.dispatchEvent(evt as any);
-                    } catch (e) {
-                      console.warn("Update event notice:", e);
+              {Platform.OS !== 'web' && (
+                <TouchableOpacity
+                  onPress={() => {
+                    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+                      try {
+                        const evt = typeof CustomEvent === 'function'
+                          ? new CustomEvent('trigger_app_update')
+                          : { type: 'trigger_app_update' };
+                        window.dispatchEvent(evt as any);
+                      } catch (e) {
+                        console.warn("Update event notice:", e);
+                      }
                     }
-                  }
-                }}
-                style={styles.updateBadgeBtn}
-              >
-                <Ionicons name="sparkles" size={16} color="#16A34A" />
-                <Text style={styles.updateBadgeText}>Updates</Text>
-              </TouchableOpacity>
+                  }}
+                  style={styles.updateBadgeBtn}
+                >
+                  <Ionicons name="sparkles" size={16} color="#16A34A" />
+                  <Text style={styles.updateBadgeText}>Updates</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
                 <Ionicons name="notifications-outline" size={22} color="#1F2937" />
                 {unreadCount > 0 && (
