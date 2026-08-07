@@ -6,9 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function Auth() {
   const navigation = useNavigation<any>();
-  const { login, sendOtp, verifyOtp } = useAuth();
+  const { login, sendOtp, verifyOtp, resetPassword } = useAuth();
 
-  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp">("login");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -21,6 +21,28 @@ export default function Auth() {
 
   const handleSubmit = async () => {
     setErrorMessage(null);
+    if (authMode === "forgot_password") {
+      if (!email.trim()) {
+        const msg = "Please enter your email address to receive password reset instructions.";
+        setErrorMessage(msg);
+        Alert.alert("Email Required", msg);
+        return;
+      }
+      setBusy(true);
+      const res = await resetPassword(email.trim());
+      setBusy(false);
+      if (!res.ok) {
+        const err = "error" in res ? String(res.error) : "Failed to send reset email.";
+        setErrorMessage(err);
+        Alert.alert("Reset Failed", err);
+        return;
+      }
+      setErrorMessage(null);
+      Alert.alert("Password Reset Sent", `Instructions to reset your password have been sent to ${email}. Check your inbox!`);
+      setAuthMode("login");
+      return;
+    }
+
     if (authMode === "verify_otp") {
       if (!otp.trim() || otp.trim().length < 6) {
         const msg = "Please enter the 6-digit OTP code sent to your email.";
@@ -93,7 +115,9 @@ export default function Auth() {
           </View>
           <Text style={styles.title}>Zerra Food Hub</Text>
           <Text style={styles.subtitle}>
-            {authMode === "verify_otp"
+            {authMode === "forgot_password"
+              ? "Enter your email to receive reset instructions"
+              : authMode === "verify_otp"
               ? `Enter the 6-digit OTP sent to ${email}`
               : authMode === "login"
               ? "Welcome back! Sign in to continue."
@@ -101,7 +125,7 @@ export default function Auth() {
           </Text>
         </View>
 
-        {authMode !== "verify_otp" && (
+        {authMode !== "verify_otp" && authMode !== "forgot_password" && (
           <View style={styles.tabContainer}>
             <TouchableOpacity
               onPress={() => setAuthMode("login")}
@@ -126,7 +150,32 @@ export default function Auth() {
             </View>
           )}
 
-          {authMode === "verify_otp" ? (
+          {authMode === "forgot_password" ? (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your registered email address"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
+              <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
+                <Text style={styles.submitBtnText}>
+                  {busy ? "Sending Link..." : "Send Password Reset Email"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setErrorMessage(null);
+                  setAuthMode("login");
+                }}
+                style={styles.backToLoginBtn}
+              >
+                <Text style={styles.backToLoginText}>← Back to Log In</Text>
+              </TouchableOpacity>
+            </>
+          ) : authMode === "verify_otp" ? (
             <>
               {/* Single Unified 6-Digit OTP Input Field */}
               <View style={styles.otpContainer}>
@@ -139,13 +188,13 @@ export default function Auth() {
                       <View
                         key={index}
                         style={[
-                          styles.otpBox,
-                          isLast ? styles.otpBoxLast : null,
-                          char ? styles.otpBoxFilled : null,
-                          isFocused ? styles.otpBoxFocused : null,
+                          styles.otpSegmentBox,
+                          isFocused && styles.otpSegmentBoxFocused,
+                          Boolean(char) && styles.otpSegmentBoxFilled,
+                          isLast && styles.otpSegmentBoxLast
                         ]}
                       >
-                        <Text style={styles.otpChar}>{char}</Text>
+                        <Text style={styles.otpSegmentChar}>{char}</Text>
                       </View>
                     );
                   })}
@@ -154,21 +203,22 @@ export default function Auth() {
                 {/* Hidden input overlaying the boxes for seamless typing */}
                 <TextInput
                   style={styles.hiddenOtpInput}
+                  value={otp}
+                  onChangeText={(val) => {
+                    const digits = val.replace(/[^0-9]/g, "").slice(0, 6);
+                    setOtp(digits);
+                  }}
                   keyboardType="number-pad"
                   maxLength={6}
-                  value={otp}
-                  onChangeText={setOtp}
-                  autoFocus
+                  autoFocus={true}
+                  caretHidden={true}
                 />
               </View>
 
               <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>
-                  {busy ? "Verifying Code..." : "Verify Code & Sign In 🚀"}
+                  {busy ? "Verifying..." : "Verify Code & Log In"}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setAuthMode("login")} style={styles.secondaryBtn}>
-                <Text style={styles.secondaryBtnText}>Back to Log In</Text>
               </TouchableOpacity>
             </>
           ) : (
@@ -220,6 +270,18 @@ export default function Auth() {
                   />
                 </TouchableOpacity>
               </View>
+
+              {authMode === "login" && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setErrorMessage(null);
+                    setAuthMode("forgot_password");
+                  }}
+                  style={styles.forgotBtn}
+                >
+                  <Text style={styles.forgotBtnText}>Forgot Password?</Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>
@@ -396,5 +458,48 @@ const styles = StyleSheet.create({
     color: '#991B1B',
     fontSize: 13,
     fontWeight: '600',
+  },
+  forgotBtn: {
+    alignSelf: 'flex-end',
+    paddingVertical: 4,
+    marginTop: -4,
+    marginBottom: 4,
+  },
+  forgotBtnText: {
+    color: '#16A34A',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  backToLoginBtn: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  backToLoginText: {
+    color: '#4B5563',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  otpSegmentBox: {
+    width: 44,
+    height: 52,
+    borderRightWidth: 1,
+    borderRightColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  otpSegmentBoxLast: {
+    borderRightWidth: 0,
+  },
+  otpSegmentBoxFilled: {
+    backgroundColor: '#F0FDF4',
+  },
+  otpSegmentBoxFocused: {
+    backgroundColor: '#DCFCE7',
+  },
+  otpSegmentChar: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#111827',
   },
 });
