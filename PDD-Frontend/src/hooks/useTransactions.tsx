@@ -293,6 +293,23 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
           })
           .eq("id", foodId);
       }
+
+      // 4. Create notification row for donor
+      try {
+        const collectorName = profile?.name || user.email?.split("@")[0] || "A community member";
+        const { data: foodObj } = await supabase.from("foods").select("name").eq("id", foodId).single();
+        const foodName = foodObj?.name || "food post";
+        await supabase.from("notifications").insert({
+          user_id: donorId,
+          food_id: foodId,
+          title: "Food Claimed! 🍱",
+          message: `${collectorName} booked ${portions} portion(s) of your ${foodName}!`,
+          is_read: false,
+        });
+      } catch (e) {
+        console.warn("Notification insert notice:", e);
+      }
+
       await fetchTransactions();
     }
   };

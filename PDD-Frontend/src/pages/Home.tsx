@@ -127,8 +127,7 @@ export default function Home() {
     const now = Date.now();
     arr = arr.filter((f) => {
       const { primaryExpiry } = getFoodTimes(f);
-      const remainingPortions = f.feeds - (f.bookedPortions || 0);
-      return now < primaryExpiry && f.status !== "collected" && remainingPortions > 0;
+      return now < primaryExpiry && f.status !== "collected" && f.status !== "deleted";
     });
 
     if (userLoc) {

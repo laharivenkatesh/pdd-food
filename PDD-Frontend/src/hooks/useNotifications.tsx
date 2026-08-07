@@ -210,27 +210,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             // Trigger Android status bar push notification!
             sendNativeStatusBarNotification("🍱 " + newNotif.title, newNotif.message);
 
-            // Show interactive toast popup
-            toast("🍱 " + newNotif.title, {
-              description: newNotif.message,
-              duration: 6000,
-              action: {
-                label: "View",
-                onClick: () => {
-                  if (Platform.OS === 'web' && typeof window !== "undefined" && window.location && typeof window.dispatchEvent === "function") {
-                    try {
-                      window.location.hash = `#/food/${newNotif.food_id}`;
-                      const evt = typeof CustomEvent === 'function'
-                        ? new CustomEvent("view-food-notification", { detail: newNotif })
-                        : { type: "view-food-notification", detail: newNotif };
-                      window.dispatchEvent(evt as any);
-                    } catch (e) {
-                      console.warn("Event dispatch notice:", e);
-                    }
-                  }
-                },
-              },
-            });
+            // Display on-screen Alert popup dialog
+            if (Platform.OS === 'web') {
+              if (typeof window !== 'undefined' && window.alert) {
+                window.alert(`🍱 ${newNotif.title}\n${newNotif.message}`);
+              }
+            } else {
+              Alert.alert("🍱 " + newNotif.title, newNotif.message);
+            }
           } else if (payload.eventType === "DELETE") {
             const oldId = payload.old.id;
             setNotifications((prev) => prev.filter((n) => n.id !== oldId));
