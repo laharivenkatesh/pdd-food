@@ -112,6 +112,14 @@ async function fetchFoodsQuery(userId?: string) {
 let globalMyPostsCache: FoodItem[] = [];
 let globalMyPostsLoaded = false;
 
+const allFoodsListeners = new Set<() => void>();
+
+function notifyAllFoodsListeners() {
+  allFoodsListeners.forEach((listener) => {
+    try { listener(); } catch {}
+  });
+}
+
 export function useMyPosts() {
   const { user, profile, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState<FoodItem[]>(globalMyPostsCache);
@@ -245,6 +253,7 @@ export function useMyPosts() {
     globalMyPostsCache = globalMyPostsCache.filter((p) => p.id !== id);
     globalFoodsCache = globalFoodsCache.filter((p) => p.id !== id);
     setPosts((prev) => prev.filter((p) => p.id !== id));
+    notifyAllFoodsListeners();
   }, []);
 
   const getLastPostTime = useCallback(() => {
@@ -265,6 +274,16 @@ export function useAllFoods() {
   const { loading: authLoading } = useAuth();
   const [foods, setFoods] = useState<FoodItem[]>(globalFoodsCache);
   const [loading, setLoading] = useState(!globalFoodsLoaded);
+
+  useEffect(() => {
+    const listener = () => {
+      setFoods([...globalFoodsCache]);
+    };
+    allFoodsListeners.add(listener);
+    return () => {
+      allFoodsListeners.delete(listener);
+    };
+  }, []);
 
   const refresh = useCallback(async (isBackground = false) => {
     try {

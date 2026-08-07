@@ -135,62 +135,6 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
   };
 
   public render() {
-    if (this.state.hasError) {
-      return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#FFFFFF', gap: 12 }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: '#DC2626', marginBottom: 4 }}>App Notice</Text>
-          <Text style={{ fontSize: 13, color: '#4B5563', textAlign: 'center', marginBottom: 4 }}>
-            {this.state.error?.message || "An unexpected error occurred."}
-          </Text>
-
-          {this.state.error?.stack ? (
-            <ScrollView style={{ maxHeight: 100, width: '100%', maxWidth: 320, backgroundColor: '#F3F4F6', padding: 8, borderRadius: 8 }}>
-              <Text style={{ fontSize: 10, color: '#6B7280', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }}>
-                {this.state.error.stack}
-              </Text>
-            </ScrollView>
-          ) : null}
-
-          {this.state.updateStatus ? (
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#16A34A', textAlign: 'center' }}>
-              {this.state.updateStatus}
-            </Text>
-          ) : null}
-
-          <View style={{ flexDirection: 'column', gap: 10, width: '100%', maxWidth: 280 }}>
-            {Platform.OS !== 'web' ? (
-              <TouchableOpacity
-                onPress={this.handleForceUpdate}
-                disabled={this.state.checkingUpdate}
-                style={{ backgroundColor: '#16A34A', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
-              >
-                <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
-                  {this.state.checkingUpdate ? "Updating..." : "Check & Apply Update ✨"}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => {
-                  if (typeof window !== 'undefined') window.location.reload();
-                }}
-                style={{ backgroundColor: '#16A34A', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
-              >
-                <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>
-                  Reload Page 🔄
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              onPress={() => this.setState({ hasError: false, error: null })}
-              style={{ backgroundColor: '#F3F4F6', paddingVertical: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#E5E7EB' }}
-            >
-              <Text style={{ color: '#374151', fontWeight: '700', fontSize: 13 }}>Restart View 🌱</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      );
-    }
     return this.props.children;
   }
 }
