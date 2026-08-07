@@ -389,6 +389,22 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
     if (!error) {
       await syncFoodStatusOnCompletion(tx.food_id);
+      
+      // Create real-time handover notification for collector
+      try {
+        const { data: foodObj } = await supabase.from("foods").select("name").eq("id", tx.food_id).single();
+        const foodName = foodObj?.name || "food post";
+        await supabase.from("notifications").insert({
+          user_id: tx.collector_id,
+          food_id: tx.food_id,
+          title: "Food Handed Over! 🎉",
+          message: `Your booked food (${foodName}) has been successfully handed over to you by the donor!`,
+          is_read: false,
+        });
+      } catch (notifErr) {
+        console.warn("Collector handover notification notice:", notifErr);
+      }
+
       // Delete notification for donor immediately
       try {
         await supabase
