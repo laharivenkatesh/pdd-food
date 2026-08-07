@@ -1,13 +1,8 @@
-import { AppRegistry } from 'react-native';
+import { createRoot } from 'react-dom/client';
 import App from './App';
 
-AppRegistry.registerComponent('App', () => App);
-if (typeof document !== 'undefined') {
-  const rootTag = document.getElementById('root');
-  if (rootTag) {
-    AppRegistry.runApplication('App', {
-      initialProps: {},
-      rootTag,
-    });
-  }
+const container = document.getElementById('root');
+if (container) {
+  const root = createRoot(container);
+  root.render(<App />);
 }
