@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
 import { useState, useEffect, useRef } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useAllFoods, useMyPosts } from "@/hooks/useMyPosts";
@@ -91,23 +91,32 @@ export default function FoodDetail() {
     }
   };
 
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Listing",
-      "Are you sure you want to delete this listing?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await removePost(food.id);
-            Alert.alert("Success", "Listing deleted successfully!");
-            navigation.navigate("Home" as never);
+  const handleDelete = async () => {
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && window.confirm ? window.confirm("Are you sure you want to delete this listing?") : true;
+      if (confirmed) {
+        await removePost(food.id);
+        if (typeof window !== 'undefined' && window.alert) window.alert("Listing deleted successfully!");
+        navigation.navigate("Home" as never);
+      }
+    } else {
+      Alert.alert(
+        "Delete Listing",
+        "Are you sure you want to delete this listing?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              await removePost(food.id);
+              Alert.alert("Success", "Listing deleted successfully!");
+              navigation.navigate("Home" as never);
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (

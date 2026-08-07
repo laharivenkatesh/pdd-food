@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/hooks/useAuth";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -23,22 +23,30 @@ export default function Activity() {
     );
   }
 
-  const handleDelete = (id: string, name: string) => {
-    Alert.alert(
-      "Delete Listing",
-      `Are you sure you want to delete "${name}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await removePost(id);
-            Alert.alert("Success", "Listing deleted successfully!");
+  const handleDelete = async (id: string, name: string) => {
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && window.confirm ? window.confirm(`Are you sure you want to delete "${name}"?`) : true;
+      if (confirmed) {
+        await removePost(id);
+        if (typeof window !== 'undefined' && window.alert) window.alert("Listing deleted successfully!");
+      }
+    } else {
+      Alert.alert(
+        "Delete Listing",
+        `Are you sure you want to delete "${name}"?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              await removePost(id);
+              Alert.alert("Success", "Listing deleted successfully!");
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (

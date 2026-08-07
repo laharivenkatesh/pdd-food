@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
 import { FoodItem } from "@/types/food";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
@@ -35,22 +35,30 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
     statusBg = isFullyBooked ? "#EF4444" : "#F59E0B";
   }
 
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Listing",
-      `Are you sure you want to delete "${food.name}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await removePost(food.id);
-            Alert.alert("Success", "Listing deleted successfully!");
+  const handleDelete = async () => {
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined' && window.confirm ? window.confirm(`Are you sure you want to delete "${food.name}"?`) : true;
+      if (confirmed) {
+        await removePost(food.id);
+        if (typeof window !== 'undefined' && window.alert) window.alert("Listing deleted successfully!");
+      }
+    } else {
+      Alert.alert(
+        "Delete Listing",
+        `Are you sure you want to delete "${food.name}"?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              await removePost(food.id);
+              Alert.alert("Success", "Listing deleted successfully!");
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (

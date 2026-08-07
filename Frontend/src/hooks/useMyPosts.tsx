@@ -230,7 +230,18 @@ export function useMyPosts() {
   );
 
   const removePost = useCallback(async (id: string) => {
-    await supabase.from("foods").delete().eq("id", id);
+    try {
+      // Clear linked child records first to satisfy Foreign Key constraints
+      await supabase.from("transactions").delete().eq("food_id", id);
+      await supabase.from("notifications").delete().eq("food_id", id);
+      const { error } = await supabase.from("foods").delete().eq("id", id);
+      if (error) {
+        console.error("Supabase delete post error:", error);
+      }
+    } catch (err) {
+      console.warn("Exception deleting post:", err);
+    }
+
     globalMyPostsCache = globalMyPostsCache.filter((p) => p.id !== id);
     globalFoodsCache = globalFoodsCache.filter((p) => p.id !== id);
     setPosts((prev) => prev.filter((p) => p.id !== id));
