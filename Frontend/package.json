@@ -58,6 +58,7 @@
     "expo": "~52.0.37",
     "expo-dev-client": "~5.0.12",
     "expo-image-picker": "~16.0.6",
+    "expo-location": "~18.0.10",
     "expo-notifications": "~0.29.14",
     "expo-updates": "~0.26.15",
     "firebase": "^12.13.0",

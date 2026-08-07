@@ -99,6 +99,19 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        if (existingStatus !== 'granted') {
+          await Notifications.requestPermissionsAsync();
+        }
+      } catch (err) {
+        console.warn("Notification permission prompt notice:", err);
+      }
+    })();
+  }, []);
   const [soundEnabled, setSoundEnabledState] = useState<boolean>(() => {
     try {
       if (typeof localStorage === "undefined") return true;

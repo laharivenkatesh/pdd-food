@@ -2,11 +2,15 @@
 -- RUN THIS IN YOUR SUPABASE SQL EDITOR TO FIX THE ERRORS
 -- ============================================================
 
--- 1) FIX THE FOREIGN KEY ERROR (HTTP 400)
--- This drops the old constraint pointing to auth.users and points it to public.profiles
-alter table public.foods drop constraint if exists foods_user_id_fkey;
-alter table public.foods drop constraint if exists foods_user_id_profiles_fkey;
-alter table public.foods add constraint foods_user_id_profiles_fkey foreign key (user_id) references public.profiles(id) on delete cascade;
+-- 1) FIX THE RLS INSERT POLICY ON FOODS TABLE
+alter table public.foods enable row level security;
+drop policy if exists "Foods: insert by authenticated users" on public.foods;
+drop policy if exists "Foods: insert permissive" on public.foods;
+drop policy if exists "Foods: allow all insert" on public.foods;
+
+create policy "Foods: allow all insert"
+  on public.foods for insert
+  with check (true);
 
 -- 2) CREATE THE MISSING TRANSACTIONS TABLE (HTTP 404)
 -- We check if the enum exists first to prevent errors

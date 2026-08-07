@@ -17,11 +17,30 @@ import NGOs from "./pages/NGOs";
 import NotFound from "./pages/NotFound";
 import Expired from "./pages/Expired";
 import OtaUpdateModal from "./components/OtaUpdateModal";
+import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
 
 const Stack = createNativeStackNavigator();
 const queryClient = new QueryClient();
 
 const App = () => {
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const { status: notifStatus } = await Notifications.getPermissionsAsync();
+        if (notifStatus !== 'granted') {
+          await Notifications.requestPermissionsAsync();
+        }
+        const { status: locStatus } = await Location.getForegroundPermissionsAsync();
+        if (locStatus !== 'granted') {
+          await Location.requestForegroundPermissionsAsync();
+        }
+      } catch (err) {
+        console.warn("Startup permissions prompt notice:", err);
+      }
+    })();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <OtaUpdateModal />

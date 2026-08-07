@@ -6,6 +6,7 @@ import { Category, Purpose } from "@/types/food";
 import { useMyPosts } from "@/hooks/useMyPosts";
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 const purposes: { key: Purpose; label: string }[] = [
@@ -77,57 +78,60 @@ export default function PostFood() {
     }
   };
 
-  const detectLocation = () => {
+  const detectLocation = async () => {
     setDetectingLoc(true);
     try {
-      if (typeof navigator !== "undefined" && navigator?.geolocation?.getCurrentPosition) {
-        navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            const currentLat = pos.coords.latitude;
-            const currentLng = pos.coords.longitude;
-            setLat(currentLat);
-            setLng(currentLng);
-
-            try {
-              // Try BigDataCloud reverse geocode first
-              const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${currentLat}&longitude=${currentLng}&localityLanguage=en`);
-              const data = await res.json();
-              if (data && (data.locality || data.city || data.principalSubdivision)) {
-                const fullAddr = [data.locality || data.city, data.principalSubdivision, data.countryName].filter(Boolean).join(", ");
-                setAddress(fullAddr);
-                Alert.alert("Address Located! 📍", fullAddr);
-              } else {
-                // Fallback to Nominatim
-                const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLng}`, {
-                  headers: { 'User-Agent': 'ZerraFoodHub/1.0' }
-                });
-                const nomData = await nomRes.json();
-                if (nomData && nomData.display_name) {
-                  setAddress(nomData.display_name);
-                  Alert.alert("Address Located! 📍", nomData.display_name);
-                } else {
-                  setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-                  Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-                }
-              }
-            } catch {
-              setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-              Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-            } finally {
-              setDetectingLoc(false);
-            }
-          },
-          (err) => {
-            console.warn("Location fetch error:", err);
-            setDetectingLoc(false);
-            Alert.alert("Location Error", "Could not fetch GPS coordinates. Please ensure phone location is enabled.");
-          },
-          { enableHighAccuracy: true, timeout: 15000 }
-        );
-      } else {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission Denied", "Location permission is required to detect your current position.");
         setDetectingLoc(false);
+        return;
       }
-    } catch {
+
+      const pos = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const currentLat = pos.coords.latitude;
+      const currentLng = pos.coords.longitude;
+      setLat(currentLat);
+      setLng(currentLng);
+
+      try {
+        const places = await Location.reverseGeocodeAsync({
+          latitude: currentLat,
+          longitude: currentLng,
+        });
+
+        if (places && places.length > 0) {
+          const p = places[0];
+          const parts = [
+            p.name || p.streetNumber,
+            p.street || p.district,
+            p.city || p.subregion,
+            p.region || p.postalCode
+          ].filter(Boolean);
+
+          const formattedAddr = parts.join(", ");
+          if (formattedAddr) {
+            setAddress(formattedAddr);
+            Alert.alert("Address Located! 📍", formattedAddr);
+          } else {
+            setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+            Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+          }
+        } else {
+          setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+          Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+        }
+      } catch {
+        setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+        Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
+      }
+    } catch (err: any) {
+      console.warn("Native location error:", err);
+      Alert.alert("Location Error", "Could not fetch GPS coordinates. Please check your phone's GPS settings.");
+    } finally {
       setDetectingLoc(false);
     }
   };

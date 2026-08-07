@@ -49,7 +49,13 @@
     "runtimeVersion": "1.0.0",
     "plugins": [
       "expo-updates",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Zerra Food Hub to use your location to detect nearby NGOs and populate pickup address."
+        }
+      ]
     ],
     "extra": {
       "eas": {
