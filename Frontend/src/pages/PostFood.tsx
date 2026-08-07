@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import LocationPickerModal from '@/components/LocationPickerModal';
 import { getReverseGeocodeAddress } from "@/lib/location";
+import { uploadFoodImage } from "@/lib/storage";
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 const purposes: { key: Purpose; label: string }[] = [
@@ -136,10 +137,14 @@ export default function PostFood() {
     setBusy(true);
 
     const defaultFallbackImage = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
+    let finalImageUrl = defaultFallbackImage;
+    if (imageUri) {
+      finalImageUrl = await uploadFoodImage(imageUri);
+    }
 
     const res = await addPost({
       name: name.trim(),
-      image: imageUri || defaultFallbackImage,
+      image: finalImageUrl,
       feeds: Number(feeds) || 1,
       price: paid ? Number(price) || 0 : 0,
       expiry_hours: Number(expiryHours) || 4,

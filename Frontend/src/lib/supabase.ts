@@ -35,7 +35,9 @@ const CustomStorage = {
       if (typeof localStorage !== "undefined") {
         return localStorage.getItem(key);
       }
-    } catch {}
+    } catch (e) {
+      console.warn("Storage getItem notice:", e);
+    }
     return null;
   },
   setItem: (key: string, value: string): void => {
@@ -43,14 +45,18 @@ const CustomStorage = {
       if (typeof localStorage !== "undefined") {
         localStorage.setItem(key, value);
       }
-    } catch {}
+    } catch (e) {
+      console.warn("Storage setItem notice:", e);
+    }
   },
   removeItem: (key: string): void => {
     try {
       if (typeof localStorage !== "undefined") {
         localStorage.removeItem(key);
       }
-    } catch {}
+    } catch (e) {
+      console.warn("Storage removeItem notice:", e);
+    }
   },
 };
 
@@ -61,6 +67,7 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: typeof window !== 'undefined' && Boolean(window.location?.search),
       storage: CustomStorage,
     },
   },

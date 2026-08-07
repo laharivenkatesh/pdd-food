@@ -7,6 +7,7 @@ function resolveImageUrl(image: string | null | undefined): string {
   const fallback = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
   if (!image) return fallback;
   if (image.startsWith("http") || image.startsWith("data:")) return image;
+  if (image.startsWith("file:") || image.startsWith("ph:") || image.startsWith("blob:")) return fallback;
   const { data } = supabase.storage.from("food-images").getPublicUrl(image);
   return data?.publicUrl || fallback;
 }
@@ -112,7 +113,7 @@ let globalMyPostsCache: FoodItem[] = [];
 let globalMyPostsLoaded = false;
 
 export function useMyPosts() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState<FoodItem[]>(globalMyPostsCache);
   const [loading, setLoading] = useState(!globalMyPostsLoaded);
 
@@ -181,7 +182,7 @@ export function useMyPosts() {
       try {
         await supabase.from("profiles").upsert({
           id: user.id,
-          name: user.name || user.email?.split("@")[0] || "Community Member",
+          name: profile?.name || user.name || user.email?.split("@")[0] || "Community Member",
           email: user.email || null,
           phone: user.phone || null
         }, { onConflict: "id" });

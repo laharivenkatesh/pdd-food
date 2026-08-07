@@ -8,22 +8,21 @@ export default function OtaUpdateModal() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    async function checkOtaUpdate() {
+    let isMounted = true;
+
+    const timer = setTimeout(async () => {
       try {
         if (!__DEV__ && Updates.checkForUpdateAsync) {
           const update = await Updates.checkForUpdateAsync();
-          if (update.isAvailable) {
+          if (update.isAvailable && isMounted) {
             await Updates.fetchUpdateAsync();
             setShowModal(true);
-            return;
           }
         }
       } catch (e) {
         console.warn("OTA update check notice:", e);
       }
-    }
-
-    checkOtaUpdate();
+    }, 3000);
 
     const handleCustomUpdateTrigger = () => {
       setShowModal(true);
@@ -34,6 +33,8 @@ export default function OtaUpdateModal() {
     }
 
     return () => {
+      isMounted = false;
+      clearTimeout(timer);
       if (typeof window !== 'undefined') {
         window.removeEventListener('trigger_app_update', handleCustomUpdateTrigger);
       }

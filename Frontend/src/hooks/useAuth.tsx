@@ -17,6 +17,7 @@ export interface JWTUser {
   id: string;
   phone?: string;
   email: string;
+  name?: string;
 }
 
 interface AuthContextValue {
