@@ -23,11 +23,22 @@
   <body>
     <div id="root"></div>
     <script>
-      if (typeof global === 'undefined') {
-        window.global = window;
-      }
-      if (typeof __DEV__ === 'undefined') {
-        window.__DEV__ = false;
+      if (typeof window !== 'undefined') {
+        if (typeof global === 'undefined') { window.global = window; }
+        if (typeof __DEV__ === 'undefined') { window.__DEV__ = false; }
+        if (typeof window.CustomEvent !== 'function') {
+          window.CustomEvent = function CustomEvent(event, params) {
+            params = params || { bubbles: false, cancelable: false, detail: null };
+            var evt = document.createEvent ? document.createEvent('CustomEvent') : {};
+            if (evt.initCustomEvent) {
+              evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+            } else {
+              evt.type = event;
+              evt.detail = params.detail;
+            }
+            return evt;
+          };
+        }
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>

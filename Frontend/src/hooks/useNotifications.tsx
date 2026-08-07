@@ -213,9 +213,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
               action: {
                 label: "View",
                 onClick: () => {
-                  if (typeof window !== "undefined") {
-                    window.location.hash = `#/food/${newNotif.food_id}`;
-                    window.dispatchEvent(new CustomEvent("view-food-notification", { detail: newNotif }));
+                  if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+                    try {
+                      window.location.hash = `#/food/${newNotif.food_id}`;
+                      const evt = typeof CustomEvent === 'function'
+                        ? new CustomEvent("view-food-notification", { detail: newNotif })
+                        : { type: "view-food-notification", detail: newNotif };
+                      window.dispatchEvent(evt as any);
+                    } catch (e) {
+                      console.warn("Event dispatch notice:", e);
+                    }
                   }
                 },
               },

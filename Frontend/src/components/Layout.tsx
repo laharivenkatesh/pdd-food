@@ -117,8 +117,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <View style={styles.headerRight}>
               <TouchableOpacity
                 onPress={() => {
-                  if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('trigger_app_update'));
+                  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+                    try {
+                      const evt = typeof CustomEvent === 'function'
+                        ? new CustomEvent('trigger_app_update')
+                        : { type: 'trigger_app_update' };
+                      window.dispatchEvent(evt as any);
+                    } catch (e) {
+                      console.warn("Update event notice:", e);
+                    }
                   }
                 }}
                 style={styles.updateBadgeBtn}

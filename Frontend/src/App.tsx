@@ -1,5 +1,14 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Platform } from 'react-native';
 import React, { Component, ErrorInfo, ReactNode } from "react";
+
+if (typeof window !== 'undefined') {
+  if (typeof (window as any).CustomEvent !== 'function') {
+    (window as any).CustomEvent = function CustomEvent(event: string, params: any) {
+      params = params || { bubbles: false, cancelable: false, detail: null };
+      return { type: event, detail: params?.detail, bubbles: !!params?.bubbles, cancelable: !!params?.cancelable };
+    };
+  }
+}
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
