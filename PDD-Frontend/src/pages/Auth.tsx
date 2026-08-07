@@ -169,25 +169,25 @@ export default function Auth() {
           </TouchableOpacity>
         )}
 
-        <View style={styles.header}>
-          <View style={styles.logoBadge}>
-            <Ionicons name="leaf" size={24} color="#FFFFFF" />
+        {authMode !== "reset_link_sent" && (
+          <View style={styles.header}>
+            <View style={styles.logoBadge}>
+              <Ionicons name="leaf" size={24} color="#FFFFFF" />
+            </View>
+            <Text style={styles.title}>Zerra Food Hub</Text>
+            <Text style={styles.subtitle}>
+              {authMode === "reset_password"
+                ? "Create a new password for your account"
+                : authMode === "forgot_password"
+                ? "Enter your email to receive reset instructions"
+                : authMode === "verify_otp"
+                ? `Enter the 6-digit ${otpReason === "recovery" ? "password reset " : ""}OTP sent to ${email}`
+                : authMode === "login"
+                ? "Welcome back! Sign in to continue."
+                : "Create an account to start sharing food."}
+            </Text>
           </View>
-          <Text style={styles.title}>Zerra Food Hub</Text>
-          <Text style={styles.subtitle}>
-            {authMode === "reset_link_sent"
-              ? "Check your email for the password reset link"
-              : authMode === "reset_password"
-              ? "Create a new password for your account"
-              : authMode === "forgot_password"
-              ? "Enter your email to receive reset instructions"
-              : authMode === "verify_otp"
-              ? `Enter the 6-digit ${otpReason === "recovery" ? "password reset " : ""}OTP sent to ${email}`
-              : authMode === "login"
-              ? "Welcome back! Sign in to continue."
-              : "Create an account to start sharing food."}
-          </Text>
-        </View>
+        )}
 
         {authMode !== "verify_otp" && authMode !== "forgot_password" && authMode !== "reset_password" && authMode !== "reset_link_sent" && (
           <View style={styles.tabContainer}>
@@ -217,11 +217,11 @@ export default function Auth() {
           {authMode === "reset_link_sent" ? (
             <View style={styles.resetSuccessContainer}>
               <View style={styles.mailBadge}>
-                <Ionicons name="mail-open-outline" size={48} color="#16A34A" />
+                <Ionicons name="mail-open-outline" size={40} color="#16A34A" />
               </View>
               <Text style={styles.resetSuccessTitle}>Password Reset Link Sent! ✉️</Text>
               <Text style={styles.resetSuccessMessage}>
-                We've sent a password reset link to <Text style={{ fontWeight: '800', color: '#111827' }}>{email}</Text>. Please check your inbox and tap the link to reset your password.
+                We've sent a password reset link to <Text style={{ fontWeight: '800', color: '#111827' }}>{email}</Text>. Please check your inbox and click the link to reset your password.
               </Text>
 
               <TouchableOpacity
@@ -229,9 +229,9 @@ export default function Auth() {
                   setErrorMessage(null);
                   setAuthMode("login");
                 }}
-                style={styles.submitBtn}
+                style={styles.resetBackBtn}
               >
-                <Text style={styles.submitBtnText}>← Back to Log In</Text>
+                <Text style={styles.resetBackBtnText}>← Back to Log In</Text>
               </TouchableOpacity>
             </View>
           ) : authMode === "reset_password" ? (
@@ -436,6 +436,9 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 20,
     position: 'relative',
+    maxWidth: 480,
+    width: '100%',
+    alignSelf: 'center',
   },
   closeBtn: {
     position: 'absolute',
@@ -636,21 +639,24 @@ const styles = StyleSheet.create({
   },
   resetSuccessContainer: {
     alignItems: 'center',
-    paddingVertical: 12,
-    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    gap: 14,
+    width: '100%',
   },
   mailBadge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: '#F0FDF4',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: '#86EFAC',
+    marginBottom: 4,
   },
   resetSuccessTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
     color: '#111827',
     textAlign: 'center',
@@ -659,7 +665,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#4B5563',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: 8,
+  },
+  resetBackBtn: {
+    backgroundColor: '#16A34A',
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    width: '100%',
+    maxWidth: 280,
+  },
+  resetBackBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 15,
   },
 });
