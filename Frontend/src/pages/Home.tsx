@@ -160,9 +160,6 @@ export default function Home() {
           <Text style={styles.title}>Available Food</Text>
           <Text style={styles.subtitle}>Rescue meals near you, today.</Text>
         </View>
-        <TouchableOpacity onPress={() => refresh()} style={styles.refreshBtn}>
-          <Ionicons name="refresh" size={18} color="#374151" />
-        </TouchableOpacity>
       </View>
 
       {/* Stats Banner */}
