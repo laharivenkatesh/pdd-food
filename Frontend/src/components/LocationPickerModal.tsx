@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
 
 interface LocationPickerModalProps {
   visible: boolean;
@@ -40,16 +39,35 @@ export default function LocationPickerModal({
     }
   };
 
-  const handleMessage = (event: any) => {
+  const handleLocationData = (lat: number, lng: number) => {
+    updateAddress(lat, lng);
+  };
+
+  const handleNativeMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type === 'location_selected') {
-        updateAddress(data.lat, data.lng);
+        handleLocationData(data.lat, data.lng);
       }
     } catch (e) {
       console.warn("Location picker WebView message error:", e);
     }
   };
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const handleWebMessage = (event: MessageEvent) => {
+        try {
+          const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+          if (data && data.type === 'location_selected') {
+            handleLocationData(data.lat, data.lng);
+          }
+        } catch {}
+      };
+      window.addEventListener('message', handleWebMessage);
+      return () => window.removeEventListener('message', handleWebMessage);
+    }
+  }, []);
 
   const leafletHtml = `
     <!DOCTYPE html>
@@ -92,12 +110,12 @@ export default function LocationPickerModal({
         }).addTo(map);
 
         function notifyLocation(lat, lng) {
+          var payload = JSON.stringify({ type: 'location_selected', lat: lat, lng: lng });
           if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'location_selected',
-              lat: lat,
-              lng: lng
-            }));
+            window.ReactNativeWebView.postMessage(payload);
+          }
+          if (window.parent) {
+            window.parent.postMessage(payload, '*');
           }
         }
 
@@ -126,13 +144,21 @@ export default function LocationPickerModal({
           </TouchableOpacity>
         </View>
 
-        {/* Interactive Map WebView */}
-        <WebView
-          originWhitelist={['*']}
-          source={{ html: leafletHtml }}
-          onMessage={handleMessage}
-          style={{ flex: 1 }}
-        />
+        {/* Interactive Map: iframe on Web, WebView on Native APK */}
+        {Platform.OS === 'web' ? (
+          <iframe
+            srcDoc={leafletHtml}
+            style={{ width: '100%', height: '100%', border: 'none', flex: 1 }}
+            title="Interactive Location Picker Map"
+          />
+        ) : (
+          <WebView
+            originWhitelist={['*']}
+            source={{ html: leafletHtml }}
+            onMessage={handleNativeMessage}
+            style={{ flex: 1 }}
+          />
+        )}
 
         {/* Selected Address Display Card & Confirm Button */}
         <View style={styles.footer}>
