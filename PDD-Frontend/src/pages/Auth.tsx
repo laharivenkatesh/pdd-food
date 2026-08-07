@@ -8,7 +8,7 @@ export default function Auth() {
   const navigation = useNavigation<any>();
   const { login, sendOtp, verifyOtp, resetPassword, updateUserPassword } = useAuth();
 
-  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password" | "reset_password">("login");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password" | "reset_link_sent" | "reset_password">("login");
   const [otpReason, setOtpReason] = useState<"signup" | "recovery">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,9 +80,7 @@ export default function Auth() {
         return;
       }
       setErrorMessage(null);
-      setOtpReason("recovery");
-      setAuthMode("verify_otp");
-      Alert.alert("Code Sent ✉️", `A 6-digit password reset OTP code has been sent to ${email}. Enter it below to set your new password!`);
+      setAuthMode("reset_link_sent");
       return;
     }
 
@@ -177,7 +175,9 @@ export default function Auth() {
           </View>
           <Text style={styles.title}>Zerra Food Hub</Text>
           <Text style={styles.subtitle}>
-            {authMode === "reset_password"
+            {authMode === "reset_link_sent"
+              ? "Check your email for the password reset link"
+              : authMode === "reset_password"
               ? "Create a new password for your account"
               : authMode === "forgot_password"
               ? "Enter your email to receive reset instructions"
@@ -189,7 +189,7 @@ export default function Auth() {
           </Text>
         </View>
 
-        {authMode !== "verify_otp" && authMode !== "forgot_password" && authMode !== "reset_password" && (
+        {authMode !== "verify_otp" && authMode !== "forgot_password" && authMode !== "reset_password" && authMode !== "reset_link_sent" && (
           <View style={styles.tabContainer}>
             <TouchableOpacity
               onPress={() => setAuthMode("login")}
@@ -214,7 +214,27 @@ export default function Auth() {
             </View>
           )}
 
-          {authMode === "reset_password" ? (
+          {authMode === "reset_link_sent" ? (
+            <View style={styles.resetSuccessContainer}>
+              <View style={styles.mailBadge}>
+                <Ionicons name="mail-open-outline" size={48} color="#16A34A" />
+              </View>
+              <Text style={styles.resetSuccessTitle}>Password Reset Link Sent! ✉️</Text>
+              <Text style={styles.resetSuccessMessage}>
+                We've sent a password reset link to <Text style={{ fontWeight: '800', color: '#111827' }}>{email}</Text>. Please check your inbox and tap the link to reset your password.
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setErrorMessage(null);
+                  setAuthMode("login");
+                }}
+                style={styles.submitBtn}
+              >
+                <Text style={styles.submitBtnText}>← Back to Log In</Text>
+              </TouchableOpacity>
+            </View>
+          ) : authMode === "reset_password" ? (
             <>
               {/* New Password Input */}
               <View style={styles.passwordWrapper}>
@@ -613,5 +633,33 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     color: '#111827',
+  },
+  resetSuccessContainer: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    gap: 12,
+  },
+  mailBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F0FDF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#86EFAC',
+  },
+  resetSuccessTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+    textAlign: 'center',
+  },
+  resetSuccessMessage: {
+    fontSize: 14,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 8,
   },
 });
