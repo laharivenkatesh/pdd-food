@@ -3,10 +3,13 @@ import { FoodItem } from "@/types/food";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/lib/supabase";
 
+const deletedFoodIds = new Set<string>();
+
 function resolveImageUrl(image: string | null | undefined): string {
   const fallback = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
-  if (!image) return fallback;
-  if (image.startsWith("http") || image.startsWith("data:")) return image;
+  if (!image || typeof image !== 'string') return fallback;
+  if (image.includes("address at") || image.includes("flushPassiveEffects") || image.includes("TypeError") || image.includes("bundle-")) return fallback;
+  if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("data:")) return image;
   if (image.startsWith("file:") || image.startsWith("ph:") || image.startsWith("blob:")) return fallback;
   const { data } = supabase.storage.from("food-images").getPublicUrl(image);
   return data?.publicUrl || fallback;
@@ -237,8 +240,6 @@ export function useMyPosts() {
     [user]
   );
 
-const deletedFoodIds = new Set<string>();
-
   const removePost = useCallback(async (id: string) => {
     deletedFoodIds.add(id);
 
@@ -305,7 +306,7 @@ export function useAllFoods() {
         return;
       }
 
-      const mapped = (data || []).map(mapRow).filter((f) => f.status !== "deleted" && !deletedFoodIds.has(f.id));
+      const mapped = (data || []).map(mapRow).filter((f) => (f.status as string) !== "deleted" && !deletedFoodIds.has(f.id));
       globalFoodsCache = mapped;
       globalFoodsLoaded = true;
       setFoods(mapped);
