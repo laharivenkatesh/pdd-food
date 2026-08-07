@@ -7,6 +7,7 @@ import { useMyPosts } from "@/hooks/useMyPosts";
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import LocationPickerModal from '@/components/LocationPickerModal';
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 const purposes: { key: Purpose; label: string }[] = [
@@ -35,6 +36,7 @@ export default function PostFood() {
   const [lat, setLat] = useState<number>(13.0827);
   const [lng, setLng] = useState<number>(80.2707);
   const [detectingLoc, setDetectingLoc] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const pickImageFromGallery = async () => {
@@ -261,12 +263,31 @@ export default function PostFood() {
           onChangeText={setAddress}
         />
 
-        <TouchableOpacity onPress={detectLocation} style={styles.detectBtn}>
-          <Ionicons name="location" size={16} color="#16A34A" />
-          <Text style={styles.detectBtnText}>
-            {detectingLoc ? "Detecting GPS..." : `Detect My Location (${lat.toFixed(2)}, ${lng.toFixed(2)})`}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.locationBtnRow}>
+          <TouchableOpacity onPress={detectLocation} style={styles.detectBtn}>
+            <Ionicons name="navigate" size={15} color="#16A34A" />
+            <Text style={styles.detectBtnText}>
+              {detectingLoc ? "Detecting..." : "Auto-Detect GPS"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setShowMapPicker(true)} style={styles.mapPinBtn}>
+            <Ionicons name="map" size={15} color="#2563EB" />
+            <Text style={styles.mapPinBtnText}>Drag Pin on Map 📍</Text>
+          </TouchableOpacity>
+        </View>
+
+        <LocationPickerModal
+          visible={showMapPicker}
+          initialLat={lat}
+          initialLng={lng}
+          onClose={() => setShowMapPicker(false)}
+          onSelectLocation={(newLat, newLng, newAddress) => {
+            setLat(newLat);
+            setLng(newLng);
+            setAddress(newAddress);
+          }}
+        />
 
         {/* Category */}
         <View style={styles.fieldSection}>
@@ -398,23 +419,46 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 15,
   },
+  locationBtnRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
   detectBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     backgroundColor: '#F0FDF4',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#DCFCE7',
-    alignSelf: 'flex-start',
-    marginBottom: 12,
   },
   detectBtnText: {
     fontSize: 12,
     fontWeight: '700',
     color: '#16A34A',
+  },
+  mapPinBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  mapPinBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563EB',
   },
   imageBtnRow: {
     flexDirection: 'row',
