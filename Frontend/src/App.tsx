@@ -112,20 +112,22 @@ const App = () => {
         <AuthProvider>
           <NotificationProvider>
             <TransactionProvider>
-              <NavigationContainer>
-                <Layout>
-                  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Auth">
-                    <Stack.Screen name="Auth" component={Auth} />
-                    <Stack.Screen name="Home" component={Home} />
-                    <Stack.Screen name="Expired" component={Expired} />
-                    <Stack.Screen name="FoodDetail" component={FoodDetail} />
-                    <Stack.Screen name="PostFood" component={PostFood} />
-                    <Stack.Screen name="Activity" component={Activity} />
-                    <Stack.Screen name="NGOs" component={NGOs} />
-                    <Stack.Screen name="NotFound" component={NotFound} />
-                  </Stack.Navigator>
-                </Layout>
-              </NavigationContainer>
+              <View style={{ flex: 1, width: '100%', height: '100%' }}>
+                <NavigationContainer>
+                  <Layout>
+                    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Auth">
+                      <Stack.Screen name="Auth" component={Auth} />
+                      <Stack.Screen name="Home" component={Home} />
+                      <Stack.Screen name="Expired" component={Expired} />
+                      <Stack.Screen name="FoodDetail" component={FoodDetail} />
+                      <Stack.Screen name="PostFood" component={PostFood} />
+                      <Stack.Screen name="Activity" component={Activity} />
+                      <Stack.Screen name="NGOs" component={NGOs} />
+                      <Stack.Screen name="NotFound" component={NotFound} />
+                    </Stack.Navigator>
+                  </Layout>
+                </NavigationContainer>
+              </View>
             </TransactionProvider>
           </NotificationProvider>
         </AuthProvider>
