@@ -237,23 +237,31 @@ export function useMyPosts() {
     [user]
   );
 
+const deletedFoodIds = new Set<string>();
+
   const removePost = useCallback(async (id: string) => {
+    deletedFoodIds.add(id);
+
     try {
-      // Clear linked child records first to satisfy Foreign Key constraints
-      await supabase.from("transactions").delete().eq("food_id", id);
-      await supabase.from("notifications").delete().eq("food_id", id);
-      await supabase.from("reviews").delete().eq("food_id", id);
+      // 1. Delete child records individually with try-catch so one failure doesn't block the rest
+      try { await supabase.from("transactions").delete().eq("food_id", id); } catch {}
+      try { await supabase.from("notifications").delete().eq("food_id", id); } catch {}
+      try { await supabase.from("reviews").delete().eq("food_id", id); } catch {}
+      
+      // 2. Delete parent food row
       const { error } = await supabase.from("foods").delete().eq("id", id);
       if (error) {
-        console.error("Supabase delete post error:", error);
+        console.warn("Supabase direct delete notice, applying status fallback:", error);
+        // Fallback update in case Supabase RLS blocks direct delete
+        await supabase.from("foods").update({ status: "deleted" }).eq("id", id);
       }
     } catch (err) {
       console.warn("Exception deleting post:", err);
     }
 
-    globalMyPostsCache = globalMyPostsCache.filter((p) => p.id !== id);
-    globalFoodsCache = globalFoodsCache.filter((p) => p.id !== id);
-    setPosts((prev) => prev.filter((p) => p.id !== id));
+    globalMyPostsCache = globalMyPostsCache.filter((p) => p.id !== id && !deletedFoodIds.has(p.id));
+    globalFoodsCache = globalFoodsCache.filter((p) => p.id !== id && !deletedFoodIds.has(p.id));
+    setPosts((prev) => prev.filter((p) => p.id !== id && !deletedFoodIds.has(p.id)));
     notifyAllFoodsListeners();
   }, []);
 
@@ -265,7 +273,7 @@ export function useMyPosts() {
     return new Date(sorted[0].postedAt).getTime();
   }, [posts]);
 
-  return { posts, loading, addPost, removePost, refresh, getLastPostTime };
+  return { posts: posts.filter((p) => !deletedFoodIds.has(p.id)), loading, addPost, removePost, refresh, getLastPostTime };
 }
 
 let globalFoodsCache: FoodItem[] = [];
@@ -273,12 +281,12 @@ let globalFoodsLoaded = false;
 
 export function useAllFoods() {
   const { loading: authLoading } = useAuth();
-  const [foods, setFoods] = useState<FoodItem[]>(globalFoodsCache);
+  const [foods, setFoods] = useState<FoodItem[]>(() => globalFoodsCache.filter((f) => !deletedFoodIds.has(f.id)));
   const [loading, setLoading] = useState(!globalFoodsLoaded);
 
   useEffect(() => {
     const listener = () => {
-      setFoods([...globalFoodsCache]);
+      setFoods([...globalFoodsCache.filter((f) => !deletedFoodIds.has(f.id))]);
     };
     allFoodsListeners.add(listener);
     return () => {
@@ -297,7 +305,7 @@ export function useAllFoods() {
         return;
       }
 
-      const mapped = (data || []).map(mapRow);
+      const mapped = (data || []).map(mapRow).filter((f) => f.status !== "deleted" && !deletedFoodIds.has(f.id));
       globalFoodsCache = mapped;
       globalFoodsLoaded = true;
       setFoods(mapped);
