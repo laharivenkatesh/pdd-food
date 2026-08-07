@@ -192,7 +192,7 @@ export default function FoodDetail() {
         )}
 
         {/* Booking Section */}
-        {!isDonor && !isCollected && !isFullyBooked && !isCollector && (
+        {!isDonor && !isCollected && !isFullyBooked && (
           <View style={styles.bookingBox}>
             <Text style={styles.bookingTitle}>Book Portions ({remaining} available)</Text>
             <TouchableOpacity onPress={handleBookPortions} disabled={bookingBusy} style={styles.bookBtn}>

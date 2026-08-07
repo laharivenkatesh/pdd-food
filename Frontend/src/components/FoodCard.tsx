@@ -151,11 +151,19 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
         </View>
 
         <View style={styles.actionsRow}>
+          {!isDonor && !isCollected && ((food.feeds || 1) - (food.bookedPortions || 0) > 0) ? (
+            <TouchableOpacity
+              onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
+              style={styles.btnBook}
+            >
+              <Text style={styles.btnBookText}>Book Food 🍽️</Text>
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
             onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
             style={[styles.btnPrimary, isCollected && styles.btnCollected]}
           >
-            <Text style={styles.btnPrimaryText}>{isCollected ? "Collected" : "View Details"}</Text>
+            <Text style={styles.btnPrimaryText}>{isCollected ? "Collected" : "Details"}</Text>
           </TouchableOpacity>
           {isDonor && (
             <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
@@ -363,9 +371,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
+  btnBook: {
+    flex: 1.2,
+    backgroundColor: '#16A34A',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  btnBookText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
   btnPrimary: {
     flex: 1,
-    backgroundColor: '#16A34A',
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -374,7 +396,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#9CA3AF',
   },
   btnPrimaryText: {
-    color: '#FFFFFF',
+    color: '#374151',
     fontWeight: '700',
     fontSize: 14,
   },
