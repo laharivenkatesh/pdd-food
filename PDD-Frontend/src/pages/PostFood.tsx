@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Switch } from 'react-native';
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Chip from "@/components/Chip";
 import { Category, Purpose } from "@/types/food";
@@ -20,7 +20,13 @@ const purposes: { key: Purpose; label: string }[] = [
 
 export default function PostFood() {
   const navigation = useNavigation<any>();
-  const { addPost } = useMyPosts();
+  const { addPost, user } = useMyPosts();
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const nameInputRef = useRef<TextInput>(null);
+  const quantityInputRef = useRef<TextInput>(null);
+  const feedsInputRef = useRef<TextInput>(null);
+  const addressInputRef = useRef<TextInput>(null);
 
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -125,25 +131,48 @@ export default function PostFood() {
     }
   };
 
+  const showAlert = (title: string, msg: string) => {
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert(`${title}\n${msg}`);
+      } else {
+        console.log(title, msg);
+      }
+    } else {
+      Alert.alert(title, msg);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!user) {
+      showAlert("Login Required 🔒", "Please log in to publish a food post.");
+      navigation.navigate("Auth" as never);
+      return;
+    }
     if (!name.trim()) {
-      Alert.alert("Missing Field", "Please enter food name.");
+      showAlert("Empty Field ⚠️", "Please fill in Food Name to publish your food post!");
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      setTimeout(() => nameInputRef.current?.focus(), 250);
       return;
     }
     if (!quantity.trim()) {
-      Alert.alert("Missing Field", "Please enter food quantity.");
+      showAlert("Empty Field ⚠️", "Please fill in Food Quantity to publish your food post!");
+      scrollViewRef.current?.scrollTo({ y: 100, animated: true });
+      setTimeout(() => quantityInputRef.current?.focus(), 250);
       return;
     }
     if (!feeds) {
-      Alert.alert("Missing Field", "Please enter number of people it feeds.");
+      showAlert("Empty Field ⚠️", "Please fill in Feeds Count (how many people it feeds) to publish your food post!");
+      scrollViewRef.current?.scrollTo({ y: 100, animated: true });
+      setTimeout(() => feedsInputRef.current?.focus(), 250);
       return;
     }
-    if (!expiryHours) {
-      Alert.alert("Missing Field", "Please enter expiry hours.");
-      return;
-    }
+    const finalExpiryHours = expiryHours || "4";
+    const finalPreparedAt = preparedAt || "Freshly Prepared (Just Now)";
     if (!address.trim()) {
-      Alert.alert("Missing Field", "Please enter or detect your address.");
+      showAlert("Empty Field ⚠️", "Please fill in or detect Pickup Address to publish your food post!");
+      scrollViewRef.current?.scrollTo({ y: 350, animated: true });
+      setTimeout(() => addressInputRef.current?.focus(), 250);
       return;
     }
 
@@ -160,8 +189,8 @@ export default function PostFood() {
       image: finalImageUrl,
       feeds: Number(feeds) || 1,
       price: paid ? Number(price) || 0 : 0,
-      expiry_hours: Number(expiryHours) || 4,
-      prepared_at: preparedAt || new Date().toLocaleString(),
+      expiry_hours: Number(finalExpiryHours) || 4,
+      prepared_at: finalPreparedAt,
       address: address.trim(),
       lat,
       lng,
@@ -178,10 +207,10 @@ export default function PostFood() {
 
     setBusy(false);
     if (!res.ok) {
-      Alert.alert("Error Posting Food", res.error || "Failed to post food.");
+      showAlert("Error Posting Food", res.error || "Failed to post food.");
       return;
     }
-    Alert.alert("Success! 🥗", "Food post published successfully!");
+    showAlert("Success! 🥗", "Food post published successfully!");
     navigation.navigate("Home" as never);
   };
 
@@ -199,7 +228,7 @@ export default function PostFood() {
   const [selectedExpiryChip, setSelectedExpiryChip] = useState("4");
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.pageHeader}>
         <Text style={styles.title}>Post Leftover Food 🌱</Text>
         <Text style={styles.subtitle}>Share excess food with nearby community members and NGOs</Text>
@@ -214,6 +243,7 @@ export default function PostFood() {
           </View>
 
           <TextInput
+            ref={nameInputRef}
             style={styles.input}
             placeholder="Food name (e.g. Biryani, Chapati & Curry)"
             placeholderTextColor="#9CA3AF"
@@ -222,6 +252,7 @@ export default function PostFood() {
           />
           <View style={styles.inputRow}>
             <TextInput
+              ref={quantityInputRef}
               style={[styles.input, { flex: 1 }]}
               placeholder="Quantity (e.g. 5 kg, 10 plates)"
               placeholderTextColor="#9CA3AF"
@@ -229,6 +260,7 @@ export default function PostFood() {
               onChangeText={setQuantity}
             />
             <TextInput
+              ref={feedsInputRef}
               style={[styles.input, { width: 130 }]}
               placeholder="Feeds count (8)"
               placeholderTextColor="#9CA3AF"
@@ -312,6 +344,7 @@ export default function PostFood() {
           </View>
 
           <TextInput
+            ref={addressInputRef}
             style={styles.input}
             placeholder="Enter street, area, or landmark"
             placeholderTextColor="#9CA3AF"
