@@ -12,10 +12,12 @@ export default function OtaUpdateModal() {
 
     const timer = setTimeout(async () => {
       try {
-        if (!__DEV__ && Updates.checkForUpdateAsync) {
+        if (!__DEV__ && typeof Updates.checkForUpdateAsync === 'function') {
           const update = await Updates.checkForUpdateAsync();
-          if (update.isAvailable && isMounted) {
-            await Updates.fetchUpdateAsync();
+          if (update && update.isAvailable && isMounted) {
+            if (typeof Updates.fetchUpdateAsync === 'function') {
+              await Updates.fetchUpdateAsync();
+            }
             setShowModal(true);
           }
         }

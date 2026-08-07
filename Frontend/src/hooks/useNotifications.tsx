@@ -16,13 +16,14 @@ try {
 
 export async function sendNativeStatusBarNotification(title: string, body: string) {
   try {
+    if (typeof Notifications.getPermissionsAsync !== 'function') return;
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
+    if (existingStatus !== 'granted' && typeof Notifications.requestPermissionsAsync === 'function') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
-    if (finalStatus === 'granted') {
+    if (finalStatus === 'granted' && typeof Notifications.scheduleNotificationAsync === 'function') {
       await Notifications.scheduleNotificationAsync({
         content: {
           title,
@@ -103,9 +104,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        if (existingStatus !== 'granted') {
-          await Notifications.requestPermissionsAsync();
+        if (typeof Notifications.getPermissionsAsync === 'function') {
+          const { status: existingStatus } = await Notifications.getPermissionsAsync();
+          if (existingStatus !== 'granted' && typeof Notifications.requestPermissionsAsync === 'function') {
+            await Notifications.requestPermissionsAsync();
+          }
         }
       } catch (err) {
         console.warn("Notification permission prompt notice:", err);
