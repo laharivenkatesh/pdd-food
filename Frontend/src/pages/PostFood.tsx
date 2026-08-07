@@ -43,6 +43,10 @@ export default function PostFood() {
 
   const pickImageFromGallery = async () => {
     try {
+      if (typeof ImagePicker.requestMediaLibraryPermissionsAsync !== 'function' || typeof ImagePicker.launchImageLibraryAsync !== 'function') {
+        Alert.alert("Feature Unavailable", "Gallery picker is not supported on this platform.");
+        return;
+      }
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert("Permission Needed", "Please grant photo gallery permissions to upload food pictures.");
@@ -64,6 +68,10 @@ export default function PostFood() {
 
   const takePhotoWithCamera = async () => {
     try {
+      if (typeof ImagePicker.requestCameraPermissionsAsync !== 'function' || typeof ImagePicker.launchCameraAsync !== 'function') {
+        Alert.alert("Feature Unavailable", "Camera picker is not supported on this platform.");
+        return;
+      }
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert("Permission Needed", "Please grant camera permissions to take food photos.");
@@ -85,6 +93,11 @@ export default function PostFood() {
   const detectLocation = async () => {
     setDetectingLoc(true);
     try {
+      if (typeof Location.requestForegroundPermissionsAsync !== 'function' || typeof Location.getCurrentPositionAsync !== 'function') {
+        Alert.alert("GPS Unavailable", "GPS auto-detection is not available on this device.");
+        setDetectingLoc(false);
+        return;
+      }
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert("Permission Denied", "Location permission is required to detect your current position.");

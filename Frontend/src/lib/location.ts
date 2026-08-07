@@ -44,17 +44,19 @@ export async function getReverseGeocodeAddress(lat: number, lng: number): Promis
 
   // 3. Fallback to Expo Native Location reverseGeocodeAsync
   try {
-    const places = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
-    if (places && places.length > 0) {
-      const p = places[0];
-      const parts = [
-        p.name || p.streetNumber,
-        p.street || p.district,
-        p.city || p.subregion,
-        p.region || p.postalCode,
-      ].filter(Boolean);
-      if (parts.length > 0) {
-        return parts.join(", ");
+    if (typeof Location.reverseGeocodeAsync === 'function') {
+      const places = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+      if (places && places.length > 0) {
+        const p = places[0];
+        const parts = [
+          p.name || p.streetNumber,
+          p.street || p.district,
+          p.city || p.subregion,
+          p.region || p.postalCode,
+        ].filter(Boolean);
+        if (parts.length > 0) {
+          return parts.join(", ");
+        }
       }
     }
   } catch (err) {

@@ -99,13 +99,17 @@ export default function Home() {
     let active = true;
     (async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === 'granted') {
-          const pos = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          });
-          if (active) {
-            setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        if (typeof Location.requestForegroundPermissionsAsync === 'function') {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status === 'granted' && typeof Location.getCurrentPositionAsync === 'function') {
+            const pos = await Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            });
+            if (active) {
+              setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            }
+          } else {
+            if (active) setUserLoc({ lat: 13.0827, lng: 80.2707 });
           }
         } else {
           if (active) setUserLoc({ lat: 13.0827, lng: 80.2707 });
