@@ -263,8 +263,8 @@ export default function PostFood() {
             />
             <TextInput
               ref={feedsInputRef}
-              style={[styles.input, { width: 130 }]}
-              placeholder="Feeds count (8)"
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Feeds count (e.g. 8)"
               placeholderTextColor="#9CA3AF"
               keyboardType="numeric"
               value={feeds}
@@ -390,9 +390,10 @@ export default function PostFood() {
 
           {imageUri ? (
             <View style={styles.imagePreviewWrapper}>
-              <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="cover" />
               <TouchableOpacity onPress={() => setImageUri(null)} style={styles.removeImageBtn}>
-                <Ionicons name="close-circle" size={24} color="#EF4444" />
+                <Ionicons name="trash-outline" size={15} color="#DC2626" />
+                <Text style={styles.removeImageBtnText}>Remove Photo</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -666,19 +667,37 @@ const styles = StyleSheet.create({
   },
   imagePreviewWrapper: {
     position: 'relative',
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: 'hidden',
+    height: 200,
   },
   imagePreview: {
     width: '100%',
-    height: 160,
-    borderRadius: 12,
+    height: '100%',
+    borderRadius: 14,
   },
   removeImageBtn: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  removeImageBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#DC2626',
   },
 });
