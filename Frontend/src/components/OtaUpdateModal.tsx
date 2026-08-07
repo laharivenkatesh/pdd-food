@@ -10,28 +10,51 @@ export default function OtaUpdateModal() {
   useEffect(() => {
     async function checkOtaUpdate() {
       try {
-        if (__DEV__) return;
-        const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
-          await Updates.fetchUpdateAsync();
-          setTimeout(() => {
+        if (!__DEV__ && Updates.checkForUpdateAsync) {
+          const update = await Updates.checkForUpdateAsync();
+          if (update.isAvailable) {
+            await Updates.fetchUpdateAsync();
             setShowModal(true);
-          }, 2000);
+            return;
+          }
         }
       } catch (e) {
-        console.warn("OTA update check error:", e);
+        console.warn("OTA update check notice:", e);
       }
     }
+
     checkOtaUpdate();
+
+    const handleCustomUpdateTrigger = () => {
+      setShowModal(true);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('trigger_app_update', handleCustomUpdateTrigger);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('trigger_app_update', handleCustomUpdateTrigger);
+      }
+    };
   }, []);
 
   const handleUpdateAndRestart = async () => {
     setIsUpdating(true);
     try {
-      await Updates.reloadAsync();
+      if (Updates.reloadAsync) {
+        await Updates.reloadAsync();
+      } else if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch {
-      setIsUpdating(false);
-      setShowModal(false);
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      } else {
+        setIsUpdating(false);
+        setShowModal(false);
+      }
     }
   };
 

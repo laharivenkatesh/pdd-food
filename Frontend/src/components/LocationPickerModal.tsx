@@ -12,6 +12,8 @@ interface LocationPickerModalProps {
   onSelectLocation: (lat: number, lng: number, address: string) => void;
 }
 
+import { getReverseGeocodeAddress } from '@/lib/location';
+
 export default function LocationPickerModal({
   visible,
   initialLat,
@@ -29,20 +31,8 @@ export default function LocationPickerModal({
     setSelectedLng(lng);
     setGeocoding(true);
     try {
-      const places = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
-      if (places && places.length > 0) {
-        const p = places[0];
-        const parts = [
-          p.name || p.streetNumber,
-          p.street || p.district,
-          p.city || p.subregion,
-          p.region || p.postalCode,
-        ].filter(Boolean);
-        const formatted = parts.join(", ");
-        setAddress(formatted || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-      } else {
-        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-      }
+      const formatted = await getReverseGeocodeAddress(lat, lng);
+      setAddress(formatted);
     } catch {
       setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
     } finally {

@@ -2,15 +2,33 @@
 -- RUN THIS IN YOUR SUPABASE SQL EDITOR TO FIX THE ERRORS
 -- ============================================================
 
--- 1) FIX THE RLS INSERT POLICY ON FOODS TABLE
+-- 1) FIX THE RLS POLICIES ON FOODS & PROFILES TABLES
 alter table public.foods enable row level security;
 drop policy if exists "Foods: insert by authenticated users" on public.foods;
 drop policy if exists "Foods: insert permissive" on public.foods;
 drop policy if exists "Foods: allow all insert" on public.foods;
+drop policy if exists "Foods: allow all select" on public.foods;
+drop policy if exists "Foods: allow all update" on public.foods;
+drop policy if exists "Foods: allow all delete" on public.foods;
+drop policy if exists "Enable read access for all users" on public.foods;
+drop policy if exists "Enable insert for authenticated users only" on public.foods;
 
-create policy "Foods: allow all insert"
-  on public.foods for insert
-  with check (true);
+create policy "Foods: allow all select" on public.foods for select using (true);
+create policy "Foods: allow all insert" on public.foods for insert with check (true);
+create policy "Foods: allow all update" on public.foods for update using (true);
+create policy "Foods: allow all delete" on public.foods for delete using (true);
+
+alter table public.profiles enable row level security;
+drop policy if exists "Profiles: allow all select" on public.profiles;
+drop policy if exists "Profiles: allow all insert" on public.profiles;
+drop policy if exists "Profiles: allow all update" on public.profiles;
+drop policy if exists "Public profiles are viewable by everyone." on public.profiles;
+drop policy if exists "Users can insert their own profile." on public.profiles;
+drop policy if exists "Users can update own profile." on public.profiles;
+
+create policy "Profiles: allow all select" on public.profiles for select using (true);
+create policy "Profiles: allow all insert" on public.profiles for insert with check (true);
+create policy "Profiles: allow all update" on public.profiles for update using (true);
 
 -- 2) CREATE THE MISSING TRANSACTIONS TABLE (HTTP 404)
 -- We check if the enum exists first to prevent errors

@@ -115,6 +115,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {user && (
             <View style={styles.headerRight}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('trigger_app_update'));
+                  }
+                }}
+                style={styles.updateBadgeBtn}
+              >
+                <Ionicons name="sparkles" size={16} color="#16A34A" />
+                <Text style={styles.updateBadgeText}>Updates</Text>
+              </TouchableOpacity>
               <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
                 <Ionicons name="notifications-outline" size={22} color="#1F2937" />
                 {unreadCount > 0 && (
@@ -235,7 +246,23 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+  },
+  updateBadgeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  updateBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#16A34A',
   },
   iconBtn: {
     position: 'relative',

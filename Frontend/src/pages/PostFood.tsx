@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import LocationPickerModal from '@/components/LocationPickerModal';
+import { getReverseGeocodeAddress } from "@/lib/location";
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 const purposes: { key: Purpose; label: string }[] = [
@@ -99,37 +100,9 @@ export default function PostFood() {
       setLat(currentLat);
       setLng(currentLng);
 
-      try {
-        const places = await Location.reverseGeocodeAsync({
-          latitude: currentLat,
-          longitude: currentLng,
-        });
-
-        if (places && places.length > 0) {
-          const p = places[0];
-          const parts = [
-            p.name || p.streetNumber,
-            p.street || p.district,
-            p.city || p.subregion,
-            p.region || p.postalCode
-          ].filter(Boolean);
-
-          const formattedAddr = parts.join(", ");
-          if (formattedAddr) {
-            setAddress(formattedAddr);
-            Alert.alert("Address Located! 📍", formattedAddr);
-          } else {
-            setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-            Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-          }
-        } else {
-          setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-          Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-        }
-      } catch {
-        setAddress(`${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-        Alert.alert("Location Found", `GPS coordinates updated: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`);
-      }
+      const formattedAddr = await getReverseGeocodeAddress(currentLat, currentLng);
+      setAddress(formattedAddr);
+      Alert.alert("Address Located! 📍", formattedAddr);
     } catch (err: any) {
       console.warn("Native location error:", err);
       Alert.alert("Location Error", "Could not fetch GPS coordinates. Please check your phone's GPS settings.");
