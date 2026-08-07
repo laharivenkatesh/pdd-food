@@ -129,17 +129,19 @@ export default function Auth() {
 
           {authMode === "verify_otp" ? (
             <>
-              {/* Clean 6-Digit OTP Box Grid without placeholders */}
+              {/* Single Unified 6-Digit OTP Input Field */}
               <View style={styles.otpContainer}>
                 <View style={styles.otpBoxesRow}>
                   {[0, 1, 2, 3, 4, 5].map((index) => {
                     const char = otp[index] || "";
                     const isFocused = otp.length === index;
+                    const isLast = index === 5;
                     return (
                       <View
                         key={index}
                         style={[
                           styles.otpBox,
+                          isLast ? styles.otpBoxLast : null,
                           char ? styles.otpBoxFilled : null,
                           isFocused ? styles.otpBoxFocused : null,
                         ]}
@@ -318,30 +320,35 @@ const styles = StyleSheet.create({
   },
   otpContainer: {
     position: 'relative',
-    marginVertical: 10,
+    marginVertical: 12,
+    alignItems: 'center',
   },
   otpBoxesRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    backgroundColor: '#F9FAFB',
+    overflow: 'hidden',
   },
   otpBox: {
     width: 44,
     height: 52,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#F9FAFB',
+    borderRightWidth: 1,
+    borderRightColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  otpBoxLast: {
+    borderRightWidth: 0,
+  },
   otpBoxFilled: {
-    borderColor: '#16A34A',
     backgroundColor: '#F0FDF4',
   },
   otpBoxFocused: {
-    borderColor: '#16A34A',
-    borderWidth: 2,
+    backgroundColor: '#DCFCE7',
   },
   otpChar: {
     fontSize: 22,
