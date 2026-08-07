@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // These are read from .env (Vite). After connecting Supabase, add to a .env file:
 // VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
@@ -33,44 +34,40 @@ if (!isSupabaseConfigured) {
 const inMemoryStorage: Record<string, string> = {};
 
 const CustomStorage = {
-  getItem: (key: string): Promise<string | null> => {
-    return new Promise((resolve) => {
-      try {
-        if (typeof localStorage !== "undefined" && localStorage !== null) {
-          resolve(localStorage.getItem(key));
-          return;
-        }
-      } catch (e) {
-        console.warn("Storage getItem notice:", e);
+  getItem: async (key: string): Promise<string | null> => {
+    try {
+      if (Platform.OS === 'web' && typeof localStorage !== "undefined" && localStorage !== null) {
+        return localStorage.getItem(key);
       }
-      resolve(inMemoryStorage[key] || null);
-    });
+      return await AsyncStorage.getItem(key);
+    } catch (e) {
+      console.warn("Storage getItem notice:", e);
+      return inMemoryStorage[key] || null;
+    }
   },
-  setItem: (key: string, value: string): Promise<void> => {
-    return new Promise((resolve) => {
-      try {
-        if (typeof localStorage !== "undefined" && localStorage !== null) {
-          localStorage.setItem(key, value);
-        }
-      } catch (e) {
-        console.warn("Storage setItem notice:", e);
+  setItem: async (key: string, value: string): Promise<void> => {
+    try {
+      if (Platform.OS === 'web' && typeof localStorage !== "undefined" && localStorage !== null) {
+        localStorage.setItem(key, value);
+      } else {
+        await AsyncStorage.setItem(key, value);
       }
-      inMemoryStorage[key] = value;
-      resolve();
-    });
+    } catch (e) {
+      console.warn("Storage setItem notice:", e);
+    }
+    inMemoryStorage[key] = value;
   },
-  removeItem: (key: string): Promise<void> => {
-    return new Promise((resolve) => {
-      try {
-        if (typeof localStorage !== "undefined" && localStorage !== null) {
-          localStorage.removeItem(key);
-        }
-      } catch (e) {
-        console.warn("Storage removeItem notice:", e);
+  removeItem: async (key: string): Promise<void> => {
+    try {
+      if (Platform.OS === 'web' && typeof localStorage !== "undefined" && localStorage !== null) {
+        localStorage.removeItem(key);
+      } else {
+        await AsyncStorage.removeItem(key);
       }
-      delete inMemoryStorage[key];
-      resolve();
-    });
+    } catch (e) {
+      console.warn("Storage removeItem notice:", e);
+    }
+    delete inMemoryStorage[key];
   },
 };
 
