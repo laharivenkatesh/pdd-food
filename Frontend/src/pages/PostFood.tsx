@@ -172,14 +172,174 @@ export default function PostFood() {
     navigation.navigate("Home" as never);
   };
 
+  const preparedTimeOptions = [
+    "Freshly Prepared (Just Now)",
+    "30 mins ago",
+    "1 hour ago",
+    "2 hours ago",
+    "Custom",
+  ];
+
+  const expiryOptions = ["2", "4", "6", "12", "24", "Custom"];
+
+  const [selectedPrepChip, setSelectedPrepChip] = useState("Freshly Prepared (Just Now)");
+  const [selectedExpiryChip, setSelectedExpiryChip] = useState("4");
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <Text style={styles.title}>Post Leftover Food</Text>
+      <View style={styles.pageHeader}>
+        <Text style={styles.title}>Post Leftover Food 🌱</Text>
+        <Text style={styles.subtitle}>Share excess food with nearby community members and NGOs</Text>
+      </View>
 
       <View style={styles.formContainer}>
-        {/* Food Photo Picker */}
-        <View style={styles.fieldSection}>
-          <Text style={styles.sectionLabel}>Food Photo</Text>
+        {/* Section 1: Food Overview */}
+        <View style={styles.cardSection}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="fast-food" size={18} color="#16A34A" />
+            <Text style={styles.cardTitle}>Food Overview</Text>
+          </View>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Food name (e.g. Biryani, Chapati & Curry)"
+            placeholderTextColor="#9CA3AF"
+            value={name}
+            onChangeText={setName}
+          />
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Quantity (e.g. 5 kg, 10 plates)"
+              placeholderTextColor="#9CA3AF"
+              value={quantity}
+              onChangeText={setQuantity}
+            />
+            <TextInput
+              style={[styles.input, { width: 130 }]}
+              placeholder="Feeds count (8)"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="numeric"
+              value={feeds}
+              onChangeText={setFeeds}
+            />
+          </View>
+        </View>
+
+        {/* Section 2: Preparation Time & Expiry */}
+        <View style={styles.cardSection}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="time" size={18} color="#16A34A" />
+            <Text style={styles.cardTitle}>Preparation Time & Expiry</Text>
+          </View>
+
+          <View style={styles.fieldSubSection}>
+            <Text style={styles.subLabel}>When was it prepared?</Text>
+            <View style={styles.chipRow}>
+              {preparedTimeOptions.map((opt) => (
+                <Chip
+                  key={opt}
+                  label={opt}
+                  active={selectedPrepChip === opt}
+                  onClick={() => {
+                    setSelectedPrepChip(opt);
+                    if (opt !== "Custom") {
+                      setPreparedAt(opt);
+                    }
+                  }}
+                />
+              ))}
+            </View>
+            {selectedPrepChip === "Custom" && (
+              <TextInput
+                style={[styles.input, { marginTop: 6 }]}
+                placeholder="Enter custom prep time (e.g. Prepared at 8:00 AM)"
+                placeholderTextColor="#9CA3AF"
+                value={preparedAt}
+                onChangeText={setPreparedAt}
+              />
+            )}
+          </View>
+
+          <View style={styles.fieldSubSection}>
+            <Text style={styles.subLabel}>Expires In (Hours)</Text>
+            <View style={styles.chipRow}>
+              {expiryOptions.map((opt) => (
+                <Chip
+                  key={opt}
+                  label={opt === "Custom" ? "Custom Hours" : `⏳ ${opt} Hours`}
+                  active={selectedExpiryChip === opt}
+                  onClick={() => {
+                    setSelectedExpiryChip(opt);
+                    if (opt !== "Custom") {
+                      setExpiryHours(opt);
+                    }
+                  }}
+                />
+              ))}
+            </View>
+            {selectedExpiryChip === "Custom" && (
+              <TextInput
+                style={[styles.input, { marginTop: 6 }]}
+                placeholder="Enter expiry hours (e.g. 5)"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                value={expiryHours}
+                onChangeText={setExpiryHours}
+              />
+            )}
+          </View>
+        </View>
+
+        {/* Section 3: Pickup Location */}
+        <View style={styles.cardSection}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="location" size={18} color="#16A34A" />
+            <Text style={styles.cardTitle}>Pickup Location</Text>
+          </View>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Enter street, area, or landmark"
+            placeholderTextColor="#9CA3AF"
+            value={address}
+            onChangeText={setAddress}
+          />
+
+          <View style={styles.locationBtnRow}>
+            <TouchableOpacity onPress={detectLocation} style={styles.detectBtn}>
+              <Ionicons name="navigate" size={15} color="#16A34A" />
+              <Text style={styles.detectBtnText}>
+                {detectingLoc ? "Detecting..." : "Auto-Detect GPS"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setShowMapPicker(true)} style={styles.mapPinBtn}>
+              <Ionicons name="map" size={15} color="#2563EB" />
+              <Text style={styles.mapPinBtnText}>Drag Pin on Map 📍</Text>
+            </TouchableOpacity>
+          </View>
+
+          <LocationPickerModal
+            visible={showMapPicker}
+            initialLat={lat}
+            initialLng={lng}
+            onClose={() => setShowMapPicker(false)}
+            onSelectLocation={(newLat, newLng, newAddress) => {
+              setLat(newLat);
+              setLng(newLng);
+              setAddress(newAddress);
+            }}
+          />
+        </View>
+
+        {/* Section 4: Photo Attachment */}
+        <View style={styles.cardSection}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="camera" size={18} color="#16A34A" />
+            <Text style={styles.cardTitle}>Food Photo</Text>
+          </View>
+
           {imageUri ? (
             <View style={styles.imagePreviewWrapper}>
               <Image source={{ uri: imageUri }} style={styles.imagePreview} />
@@ -201,123 +361,72 @@ export default function PostFood() {
           )}
         </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Food name (e.g. Biryani, Rotis)"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Quantity (e.g. 5 kg, 10 plates)"
-          value={quantity}
-          onChangeText={setQuantity}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Feeds how many people? (e.g. 8)"
-          keyboardType="numeric"
-          value={feeds}
-          onChangeText={setFeeds}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="When was it prepared? (e.g. 1 hour ago)"
-          value={preparedAt}
-          onChangeText={setPreparedAt}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Expires in how many hours? (e.g. 4)"
-          keyboardType="numeric"
-          value={expiryHours}
-          onChangeText={setExpiryHours}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Pickup address"
-          value={address}
-          onChangeText={setAddress}
-        />
-
-        <View style={styles.locationBtnRow}>
-          <TouchableOpacity onPress={detectLocation} style={styles.detectBtn}>
-            <Ionicons name="navigate" size={15} color="#16A34A" />
-            <Text style={styles.detectBtnText}>
-              {detectingLoc ? "Detecting..." : "Auto-Detect GPS"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setShowMapPicker(true)} style={styles.mapPinBtn}>
-            <Ionicons name="map" size={15} color="#2563EB" />
-            <Text style={styles.mapPinBtnText}>Drag Pin on Map 📍</Text>
-          </TouchableOpacity>
-        </View>
-
-        <LocationPickerModal
-          visible={showMapPicker}
-          initialLat={lat}
-          initialLng={lng}
-          onClose={() => setShowMapPicker(false)}
-          onSelectLocation={(newLat, newLng, newAddress) => {
-            setLat(newLat);
-            setLng(newLng);
-            setAddress(newAddress);
-          }}
-        />
-
-        {/* Category */}
-        <View style={styles.fieldSection}>
-          <Text style={styles.sectionLabel}>Category</Text>
-          <View style={styles.chipRow}>
-            {categories.map((c) => (
-              <Chip key={c} label={c} active={category === c} onClick={() => setCategory(c)} />
-            ))}
+        {/* Section 5: Category & Purpose */}
+        <View style={styles.cardSection}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="pricetags" size={18} color="#16A34A" />
+            <Text style={styles.cardTitle}>Category & Purpose</Text>
           </View>
-        </View>
 
-        {/* Purpose */}
-        <View style={styles.fieldSection}>
-          <Text style={styles.sectionLabel}>Purpose</Text>
-          <View style={styles.chipRow}>
-            {purposes.map((p) => (
-              <Chip key={p.key} label={p.label} active={purpose === p.key} onClick={() => setPurpose(p.key)} />
-            ))}
+          <View style={styles.fieldSubSection}>
+            <Text style={styles.subLabel}>Category</Text>
+            <View style={styles.chipRow}>
+              {categories.map((c) => (
+                <Chip key={c} label={c} active={category === c} onClick={() => setCategory(c)} />
+              ))}
+            </View>
           </View>
+
+          <View style={styles.fieldSubSection}>
+            <Text style={styles.subLabel}>Target Audience / Purpose</Text>
+            <View style={styles.chipRow}>
+              {purposes.map((p) => (
+                <Chip key={p.key} label={p.label} active={purpose === p.key} onClick={() => setPurpose(p.key)} />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Safe for animals</Text>
+            <Switch value={safe} onValueChange={setSafe} trackColor={{ true: '#16A34A' }} />
+          </View>
+
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{paid ? "Paid listing" : "Free listing"}</Text>
+            <Switch value={paid} onValueChange={setPaid} trackColor={{ true: '#16A34A' }} />
+          </View>
+
+          {paid && (
+            <TextInput
+              style={styles.input}
+              placeholder="Price in ₹ (e.g. 50)"
+              keyboardType="numeric"
+              value={price}
+              onChangeText={setPrice}
+            />
+          )}
         </View>
 
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Safe for animals</Text>
-          <Switch value={safe} onValueChange={setSafe} trackColor={{ true: '#16A34A' }} />
-        </View>
+        {/* Section 6: Notes & Confirm */}
+        <View style={styles.cardSection}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="create-outline" size={18} color="#16A34A" />
+            <Text style={styles.cardTitle}>Notes for Collector</Text>
+          </View>
 
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>{paid ? "Paid listing" : "Free listing"}</Text>
-          <Switch value={paid} onValueChange={setPaid} trackColor={{ true: '#16A34A' }} />
-        </View>
-
-        {paid && (
           <TextInput
-            style={styles.input}
-            placeholder="Price in ₹ (e.g. 50)"
-            keyboardType="numeric"
-            value={price}
-            onChangeText={setPrice}
+            style={[styles.input, styles.textArea]}
+            placeholder="Mention pickup instructions or packaging details..."
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={3}
+            value={notes}
+            onChangeText={setNotes}
           />
-        )}
-
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Notes for collector..."
-          multiline
-          numberOfLines={3}
-          value={notes}
-          onChangeText={setNotes}
-        />
+        </View>
 
         <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
-          <Text style={styles.submitBtnText}>{busy ? "Posting…" : "Post Food 🌱"}</Text>
+          <Text style={styles.submitBtnText}>{busy ? "Uploading & Posting…" : "Publish Food Post 🌱"}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -333,22 +442,70 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 16,
   },
+  pageHeader: {
+    gap: 4,
+    marginBottom: 4,
+  },
   title: {
     fontSize: 24,
     fontWeight: '800',
     color: '#111827',
   },
+  subtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
   formContainer: {
+    gap: 16,
+  },
+  cardSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    paddingBottom: 10,
+    marginBottom: 4,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  fieldSubSection: {
+    gap: 6,
+  },
+  subLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#4B5563',
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     fontSize: 14,
+    color: '#111827',
   },
   textArea: {
     minHeight: 80,

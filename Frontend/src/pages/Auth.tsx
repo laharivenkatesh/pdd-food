@@ -16,6 +16,8 @@ export default function Auth() {
   const [otp, setOtp] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleSubmit = async () => {
     if (authMode === "verify_otp") {
       if (!otp.trim() || otp.trim().length < 6) {
@@ -98,14 +100,38 @@ export default function Auth() {
         <View style={styles.form}>
           {authMode === "verify_otp" ? (
             <>
-              <TextInput
-                style={[styles.input, { textAlign: 'center', fontSize: 22, letterSpacing: 6, fontWeight: '800' }]}
-                placeholder="123456"
-                keyboardType="number-pad"
-                maxLength={6}
-                value={otp}
-                onChangeText={setOtp}
-              />
+              {/* Clean 6-Digit OTP Box Grid without placeholders */}
+              <View style={styles.otpContainer}>
+                <View style={styles.otpBoxesRow}>
+                  {[0, 1, 2, 3, 4, 5].map((index) => {
+                    const char = otp[index] || "";
+                    const isFocused = otp.length === index;
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          styles.otpBox,
+                          char ? styles.otpBoxFilled : null,
+                          isFocused ? styles.otpBoxFocused : null,
+                        ]}
+                      >
+                        <Text style={styles.otpChar}>{char}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+
+                {/* Hidden input overlaying the boxes for seamless typing */}
+                <TextInput
+                  style={styles.hiddenOtpInput}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  value={otp}
+                  onChangeText={setOtp}
+                  autoFocus
+                />
+              </View>
+
               <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>
                   {busy ? "Verifying Code..." : "Verify Code & Sign In 🚀"}
@@ -144,13 +170,26 @@ export default function Auth() {
                 onChangeText={setEmail}
               />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
+              {/* Password Input with Eye / Eye-Off Toggle */}
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  style={[styles.input, { flex: 1, paddingRight: 40 }]}
+                  placeholder="Password"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeBtn}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={20}
+                    color="#6B7280"
+                  />
+                </TouchableOpacity>
+              </View>
 
               <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>
@@ -229,6 +268,16 @@ const styles = StyleSheet.create({
   form: {
     gap: 12,
   },
+  passwordWrapper: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 12,
+    padding: 6,
+  },
   input: {
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
@@ -237,6 +286,42 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     fontSize: 14,
+  },
+  otpContainer: {
+    position: 'relative',
+    marginVertical: 10,
+  },
+  otpBoxesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  otpBox: {
+    width: 44,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  otpBoxFilled: {
+    borderColor: '#16A34A',
+    backgroundColor: '#F0FDF4',
+  },
+  otpBoxFocused: {
+    borderColor: '#16A34A',
+    borderWidth: 2,
+  },
+  otpChar: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  hiddenOtpInput: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.01,
   },
   submitBtn: {
     backgroundColor: '#16A34A',
