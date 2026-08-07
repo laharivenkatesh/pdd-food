@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Platform } from 'react-native';
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NavigationContainer } from "@react-navigation/native";
@@ -19,6 +19,7 @@ import Expired from "./pages/Expired";
 import OtaUpdateModal from "./components/OtaUpdateModal";
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
+import * as Updates from 'expo-updates';
 
 try {
   if (typeof Notifications.setNotificationHandler === 'function') {
