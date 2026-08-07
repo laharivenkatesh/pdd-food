@@ -69,7 +69,10 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught app error:", error, errorInfo);
-    this.autoCheckForUpdate();
+    // Auto reset error state after 300ms so app never gets stuck on error UI
+    setTimeout(() => {
+      this.setState({ hasError: false, error: null });
+    }, 300);
   }
 
   private autoCheckForUpdate = async () => {
