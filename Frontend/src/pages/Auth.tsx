@@ -68,7 +68,6 @@ export default function Auth() {
         return;
       }
       setErrorMessage(null);
-      Alert.alert("Success", "Login successful!");
       navigation.navigate("Home" as never);
     } else {
       const res = await sendOtp(email, password, name, phone, "signup");
