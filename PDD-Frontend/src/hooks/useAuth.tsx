@@ -1,7 +1,16 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { Platform } from "react-native";
-import { toast } from "sonner";
+import { Platform, Alert } from "react-native";
 import { supabase } from "../lib/supabase";
+
+const toastFn = (msg: string) => {
+  if (Platform.OS === 'web') console.log(msg);
+  else Alert.alert("Notice", msg);
+};
+const toast = Object.assign(toastFn, {
+  success: (msg: string) => toastFn(msg),
+  error: (msg: string) => toastFn(msg),
+  info: (msg: string) => toastFn(msg),
+});
 
 export interface UserProfile {
   id: string;
@@ -47,7 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const auth = supabase.auth as any;
+      const { data: { session } } = await auth.getSession();
       if (session?.user) {
         const userId = session.user.id;
 
@@ -116,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const code = params.get("code");
         if (code) {
           try {
-            await supabase.auth.exchangeCodeForSession(code);
+            await (supabase.auth as any).exchangeCodeForSession(code);
           } catch (e) {
             console.error("OAuth code exchange error:", e);
           }
@@ -128,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     handleInitialAuth();
 
     // Listen to Supabase auth changes dynamically in background
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = (supabase.auth as any).onAuthStateChange((_event: any, session: any) => {
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -243,7 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password?: string) => {
     try {
       if (!password) throw new Error("Password is required for login.");
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await (supabase.auth as any).signInWithPassword({
         email,
         password,
       });
@@ -261,7 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (mode === "signup" && password) {
         // Sign up logic - sends an OTP to email automatically if confirm email is enabled!
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await (supabase.auth as any).signUp({
           email,
           password,
           options: {
@@ -276,7 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: true as const };
       } else {
         // Login Logic - Since they want OTP on login, we use signInWithOtp
-        const { error } = await supabase.auth.signInWithOtp({
+        const { error } = await (supabase.auth as any).signInWithOtp({
           email,
         });
         if (error) throw error;
@@ -297,7 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else if (type === "magiclink") verificationType = "magiclink";
       else verificationType = "email";
 
-      const { data, error } = await supabase.auth.verifyOtp({
+      const { data, error } = await (supabase.auth as any).verifyOtp({
         email,
         token: otp,
         type: verificationType,
@@ -335,7 +345,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const resetPassword = async (email: string) => {
     try {
       const origin = (Platform.OS === 'web' && typeof window !== "undefined" && window.location) ? window.location.origin : "";
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await (supabase.auth as any).resetPasswordForEmail(email, {
         redirectTo: `${origin}/auth?mode=reset`,
       });
       if (error) throw error;
@@ -352,7 +362,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const origin = (Platform.OS === 'web' && typeof window !== "undefined" && window.location) ? window.location.origin : "";
       const redirectTo = `${origin}/auth`;
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { error } = await (supabase.auth as any).signInWithOAuth({
         provider,
         options: {
           redirectTo,
@@ -370,7 +380,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      await (supabase.auth as any).signOut();
       setUser(null);
       setProfile(null);
       toast.success("Successfully logged out.");

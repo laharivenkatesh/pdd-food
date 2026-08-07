@@ -1,8 +1,11 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
-import { Platform } from "react-native";
+import { Platform, Alert } from "react-native";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "./useAuth";
-import { toast } from "sonner";
+
+const toast = (title: string, options?: any) => {
+  console.log(title, options);
+};
 import * as Notifications from 'expo-notifications';
 
 try {
