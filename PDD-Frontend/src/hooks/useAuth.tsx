@@ -258,6 +258,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
       if (error) throw error;
+      if (data?.session?.user) {
+        setUser({
+          id: data.session.user.id,
+          email: data.session.user.email || "",
+          phone: data.session.user.user_metadata?.phone || "",
+        });
+        setProfile({
+          id: data.session.user.id,
+          name: data.session.user.user_metadata?.full_name || data.session.user.user_metadata?.name || data.session.user.email?.split("@")[0] || "Community Member",
+          email: data.session.user.email || "",
+          phone: data.session.user.user_metadata?.phone || "",
+          created_at: data.session.user.created_at,
+          role: data.session.user.user_metadata?.role || "Community Member",
+          trustScore: null,
+          reviewCount: 0,
+        });
+      }
       return { ok: true as const };
     } catch (err: any) {
       return { ok: false as const, error: err.message || "Failed to log in." };
