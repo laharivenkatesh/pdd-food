@@ -62,7 +62,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, isDonor && styles.selfPostedCard]}>
       <TouchableOpacity 
         onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
         style={styles.imageContainer}
@@ -74,8 +74,15 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
         <View style={[styles.badge, { backgroundColor: statusBg }]}>
           <Text style={[styles.badgeText, { color: statusTextColor }]}>{statusText}</Text>
         </View>
+
+        {isDonor && (
+          <View style={styles.selfPostedBadge}>
+            <Text style={styles.selfPostedBadgeText}>🌱 Posted by You</Text>
+          </View>
+        )}
+
         {food.purpose === "animals" && (
-          <View style={[styles.badge, styles.animalBadge]}>
+          <View style={[styles.badge, styles.animalBadge, isDonor && { top: 40 }]}>
             <Text style={styles.animalBadgeText}>🐾 Animal Priority</Text>
           </View>
         )}
@@ -189,6 +196,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+  },
+  selfPostedCard: {
+    borderColor: '#86EFAC',
+    borderWidth: 1.5,
+    backgroundColor: '#F0FDF4',
+  },
+  selfPostedBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: '#16A34A',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  selfPostedBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
   },
   imageContainer: {
     height: 176,

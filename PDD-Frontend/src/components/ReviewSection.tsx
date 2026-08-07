@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
 import { useState, useEffect } from "react";
 import { Review } from "@/types/food";
 import { supabase } from "@/lib/supabase";
@@ -16,63 +16,137 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
   const [reviews, setReviews] = useState<Review[]>(initial);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     setReviews(initial);
   }, [initial]);
 
   const submit = async () => {
-    if (!rating || !comment.trim()) return;
-    if (!user || !profile) {
-      Alert.alert("Login Required", "Please login to submit a review");
+    if (!user) {
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+        window.alert("Please login to submit a review");
+      } else {
+        Alert.alert("Login Required", "Please login to submit a review");
+      }
       return;
     }
 
+    if (!rating) {
+      const msg = "Please select a star rating (1 to 5 stars) before submitting!";
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+        window.alert(msg);
+      } else {
+        Alert.alert("Rating Required", msg);
+      }
+      return;
+    }
+
+    if (!comment.trim()) {
+      const msg = "Please type a short comment/experience before submitting!";
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+        window.alert(msg);
+      } else {
+        Alert.alert("Comment Required", msg);
+      }
+      return;
+    }
+
+    setSubmitting(true);
     try {
+      const userName = profile?.name || user.email?.split("@")[0] || "Community Member";
+
       const { data, error } = await supabase
         .from("reviews")
         .insert({
           food_id: foodId,
           user_id: user.id,
-          user_name: profile.name || "Anonymous",
+          user_name: userName,
           rating,
-          comment,
+          comment: comment.trim(),
         })
         .select()
         .single();
 
       if (error) {
         console.error("Error submitting review:", error);
-        Alert.alert("Error", "Failed to submit review");
+        const errMsg = error.message || "Failed to submit review. Please try again.";
+        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+          window.alert(`Review Error: ${errMsg}`);
+        } else {
+          Alert.alert("Review Failed", errMsg);
+        }
         return;
       }
 
+      // Recalculate provider's overall trust score rating across all their foods
+      if (providerId) {
+        try {
+          const { data: providerFoods } = await supabase
+            .from("foods")
+            .select("id")
+            .eq("user_id", providerId);
+
+          if (providerFoods && providerFoods.length > 0) {
+            const foodIds = providerFoods.map((f: any) => f.id);
+            const { data: allProviderReviews } = await supabase
+              .from("reviews")
+              .select("rating")
+              .in("food_id", foodIds);
+
+            if (allProviderReviews && allProviderReviews.length > 0) {
+              const totalRating = allProviderReviews.reduce((sum: number, r: any) => sum + (r.rating || 5), 0);
+              const avgScore = Number((totalRating / allProviderReviews.length).toFixed(1));
+              await supabase
+                .from("profiles")
+                .update({ trust_score: avgScore })
+                .eq("id", providerId);
+            }
+          }
+        } catch (updateErr) {
+          console.warn("Provider rating calculation notice:", updateErr);
+        }
+      }
+
+      // Notify donor if reviewer is another user
       if (providerId && providerId !== user.id) {
         await supabase.from("notifications").insert({
           user_id: providerId,
           food_id: foodId,
           title: "⭐ New Review Received!",
-          message: `${profile.name || "A collector"} left a ${rating}-star review: "${comment}"`,
+          message: `${userName} left a ${rating}-star review: "${comment.trim()}"`,
         });
       }
 
-      setReviews([
+      setReviews((prev) => [
         {
           id: data.id,
-          user: profile.name || "You",
+          user: userName,
           rating,
-          comment,
+          comment: comment.trim(),
           date: "just now",
         },
-        ...reviews,
+        ...prev,
       ]);
 
       setRating(0);
       setComment("");
-      Alert.alert("Success", "✅ Feedback submitted");
-    } catch (err) {
+      const successMsg = "Thank you! Your review has been saved and provider overall ratings updated.";
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+        window.alert(`⭐ Review Submitted!\n${successMsg}`);
+      } else {
+        Alert.alert("⭐ Review Submitted!", successMsg);
+      }
+    } catch (err: any) {
       console.error("Exception submitting review:", err);
-      Alert.alert("Error", "An error occurred. Please try again.");
+      const msg = err.message || "An error occurred. Please try again.";
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+        window.alert(msg);
+      } else {
+        Alert.alert("Error", msg);
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -100,8 +174,8 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
           numberOfLines={3}
           style={styles.inputField}
         />
-        <TouchableOpacity onPress={submit} style={styles.btnPrimary}>
-          <Text style={styles.btnText}>Submit Review</Text>
+        <TouchableOpacity onPress={submit} disabled={submitting} style={[styles.btnPrimary, submitting && { opacity: 0.6 }]}>
+          <Text style={styles.btnText}>{submitting ? "Submitting..." : "Submit Review"}</Text>
         </TouchableOpacity>
       </View>
 

@@ -6,6 +6,7 @@ import { useAllFoods } from "@/hooks/useMyPosts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { openInGoogleMaps } from "@/components/MapPreview";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/hooks/useAuth";
 import { getFoodTimes } from "@/lib/utils";
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -89,6 +90,7 @@ function NGOCard({ ngo, distance, onDonate }: { key?: React.Key; ngo: NGO; dista
 export default function Home() {
   const { foods: dbFoods, loading, refresh } = useAllFoods();
   const { userStats } = useTransactions();
+  const { user } = useAuth();
   const navigation = useNavigation<any>();
 
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
@@ -135,8 +137,18 @@ export default function Home() {
         (f) => f.lat && f.lng && calculateDistance(userLoc.lat, userLoc.lng, f.lat, f.lng) <= 50
       );
     }
+
+    // Sort: Move self-posted food items to the bottom of the feed
+    if (user?.id) {
+      arr.sort((a, b) => {
+        const isSelfA = a.provider.id === user.id ? 1 : 0;
+        const isSelfB = b.provider.id === user.id ? 1 : 0;
+        return isSelfA - isSelfB;
+      });
+    }
+
     return arr;
-  }, [dbFoods, userLoc]);
+  }, [dbFoods, userLoc, user?.id]);
 
   const nearbyNGOs = useMemo(() => {
     let filtered = ngosList;
