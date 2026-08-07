@@ -202,15 +202,15 @@ const App = () => {
   React.useEffect(() => {
     const timer = setTimeout(async () => {
       try {
-        if (Notifications.getPermissionsAsync) {
+        if (typeof Notifications.getPermissionsAsync === 'function') {
           const { status: notifStatus } = await Notifications.getPermissionsAsync();
-          if (notifStatus !== 'granted' && Notifications.requestPermissionsAsync) {
+          if (notifStatus !== 'granted' && typeof Notifications.requestPermissionsAsync === 'function') {
             await Notifications.requestPermissionsAsync();
           }
         }
-        if (Location.getForegroundPermissionsAsync) {
+        if (typeof Location.getForegroundPermissionsAsync === 'function') {
           const { status: locStatus } = await Location.getForegroundPermissionsAsync();
-          if (locStatus !== 'granted' && Location.requestForegroundPermissionsAsync) {
+          if (locStatus !== 'granted' && typeof Location.requestForegroundPermissionsAsync === 'function') {
             await Location.requestForegroundPermissionsAsync();
           }
         }
