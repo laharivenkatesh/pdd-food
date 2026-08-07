@@ -11,21 +11,23 @@ export default function OtaUpdateModal() {
     if (Platform.OS === 'web') return;
     let isMounted = true;
 
-    const timer = setTimeout(async () => {
+    const checkUpdatesImmediately = async () => {
       try {
-        if (!__DEV__ && typeof Updates.checkForUpdateAsync === 'function') {
+        if (typeof Updates.checkForUpdateAsync === 'function') {
           const update = await Updates.checkForUpdateAsync();
           if (update && update.isAvailable && isMounted) {
+            setShowModal(true);
             if (typeof Updates.fetchUpdateAsync === 'function') {
               await Updates.fetchUpdateAsync();
             }
-            setShowModal(true);
           }
         }
       } catch (e) {
-        console.warn("OTA update check notice:", e);
+        console.warn("OTA immediate update check notice:", e);
       }
-    }, 3000);
+    };
+
+    checkUpdatesImmediately();
 
     const handleCustomUpdateTrigger = () => {
       setShowModal(true);
@@ -37,7 +39,6 @@ export default function OtaUpdateModal() {
 
     return () => {
       isMounted = false;
-      clearTimeout(timer);
       if (typeof window !== 'undefined') {
         window.removeEventListener('trigger_app_update', handleCustomUpdateTrigger);
       }
