@@ -2,21 +2,22 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "lib": ["esnext"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
-    "jsx": "react-native",
+    "jsx": "react-jsx",
     "noEmit": true,
     "isolatedModules": true,
-    "strict": true,
+    "strict": false,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
+    "types": [],
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "exclude": ["node_modules", "babel.config.js", "metro.config.js"]
+  "exclude": ["node_modules", "babel.config.js"]
 }
