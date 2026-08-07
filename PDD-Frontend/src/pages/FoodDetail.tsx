@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform, Linking } from 'react-native';
 import { useState, useEffect, useRef } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useAllFoods, useMyPosts } from "@/hooks/useMyPosts";
@@ -31,18 +31,37 @@ export default function FoodDetail() {
   const id = route.params?.id;
 
   const { user, profile } = useAuth();
-  const { transactions, requestFood } = useTransactions();
+  const { transactions, requestFood, markDonated } = useTransactions();
   const { foods, loading: foodsLoading } = useAllFoods();
   const { posts, removePost } = useMyPosts();
 
   const food = foods.find((f) => f.id === id);
   const [selectedPortions, setSelectedPortions] = useState(1);
   const [bookingBusy, setBookingBusy] = useState(false);
+  const [collectorProfiles, setCollectorProfiles] = useState<Record<string, any>>({});
 
   const isDonor = food && (user?.id === food.provider.id || posts.some((p) => p.id === food.id));
   const foodTxs = food ? transactions.filter(t => t.food_id === food.id && t.status !== "cancelled") : [];
   const myTx = user ? foodTxs.find(t => t.collector_id === user.id) : undefined;
   const isCollector = !!myTx;
+
+  useEffect(() => {
+    const fetchCollectorProfiles = async () => {
+      if (foodTxs.length > 0) {
+        const collectorIds = Array.from(new Set(foodTxs.map(t => t.collector_id)));
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("id", collectorIds);
+        if (data) {
+          const map: Record<string, any> = {};
+          data.forEach(p => { map[p.id] = p; });
+          setCollectorProfiles(map);
+        }
+      }
+    };
+    fetchCollectorProfiles();
+  }, [foodTxs.length]);
 
   const { primaryExpiry } = food ? getFoodTimes(food) : { primaryExpiry: 0 };
   const now = Date.now();
@@ -191,13 +210,124 @@ export default function FoodDetail() {
           </View>
         )}
 
-        {/* Booking Section */}
+        {/* Booking Section for Collectors */}
         {!isDonor && !isCollected && !isFullyBooked && (
           <View style={styles.bookingBox}>
-            <Text style={styles.bookingTitle}>Book Portions ({remaining} available)</Text>
+            <Text style={styles.bookingTitle}>Choose Portions ({remaining} remaining)</Text>
+
+            <View style={styles.portionChipsRow}>
+              <TouchableOpacity
+                onPress={() => setSelectedPortions(1)}
+                style={[styles.portionChip, selectedPortions === 1 && styles.portionChipActive]}
+              >
+                <Text style={[styles.portionChipText, selectedPortions === 1 && styles.portionChipTextActive]}>1 Portion</Text>
+              </TouchableOpacity>
+
+              {remaining >= 2 && (
+                <TouchableOpacity
+                  onPress={() => setSelectedPortions(Math.ceil(remaining / 2))}
+                  style={[styles.portionChip, selectedPortions === Math.ceil(remaining / 2) && selectedPortions !== 1 && styles.portionChipActive]}
+                >
+                  <Text style={[styles.portionChipText, selectedPortions === Math.ceil(remaining / 2) && selectedPortions !== 1 && styles.portionChipTextActive]}>
+                    Half ({Math.ceil(remaining / 2)})
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                onPress={() => setSelectedPortions(remaining)}
+                style={[styles.portionChip, selectedPortions === remaining && selectedPortions !== 1 && styles.portionChipActive]}
+              >
+                <Text style={[styles.portionChipText, selectedPortions === remaining && selectedPortions !== 1 && styles.portionChipTextActive]}>
+                  Full ({remaining})
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.counterRow}>
+              <TouchableOpacity
+                onPress={() => setSelectedPortions(prev => Math.max(1, prev - 1))}
+                style={styles.counterBtn}
+              >
+                <Ionicons name="remove" size={18} color="#16A34A" />
+              </TouchableOpacity>
+
+              <Text style={styles.counterVal}>{selectedPortions} Portion{selectedPortions > 1 ? 's' : ''}</Text>
+
+              <TouchableOpacity
+                onPress={() => setSelectedPortions(prev => Math.min(remaining, prev + 1))}
+                style={styles.counterBtn}
+              >
+                <Ionicons name="add" size={18} color="#16A34A" />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity onPress={handleBookPortions} disabled={bookingBusy} style={styles.bookBtn}>
-              <Text style={styles.bookBtnText}>{bookingBusy ? "Booking..." : "🍽️ Book Portions"}</Text>
+              <Text style={styles.bookBtnText}>
+                {bookingBusy ? "Booking..." : `🍽️ Book ${selectedPortions} Portion${selectedPortions > 1 ? 's' : ''}`}
+              </Text>
             </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Donor View: Booked Collectors Details */}
+        {isDonor && (
+          <View style={styles.donorTxsCard}>
+            <View style={styles.donorTxsHeader}>
+              <Ionicons name="people" size={20} color="#16A34A" />
+              <Text style={styles.donorTxsTitle}>Booked Collectors ({foodTxs.length})</Text>
+            </View>
+
+            {foodTxs.length === 0 ? (
+              <Text style={styles.emptyTxsText}>No collector has claimed this food post yet.</Text>
+            ) : (
+              foodTxs.map((t) => {
+                const cProfile = collectorProfiles[t.collector_id];
+                const cName = cProfile?.name || "Community Member";
+                const cPhone = cProfile?.phone || "";
+                const cEmail = cProfile?.email || "";
+
+                return (
+                  <View key={t.id} style={styles.collectorCard}>
+                    <View style={styles.collectorHeader}>
+                      <View style={styles.collectorInfo}>
+                        <Text style={styles.collectorName}>{cName}</Text>
+                        {cPhone ? <Text style={styles.collectorSub}>📞 {cPhone}</Text> : null}
+                        {cEmail ? <Text style={styles.collectorSub}>✉️ {cEmail}</Text> : null}
+                      </View>
+                      <View style={styles.portionBadge}>
+                        <Text style={styles.portionBadgeText}>{t.portions} Portion{t.portions > 1 ? 's' : ''}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.collectorActions}>
+                      {cPhone ? (
+                        <TouchableOpacity
+                          onPress={() => Linking.openURL(`tel:${cPhone}`)}
+                          style={styles.callBtn}
+                        >
+                          <Ionicons name="call" size={14} color="#FFFFFF" />
+                          <Text style={styles.callBtnText}>Call Collector</Text>
+                        </TouchableOpacity>
+                      ) : null}
+
+                      {t.status !== "completed" && (
+                        <TouchableOpacity
+                          onPress={async () => {
+                            await markDonated(t.id);
+                            Alert.alert("Handed Over! 🎉", "Marked as completed.");
+                          }}
+                          style={styles.completeBtn}
+                        >
+                          <Ionicons name="checkmark-circle" size={14} color="#16A34A" />
+                          <Text style={styles.completeBtnText}>Mark Handed Over</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                );
+              })
+            )}
           </View>
         )}
 
@@ -419,5 +549,151 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '800',
     fontSize: 14,
+  },
+  portionChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginVertical: 4,
+  },
+  portionChip: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  portionChipActive: {
+    backgroundColor: '#DCFCE7',
+    borderColor: '#16A34A',
+  },
+  portionChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#4B5563',
+  },
+  portionChipTextActive: {
+    color: '#16A34A',
+  },
+  counterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginVertical: 4,
+  },
+  counterBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  counterVal: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  donorTxsCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 12,
+  },
+  donorTxsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    paddingBottom: 10,
+  },
+  donorTxsTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  emptyTxsText: {
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center',
+    paddingVertical: 12,
+  },
+  collectorCard: {
+    backgroundColor: '#F9FAFB',
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 10,
+  },
+  collectorHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  collectorInfo: {
+    gap: 2,
+  },
+  collectorName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  collectorSub: {
+    fontSize: 12,
+    color: '#4B5563',
+  },
+  portionBadge: {
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  portionBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
+  collectorActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  callBtn: {
+    backgroundColor: '#16A34A',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  callBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  completeBtn: {
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  completeBtnText: {
+    color: '#16A34A',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });
