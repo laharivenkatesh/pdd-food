@@ -1,16 +1,18 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
-import { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, Platform } from 'react-native';
+import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Auth() {
   const navigation = useNavigation<any>();
-  const { login, sendOtp, verifyOtp, resetPassword } = useAuth();
+  const { login, sendOtp, verifyOtp, resetPassword, updateUserPassword } = useAuth();
 
-  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password">("login");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password" | "reset_password">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -19,8 +21,47 @@ export default function Auth() {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== "undefined") {
+      const search = window.location.search || "";
+      const hash = window.location.hash || "";
+      if (search.includes("mode=reset") || hash.includes("type=recovery") || hash.includes("access_token")) {
+        setAuthMode("reset_password");
+      }
+    }
+  }, []);
+
   const handleSubmit = async () => {
     setErrorMessage(null);
+
+    if (authMode === "reset_password") {
+      if (!newPassword || newPassword.length < 6) {
+        const msg = "New password must be at least 6 characters long.";
+        setErrorMessage(msg);
+        Alert.alert("Invalid Password", msg);
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        const msg = "Passwords do not match. Please type the same password in both fields.";
+        setErrorMessage(msg);
+        Alert.alert("Password Mismatch", msg);
+        return;
+      }
+      setBusy(true);
+      const res = await updateUserPassword(newPassword);
+      setBusy(false);
+      if (!res.ok) {
+        const err = "error" in res ? String(res.error) : "Failed to update password.";
+        setErrorMessage(err);
+        Alert.alert("Update Failed", err);
+        return;
+      }
+      setErrorMessage(null);
+      Alert.alert("Success! 🎉", "Your password has been updated successfully!");
+      navigation.navigate("Home" as never);
+      return;
+    }
+
     if (authMode === "forgot_password") {
       if (!email.trim()) {
         const msg = "Please enter your email address to receive password reset instructions.";
@@ -115,7 +156,9 @@ export default function Auth() {
           </View>
           <Text style={styles.title}>Zerra Food Hub</Text>
           <Text style={styles.subtitle}>
-            {authMode === "forgot_password"
+            {authMode === "reset_password"
+              ? "Create a new password for your account"
+              : authMode === "forgot_password"
               ? "Enter your email to receive reset instructions"
               : authMode === "verify_otp"
               ? `Enter the 6-digit OTP sent to ${email}`
@@ -125,7 +168,7 @@ export default function Auth() {
           </Text>
         </View>
 
-        {authMode !== "verify_otp" && authMode !== "forgot_password" && (
+        {authMode !== "verify_otp" && authMode !== "forgot_password" && authMode !== "reset_password" && (
           <View style={styles.tabContainer}>
             <TouchableOpacity
               onPress={() => setAuthMode("login")}
@@ -150,7 +193,47 @@ export default function Auth() {
             </View>
           )}
 
-          {authMode === "forgot_password" ? (
+          {authMode === "reset_password" ? (
+            <>
+              {/* New Password Input */}
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  style={[styles.input, { flex: 1, paddingRight: 40 }]}
+                  placeholder="New Password (min 6 characters)"
+                  secureTextEntry={!showPassword}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeBtn}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={20}
+                    color="#6B7280"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Confirm New Password Input */}
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  style={[styles.input, { flex: 1, paddingRight: 40 }]}
+                  placeholder="Confirm New Password"
+                  secureTextEntry={!showPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+              </View>
+
+              <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
+                <Text style={styles.submitBtnText}>
+                  {busy ? "Updating Password..." : "Update Password & Log In"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : authMode === "forgot_password" ? (
             <>
               <TextInput
                 style={styles.input}

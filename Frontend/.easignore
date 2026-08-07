@@ -1,9 +1,0 @@
-node_modules/
-.expo/
-dist/
-web-build/
-
-# Ignore local native directories so EAS performs clean prebuild on server (Expo CNG)
-android/
-ios/
-*.log
