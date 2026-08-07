@@ -30,6 +30,8 @@ function jsxInJsPlugin() {
 export default defineConfig(({ mode }) => ({
   define: {
     global: "window",
+    __DEV__: JSON.stringify(mode === "development"),
+    "process.env.NODE_ENV": JSON.stringify(mode),
   },
   server: {
     host: "::",
