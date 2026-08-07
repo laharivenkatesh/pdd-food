@@ -94,11 +94,11 @@ create policy "Users can view their own notifications"
 create policy "Users can update their own notifications"
   on public.notifications for update using (auth.uid() = user_id);
 
-create policy "Users can delete their own notifications"
-  on public.notifications for delete using (auth.uid() = user_id);
+drop policy if exists "Transactions: allow all delete" on public.transactions;
+create policy "Transactions: allow all delete" on public.transactions for delete using (true);
 
-create policy "Users can insert notifications"
-  on public.notifications for insert with check (auth.uid() is not null);
+drop policy if exists "Notifications: allow all delete" on public.notifications;
+create policy "Notifications: allow all delete" on public.notifications for delete using (true);
 
 -- ============================================================
 -- 4) CREATE THE TRIGGER FUNCTION FOR FOOD NOTIFICATIONS

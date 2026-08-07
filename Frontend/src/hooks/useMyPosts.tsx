@@ -242,6 +242,7 @@ export function useMyPosts() {
       // Clear linked child records first to satisfy Foreign Key constraints
       await supabase.from("transactions").delete().eq("food_id", id);
       await supabase.from("notifications").delete().eq("food_id", id);
+      await supabase.from("reviews").delete().eq("food_id", id);
       const { error } = await supabase.from("foods").delete().eq("id", id);
       if (error) {
         console.error("Supabase delete post error:", error);
