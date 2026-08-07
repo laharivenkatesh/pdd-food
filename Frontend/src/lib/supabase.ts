@@ -29,34 +29,47 @@ if (!isSupabaseConfigured) {
   );
 }
 
+const inMemoryStorage: Record<string, string> = {};
+
 const CustomStorage = {
-  getItem: (key: string): string | null => {
-    try {
-      if (typeof localStorage !== "undefined") {
-        return localStorage.getItem(key);
+  getItem: (key: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      try {
+        if (typeof localStorage !== "undefined" && localStorage !== null) {
+          resolve(localStorage.getItem(key));
+          return;
+        }
+      } catch (e) {
+        console.warn("Storage getItem notice:", e);
       }
-    } catch (e) {
-      console.warn("Storage getItem notice:", e);
-    }
-    return null;
+      resolve(inMemoryStorage[key] || null);
+    });
   },
-  setItem: (key: string, value: string): void => {
-    try {
-      if (typeof localStorage !== "undefined") {
-        localStorage.setItem(key, value);
+  setItem: (key: string, value: string): Promise<void> => {
+    return new Promise((resolve) => {
+      try {
+        if (typeof localStorage !== "undefined" && localStorage !== null) {
+          localStorage.setItem(key, value);
+        }
+      } catch (e) {
+        console.warn("Storage setItem notice:", e);
       }
-    } catch (e) {
-      console.warn("Storage setItem notice:", e);
-    }
+      inMemoryStorage[key] = value;
+      resolve();
+    });
   },
-  removeItem: (key: string): void => {
-    try {
-      if (typeof localStorage !== "undefined") {
-        localStorage.removeItem(key);
+  removeItem: (key: string): Promise<void> => {
+    return new Promise((resolve) => {
+      try {
+        if (typeof localStorage !== "undefined" && localStorage !== null) {
+          localStorage.removeItem(key);
+        }
+      } catch (e) {
+        console.warn("Storage removeItem notice:", e);
       }
-    } catch (e) {
-      console.warn("Storage removeItem notice:", e);
-    }
+      delete inMemoryStorage[key];
+      resolve();
+    });
   },
 };
 

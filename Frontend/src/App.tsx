@@ -130,9 +130,17 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#FFFFFF', gap: 12 }}>
           <Text style={{ fontSize: 20, fontWeight: '800', color: '#DC2626', marginBottom: 4 }}>App Notice</Text>
-          <Text style={{ fontSize: 13, color: '#4B5563', textAlign: 'center', marginBottom: 8 }}>
+          <Text style={{ fontSize: 13, color: '#4B5563', textAlign: 'center', marginBottom: 4 }}>
             {this.state.error?.message || "An unexpected error occurred."}
           </Text>
+
+          {this.state.error?.stack ? (
+            <ScrollView style={{ maxHeight: 100, width: '100%', maxWidth: 320, backgroundColor: '#F3F4F6', padding: 8, borderRadius: 8 }}>
+              <Text style={{ fontSize: 10, color: '#6B7280', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }}>
+                {this.state.error.stack}
+              </Text>
+            </ScrollView>
+          ) : null}
 
           {this.state.updateStatus ? (
             <Text style={{ fontSize: 12, fontWeight: '700', color: '#16A34A', textAlign: 'center' }}>
