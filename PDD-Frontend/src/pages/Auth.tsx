@@ -9,6 +9,7 @@ export default function Auth() {
   const { login, sendOtp, verifyOtp, resetPassword, updateUserPassword } = useAuth();
 
   const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password" | "reset_password">("login");
+  const [otpReason, setOtpReason] = useState<"signup" | "recovery">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -79,8 +80,9 @@ export default function Auth() {
         return;
       }
       setErrorMessage(null);
-      Alert.alert("Password Reset Sent", `Instructions to reset your password have been sent to ${email}. Check your inbox!`);
-      setAuthMode("login");
+      setOtpReason("recovery");
+      setAuthMode("verify_otp");
+      Alert.alert("Code Sent ✉️", `A 6-digit password reset OTP code has been sent to ${email}. Enter it below to set your new password!`);
       return;
     }
 
@@ -92,7 +94,7 @@ export default function Auth() {
         return;
       }
       setBusy(true);
-      const res = await verifyOtp(email, otp.trim(), "signup");
+      const res = await verifyOtp(email, otp.trim(), otpReason);
       setBusy(false);
       if (!res.ok) {
         const rawErr = "error" in res ? String(res.error) : "Invalid verification code.";
@@ -101,8 +103,13 @@ export default function Auth() {
         return;
       }
       setErrorMessage(null);
-      Alert.alert("Success", "Account verified successfully!");
-      navigation.navigate("Home" as never);
+      if (otpReason === "recovery") {
+        Alert.alert("Code Verified! 🎉", "Please enter your new password below.");
+        setAuthMode("reset_password");
+      } else {
+        Alert.alert("Success", "Account verified successfully!");
+        navigation.navigate("Home" as never);
+      }
       return;
     }
 
@@ -142,6 +149,7 @@ export default function Auth() {
         return;
       }
       setErrorMessage(null);
+      setOtpReason("signup");
       Alert.alert("Verification Code Sent", `Check ${email} for your 6-digit OTP verification code!`);
       setAuthMode("verify_otp");
     }
@@ -150,6 +158,19 @@ export default function Auth() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.card}>
+        {authMode !== "login" && (
+          <TouchableOpacity
+            onPress={() => {
+              setErrorMessage(null);
+              setAuthMode("login");
+              setOtp("");
+            }}
+            style={styles.closeBtn}
+          >
+            <Ionicons name="close-circle" size={28} color="#9CA3AF" />
+          </TouchableOpacity>
+        )}
+
         <View style={styles.header}>
           <View style={styles.logoBadge}>
             <Ionicons name="leaf" size={24} color="#FFFFFF" />
@@ -161,7 +182,7 @@ export default function Auth() {
               : authMode === "forgot_password"
               ? "Enter your email to receive reset instructions"
               : authMode === "verify_otp"
-              ? `Enter the 6-digit OTP sent to ${email}`
+              ? `Enter the 6-digit ${otpReason === "recovery" ? "password reset " : ""}OTP sent to ${email}`
               : authMode === "login"
               ? "Welcome back! Sign in to continue."
               : "Create an account to start sharing food."}
@@ -394,6 +415,14 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     gap: 20,
+    position: 'relative',
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    padding: 4,
   },
   header: {
     alignItems: 'center',
