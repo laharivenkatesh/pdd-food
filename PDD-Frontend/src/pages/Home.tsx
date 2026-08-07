@@ -127,7 +127,7 @@ export default function Home() {
     const now = Date.now();
     arr = arr.filter((f) => {
       const { primaryExpiry } = getFoodTimes(f);
-      return now < primaryExpiry && f.status !== "collected" && f.status !== "deleted";
+      return now < primaryExpiry && f.status !== "collected" && (f.status as string) !== "deleted";
     });
 
     if (userLoc) {
