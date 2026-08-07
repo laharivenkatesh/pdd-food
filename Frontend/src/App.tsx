@@ -135,6 +135,25 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
   };
 
   public render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#F7F5EC', gap: 16 }}>
+          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827' }}>Zerra Food Hub</Text>
+          <Text style={{ fontSize: 14, color: '#4B5563', textAlign: 'center', maxWidth: 300 }}>
+            Fresh update ready! Tap below to open main app.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              this.setState({ hasError: false, error: null });
+              if (typeof window !== 'undefined' && window.location) window.location.reload();
+            }}
+            style={{ backgroundColor: '#16A34A', paddingVertical: 14, paddingHorizontal: 28, borderRadius: 16, alignItems: 'center' }}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 15 }}>Open Main App 🚀</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
     return this.props.children;
   }
 }
