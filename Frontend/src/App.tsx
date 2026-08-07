@@ -83,30 +83,44 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
   private handleForceUpdate = async () => {
     this.setState({ checkingUpdate: true, updateStatus: "Checking for updates..." });
     try {
-      if (typeof Updates.checkForUpdateAsync === 'function') {
-        const update = await Updates.checkForUpdateAsync();
-        if (update && update.isAvailable) {
-          if (typeof Updates.fetchUpdateAsync === 'function') {
-            await Updates.fetchUpdateAsync();
-          }
-          if (typeof Updates.reloadAsync === 'function') {
-            await Updates.reloadAsync();
-            return;
+      const updatePromise = (async () => {
+        if (typeof Updates.checkForUpdateAsync === 'function') {
+          const update = await Updates.checkForUpdateAsync();
+          if (update && update.isAvailable) {
+            this.setState({ updateStatus: "Downloading update..." });
+            if (typeof Updates.fetchUpdateAsync === 'function') {
+              await Updates.fetchUpdateAsync();
+            }
+            if (typeof Updates.reloadAsync === 'function') {
+              await Updates.reloadAsync();
+              return true;
+            }
           }
         }
+        return false;
+      })();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Update fetch timeout")), 8000)
+      );
+
+      const reloaded = await Promise.race([updatePromise, timeoutPromise]);
+      if (!reloaded) {
+        if (typeof Updates.reloadAsync === 'function') {
+          await Updates.reloadAsync();
+        } else if (typeof window !== 'undefined') {
+          window.location.reload();
+        } else {
+          this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "" });
+        }
       }
+    } catch {
       if (typeof Updates.reloadAsync === 'function') {
-        await Updates.reloadAsync();
+        try { await Updates.reloadAsync(); } catch {}
       } else if (typeof window !== 'undefined') {
         window.location.reload();
       } else {
-        this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "Reloaded!" });
-      }
-    } catch {
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      } else {
-        this.setState({ hasError: false, error: null, checkingUpdate: false });
+        this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "App reloaded!" });
       }
     }
   };

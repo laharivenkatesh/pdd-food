@@ -15,29 +15,38 @@ export default function Auth() {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [busy, setBusy] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async () => {
+    setErrorMessage(null);
     if (authMode === "verify_otp") {
       if (!otp.trim() || otp.trim().length < 6) {
-        Alert.alert("Invalid Code", "Please enter the 6-digit OTP code sent to your email.");
+        const msg = "Please enter the 6-digit OTP code sent to your email.";
+        setErrorMessage(msg);
+        Alert.alert("Invalid Code", msg);
         return;
       }
       setBusy(true);
       const res = await verifyOtp(email, otp.trim(), "signup");
       setBusy(false);
       if (!res.ok) {
-        Alert.alert("Verification Failed", "error" in res ? res.error : "Invalid verification code.");
+        const rawErr = "error" in res ? String(res.error) : "Invalid verification code.";
+        setErrorMessage(rawErr);
+        Alert.alert("Verification Failed", rawErr);
         return;
       }
+      setErrorMessage(null);
       Alert.alert("Success", "Account verified successfully!");
       navigation.navigate("Home" as never);
       return;
     }
 
     if (!email || !password) {
-      Alert.alert("Missing Fields", "Please enter your email and password.");
+      const msg = "Please enter your email and password.";
+      setErrorMessage(msg);
+      Alert.alert("Missing Fields", msg);
       return;
     }
 
@@ -46,18 +55,31 @@ export default function Auth() {
       const res = await login(email, password);
       setBusy(false);
       if (!res.ok) {
-        Alert.alert("Login Failed", "error" in res ? res.error : "Failed to log in.");
+        let friendlyErr = "error" in res ? String(res.error) : "Failed to log in.";
+        if (friendlyErr.toLowerCase().includes("invalid login credentials")) {
+          friendlyErr = "Incorrect email or password. If you haven't created an account yet, please tap 'Sign Up' first!";
+        } else if (friendlyErr.toLowerCase().includes("user not found")) {
+          friendlyErr = "No account exists for this email address. Please tap 'Sign Up' to create one!";
+        } else if (friendlyErr.toLowerCase().includes("email not confirmed")) {
+          friendlyErr = "Your email address is not verified yet. Please check your inbox for the verification code.";
+        }
+        setErrorMessage(friendlyErr);
+        Alert.alert("Login Failed", friendlyErr);
         return;
       }
+      setErrorMessage(null);
       Alert.alert("Success", "Login successful!");
       navigation.navigate("Home" as never);
     } else {
       const res = await sendOtp(email, password, name, phone, "signup");
       setBusy(false);
       if (!res.ok) {
-        Alert.alert("Registration Failed", "error" in res ? res.error : "An error occurred.");
+        const friendlyErr = "error" in res ? String(res.error) : "An error occurred during registration.";
+        setErrorMessage(friendlyErr);
+        Alert.alert("Registration Failed", friendlyErr);
         return;
       }
+      setErrorMessage(null);
       Alert.alert("Verification Code Sent", `Check ${email} for your 6-digit OTP verification code!`);
       setAuthMode("verify_otp");
     }
@@ -98,6 +120,13 @@ export default function Auth() {
         )}
 
         <View style={styles.form}>
+          {errorMessage && (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle" size={18} color="#DC2626" />
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          )}
+
           {authMode === "verify_otp" ? (
             <>
               {/* Clean 6-Digit OTP Box Grid without placeholders */}
@@ -344,5 +373,22 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '600',
     fontSize: 13,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+    borderWidth: 1,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  errorText: {
+    flex: 1,
+    color: '#991B1B',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
