@@ -248,7 +248,7 @@ export const verifyOtp = async (req, res) => {
         role: user.role,
       },
       JWT_SECRET,
-      { expiresIn: "7d" } // Session valid for 7 days
+      { expiresIn: "3650d" } // Long-lived session: valid until manual logout (10 years)
     );
 
     return res.status(200).json({
