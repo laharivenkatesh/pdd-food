@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Platform, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../lib/supabase";
 
 const toastFn = (msg: string) => {
@@ -48,12 +49,77 @@ interface AuthContextValue {
   refreshProfile: () => Promise<void>;
 }
 
+const LOCAL_STORAGE_USER = "pdd_auth_user_session_v2";
+const LOCAL_STORAGE_PROFILE = "pdd_auth_profile_session_v2";
+
+// Helper to save session state across browser reloads & app restarts
+const saveAuthToStorage = async (u: JWTUser | null, p: UserProfile | null) => {
+  try {
+    if (u && p) {
+      const uStr = JSON.stringify(u);
+      const pStr = JSON.stringify(p);
+      if (Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage !== null) {
+        localStorage.setItem(LOCAL_STORAGE_USER, uStr);
+        localStorage.setItem(LOCAL_STORAGE_PROFILE, pStr);
+      }
+      await AsyncStorage.setItem(LOCAL_STORAGE_USER, uStr);
+      await AsyncStorage.setItem(LOCAL_STORAGE_PROFILE, pStr);
+    }
+  } catch (e) {
+    console.warn("Storage save notice:", e);
+  }
+};
+
+// Helper to clear session storage ONLY when user manually logs out
+const clearAuthFromStorage = async () => {
+  try {
+    if (Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage !== null) {
+      localStorage.removeItem(LOCAL_STORAGE_USER);
+      localStorage.removeItem(LOCAL_STORAGE_PROFILE);
+    }
+    await AsyncStorage.removeItem(LOCAL_STORAGE_USER);
+    await AsyncStorage.removeItem(LOCAL_STORAGE_PROFILE);
+  } catch (e) {
+    console.warn("Storage clear notice:", e);
+  }
+};
+
+const getInitialUser = (): JWTUser | null => {
+  try {
+    if (Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage !== null) {
+      const stored = localStorage.getItem(LOCAL_STORAGE_USER);
+      if (stored) return JSON.parse(stored);
+    }
+  } catch (e) {}
+  return null;
+};
+
+const getInitialProfile = (): UserProfile | null => {
+  try {
+    if (Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage !== null) {
+      const stored = localStorage.getItem(LOCAL_STORAGE_PROFILE);
+      if (stored) return JSON.parse(stored);
+    }
+  } catch (e) {}
+  return null;
+};
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<JWTUser | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUserState] = useState<JWTUser | null>(getInitialUser());
+  const [profile, setProfileState] = useState<UserProfile | null>(getInitialProfile());
+  const [loading, setLoading] = useState<boolean>(!getInitialUser());
+
+  const setUser = (u: JWTUser | null) => {
+    setUserState(u);
+    if (u && profile) saveAuthToStorage(u, profile);
+  };
+
+  const setProfile = (p: UserProfile | null) => {
+    setProfileState(p);
+    if (user && p) saveAuthToStorage(user, p);
+  };
 
   const refreshProfile = async () => {
     try {
@@ -62,14 +128,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         const userId = session.user.id;
 
-        // Set active user session & profile INSTANTLY (< 1ms)
-        setUser({
+        const newUser: JWTUser = {
           id: userId,
           email: session.user.email || "",
           phone: session.user.user_metadata?.phone || "",
-        });
+        };
 
-        setProfile({
+        const newProfile: UserProfile = {
           id: userId,
           name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
           email: session.user.email || "",
@@ -78,40 +143,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: session.user.user_metadata?.role || "Community Member",
           trustScore: null,
           reviewCount: 0,
-        });
+        };
 
-        // Unblock auth loading state immediately
+        setUserState(newUser);
+        setProfileState(newProfile);
+        saveAuthToStorage(newUser, newProfile);
         setLoading(false);
-
-        // Perform non-blocking background fetch for user review ratings
-        (async () => {
-          try {
-            const { data: foodsData } = await supabase
-              .from("foods")
-              .select("id")
-              .eq("user_id", userId);
-
-            if (foodsData && foodsData.length > 0) {
-              const foodIds = foodsData.map((f: any) => f.id);
-              const { data: reviewsData } = await supabase
-                .from("reviews")
-                .select("rating")
-                .in("food_id", foodIds);
-
-              if (reviewsData && reviewsData.length > 0) {
-                const total = reviewsData.reduce((acc: number, curr: any) => acc + (curr.rating || 5), 0);
-                const avg = Number((total / reviewsData.length).toFixed(1));
-                setProfile((prev) => prev ? { ...prev, trustScore: avg, reviewCount: reviewsData.length } : null);
-              }
-            }
-          } catch (e) {
-            // Non-critical background computation error swallowed
-          }
-        })();
       } else {
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
+        // If Supabase session is null but local storage has user, preserve logged in user!
+        if (user && profile) {
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
       }
     } catch (err) {
       console.error("Auth restoration error:", err);
@@ -120,33 +164,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Handle OAuth PKCE code exchange if redirected with ?code=
-    const handleInitialAuth = async () => {
-      if (Platform.OS === 'web' && typeof window !== "undefined" && window.location) {
-        const params = new URLSearchParams(window.location.search || "");
-        const code = params.get("code");
-        if (code) {
-          try {
-            await (supabase.auth as any).exchangeCodeForSession(code);
-          } catch (e) {
-            console.error("OAuth code exchange error:", e);
-          }
+    const restoreSession = async () => {
+      try {
+        let uStr: string | null = null;
+        let pStr: string | null = null;
+
+        if (Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage !== null) {
+          uStr = localStorage.getItem(LOCAL_STORAGE_USER);
+          pStr = localStorage.getItem(LOCAL_STORAGE_PROFILE);
         }
+
+        if (!uStr) {
+          uStr = await AsyncStorage.getItem(LOCAL_STORAGE_USER);
+          pStr = await AsyncStorage.getItem(LOCAL_STORAGE_PROFILE);
+        }
+
+        if (uStr && pStr) {
+          const loadedUser = JSON.parse(uStr);
+          const loadedProfile = JSON.parse(pStr);
+          setUserState(loadedUser);
+          setProfileState(loadedProfile);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.warn("Error restoring stored session:", e);
       }
+
       await refreshProfile();
     };
 
-    handleInitialAuth();
+    restoreSession();
 
     // Listen to Supabase auth changes dynamically in background
     const { data: { subscription } } = (supabase.auth as any).onAuthStateChange((_event: any, session: any) => {
       if (session?.user) {
-        setUser({
+        const newUser: JWTUser = {
           id: session.user.id,
           email: session.user.email || "",
           phone: session.user.user_metadata?.phone || "",
-        });
-        setProfile((prev) => prev || {
+        };
+
+        const newProfile: UserProfile = {
           id: session.user.id,
           name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
           email: session.user.email || "",
@@ -155,15 +214,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: session.user.user_metadata?.role || "Community Member",
           trustScore: null,
           reviewCount: 0,
-        });
-        setLoading(false);
+        };
 
-        if (Platform.OS === 'web' && _event === "PASSWORD_RECOVERY" && typeof window !== "undefined" && window.location) {
-          window.location.href = "/auth?mode=reset";
-        }
-      } else {
-        setUser(null);
-        setProfile(null);
+        setUserState(newUser);
+        setProfileState(newProfile);
+        saveAuthToStorage(newUser, newProfile);
         setLoading(false);
       }
     });
@@ -172,81 +227,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
-  // Separate async effect to load extended database profile attributes
-  useEffect(() => {
-    if (!user) return;
-
-    let active = true;
-
-    const syncAndFetchDbProfile = async () => {
-      try {
-        const { data: existingProfile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        const email = user.email || "";
-        const phone = user.phone || "";
-
-        if (!existingProfile) {
-          const { data: newProfile } = await supabase
-            .from("profiles")
-            .insert({
-              id: user.id,
-              name: "User",
-              phone: phone,
-              email: email,
-              role: "Community Member"
-            })
-            .select()
-            .single();
-
-          if (newProfile && active) {
-            setProfile((prev) => {
-              if (!prev) return null;
-              return {
-                ...prev,
-                name: newProfile.name,
-                phone: newProfile.phone || "",
-                role: newProfile.role,
-                email: newProfile.email || email,
-              };
-            });
-          }
-        } else {
-          if (!existingProfile.email) {
-            await supabase
-              .from("profiles")
-              .update({ email: email })
-              .eq("id", user.id);
-          }
-
-          if (active) {
-            setProfile((prev) => {
-              if (!prev) return null;
-              return {
-                ...prev,
-                name: existingProfile.name || prev.name,
-                phone: existingProfile.phone || prev.phone,
-                role: existingProfile.role || prev.role,
-                email: existingProfile.email || email,
-              };
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Error syncing and fetching db profile:", err);
-      }
-    };
-
-    syncAndFetchDbProfile();
-
-    return () => {
-      active = false;
-    };
-  }, [user]);
 
   /**
    * Logs in a user using email and password
@@ -260,12 +240,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (error) throw error;
       if (data?.session?.user) {
-        setUser({
+        const newUser: JWTUser = {
           id: data.session.user.id,
           email: data.session.user.email || "",
           phone: data.session.user.user_metadata?.phone || "",
-        });
-        setProfile({
+        };
+        const newProfile: UserProfile = {
           id: data.session.user.id,
           name: data.session.user.user_metadata?.full_name || data.session.user.user_metadata?.name || data.session.user.email?.split("@")[0] || "Community Member",
           email: data.session.user.email || "",
@@ -274,7 +254,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: data.session.user.user_metadata?.role || "Community Member",
           trustScore: null,
           reviewCount: 0,
-        });
+        };
+        setUserState(newUser);
+        setProfileState(newProfile);
+        await saveAuthToStorage(newUser, newProfile);
       }
       return { ok: true as const };
     } catch (err: any) {
@@ -288,8 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sendOtp = async (email: string, password?: string, name?: string, phone?: string, mode?: "signup" | "login") => {
     try {
       if (mode === "signup" && password) {
-        // Sign up logic - sends an OTP to email automatically if confirm email is enabled!
-        const { data, error } = await (supabase.auth as any).signUp({
+        const { error } = await (supabase.auth as any).signUp({
           email,
           password,
           options: {
@@ -299,11 +281,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         });
-        
         if (error) throw error;
         return { ok: true as const };
       } else {
-        // Login Logic - Since they want OTP on login, we use signInWithOtp
         const { error } = await (supabase.auth as any).signInWithOtp({
           email,
         });
@@ -334,12 +314,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       if (data.session?.user) {
-        setUser({
+        const newUser: JWTUser = {
           id: data.session.user.id,
           email: data.session.user.email || "",
           phone: data.session.user.user_metadata?.phone || "",
-        });
-        setProfile({
+        };
+        const newProfile: UserProfile = {
           id: data.session.user.id,
           name: data.session.user.user_metadata?.name || "Community Member",
           email: data.session.user.email || "",
@@ -348,7 +328,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: data.session.user.user_metadata?.role || "Community Member",
           trustScore: null,
           reviewCount: 0,
-        });
+        };
+        setUserState(newUser);
+        setProfileState(newProfile);
+        await saveAuthToStorage(newUser, newProfile);
       }
 
       return { ok: true as const };
@@ -411,16 +394,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Logs out the user from the current session
+   * Logs out the user from the current session ONLY when manually clicked
    */
   const logout = async () => {
     try {
+      await clearAuthFromStorage();
       await (supabase.auth as any).signOut();
-      setUser(null);
-      setProfile(null);
+      setUserState(null);
+      setProfileState(null);
       toast.success("Successfully logged out.");
     } catch (err) {
       console.error("Logout error:", err);
+      setUserState(null);
+      setProfileState(null);
     }
   };
 
