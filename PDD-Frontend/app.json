@@ -44,12 +44,6 @@
     "web": {
       "favicon": "./public/favicon.ico"
     },
-    "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/c820fc0c-5f0b-490c-a647-b4636f495dd6"
-    },
     "runtimeVersion": "1.0.0",
     "plugins": [
       "expo-updates",
@@ -63,9 +57,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "c820fc0c-5f0b-490c-a647-b4636f495dd6"
+        "projectId": "98c8025a-162c-423a-8572-f215243486e6"
       }
     },
-    "owner": "pdd-palagiri"
+    "owner": "lahari19"
   }
 }
