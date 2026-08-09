@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function Auth() {
   const navigation = useNavigation<any>();
-  const { user, loading, login, sendOtp, verifyOtp, resetPassword, updateUserPassword } = useAuth();
+  const { login, sendOtp, verifyOtp, resetPassword, updateUserPassword } = useAuth();
 
   const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password" | "reset_link_sent" | "reset_password">("login");
   const [otpReason, setOtpReason] = useState<"signup" | "recovery">("signup");
@@ -21,12 +21,6 @@ export default function Auth() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    if (!loading && user) {
-      navigation.navigate("Home" as never);
-    }
-  }, [user, loading, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'web' && typeof window !== "undefined") {

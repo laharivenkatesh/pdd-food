@@ -113,27 +113,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setUser = (u: JWTUser | null) => {
     setUserState(u);
-    if (u) {
-      const p = profile || {
-        id: u.id,
-        name: u.name || u.email.split("@")[0] || "Community Member",
-        email: u.email,
-        phone: u.phone || "",
-        created_at: new Date().toISOString(),
-        role: "Community Member",
-        trustScore: null,
-        reviewCount: 0,
-      };
-      saveAuthToStorage(u, p);
-    }
+    if (u && profile) saveAuthToStorage(u, profile);
   };
 
   const setProfile = (p: UserProfile | null) => {
     setProfileState(p);
-    if (p) {
-      const u = user || { id: p.id, email: p.email, name: p.name, phone: p.phone };
-      saveAuthToStorage(u, p);
-    }
+    if (user && p) saveAuthToStorage(user, p);
   };
 
   const refreshProfile = async () => {
@@ -163,10 +148,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserState(newUser);
         setProfileState(newProfile);
         saveAuthToStorage(newUser, newProfile);
+        setLoading(false);
+      } else {
+        // If Supabase session is null but local storage has user, preserve logged in user!
+        if (user && profile) {
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
       }
     } catch (err) {
-      console.warn("Auth restoration notice:", err);
-    } finally {
+      console.error("Auth restoration error:", err);
       setLoading(false);
     }
   };
@@ -193,8 +185,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserState(loadedUser);
           setProfileState(loadedProfile);
           setLoading(false);
-          // Background sync with Supabase session without logging user out if offline/unreachable
-          refreshProfile();
           return;
         }
       } catch (e) {

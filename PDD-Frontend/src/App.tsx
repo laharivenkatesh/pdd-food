@@ -200,7 +200,7 @@ const App = () => {
               <View style={{ flex: 1, width: '100%', height: '100%' }}>
                 <NavigationContainer>
                   <Layout>
-                    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
+                    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Auth">
                       <Stack.Screen name="Auth" component={Auth} />
                       <Stack.Screen name="Home" component={Home} />
                       <Stack.Screen name="Expired" component={Expired} />
