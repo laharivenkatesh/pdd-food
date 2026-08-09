@@ -1,0 +1,19 @@
+{
+  "testSuiteName": "PDD-Food Web Application End-to-End Selenium Testing Suite",
+  "targetUrl": "https://pdd-food-new.vercel.app",
+  "credentials": {
+    "email": "bunny.akki21@gmail.com",
+    "password": "Bunny123"
+  },
+  "browser": "chrome",
+  "headless": true,
+  "defaultTimeoutMs": 15000,
+  "multiTabVerification": {
+    "enabled": true,
+    "maxTabs": 3
+  },
+  "excelReport": {
+    "outputDirectory": "./",
+    "fileName": "Selenium_report.xlsx"
+  }
+}

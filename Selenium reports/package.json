@@ -1,0 +1,16 @@
+{
+  "name": "pdd-food-selenium-tests",
+  "version": "1.0.0",
+  "description": "End-to-End Selenium Testing Suite & Excel Report Generator for PDD Food Vercel App (300+ unique test cases)",
+  "main": "run_selenium_tests.js",
+  "type": "module",
+  "scripts": {
+    "test:selenium": "node run_selenium_tests.js",
+    "generate:report": "node generate_excel_report.js"
+  },
+  "dependencies": {
+    "chromedriver": "^133.0.0",
+    "exceljs": "^4.4.0",
+    "selenium-webdriver": "^4.28.0"
+  }
+}
