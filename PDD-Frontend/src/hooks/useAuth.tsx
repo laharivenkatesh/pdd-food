@@ -55,14 +55,18 @@ const LOCAL_STORAGE_PROFILE = "pdd_auth_profile_session_v2";
 // Helper to save session state across browser reloads & app restarts
 const saveAuthToStorage = async (u: JWTUser | null, p: UserProfile | null) => {
   try {
-    if (u && p) {
+    if (u) {
       const uStr = JSON.stringify(u);
-      const pStr = JSON.stringify(p);
       if (Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage !== null) {
         localStorage.setItem(LOCAL_STORAGE_USER, uStr);
-        localStorage.setItem(LOCAL_STORAGE_PROFILE, pStr);
       }
       await AsyncStorage.setItem(LOCAL_STORAGE_USER, uStr);
+    }
+    if (p) {
+      const pStr = JSON.stringify(p);
+      if (Platform.OS === 'web' && typeof localStorage !== 'undefined' && localStorage !== null) {
+        localStorage.setItem(LOCAL_STORAGE_PROFILE, pStr);
+      }
       await AsyncStorage.setItem(LOCAL_STORAGE_PROFILE, pStr);
     }
   } catch (e) {
@@ -113,12 +117,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setUser = (u: JWTUser | null) => {
     setUserState(u);
-    if (u && profile) saveAuthToStorage(u, profile);
+    if (u) {
+      const p = profile || {
+        id: u.id,
+        name: u.name || u.email?.split("@")[0] || "Community Member",
+        email: u.email,
+        phone: u.phone || "",
+        created_at: new Date().toISOString(),
+        role: "Community Member",
+        trustScore: null,
+        reviewCount: 0,
+      };
+      saveAuthToStorage(u, p);
+    }
   };
 
   const setProfile = (p: UserProfile | null) => {
     setProfileState(p);
-    if (user && p) saveAuthToStorage(user, p);
+    if (p) {
+      const u = user || { id: p.id, email: p.email, name: p.name, phone: p.phone };
+      saveAuthToStorage(u, p);
+    }
   };
 
   const refreshProfile = async () => {
@@ -151,14 +170,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       } else {
         // If Supabase session is null but local storage has user, preserve logged in user!
-        if (user && profile) {
-          setLoading(false);
-        } else {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     } catch (err) {
-      console.error("Auth restoration error:", err);
+      console.warn("Auth restoration notice:", err);
       setLoading(false);
     }
   };

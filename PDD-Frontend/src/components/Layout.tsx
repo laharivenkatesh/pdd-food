@@ -113,21 +113,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Text style={styles.brandText}>Zerra</Text>
           </TouchableOpacity>
 
-          {user && (
-            <View style={styles.headerRight}>
-              <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
-                <Ionicons name="notifications-outline" size={22} color="#1F2937" />
-                {unreadCount > 0 && (
-                  <View style={styles.unreadBadge}>
-                    <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
-                <Text style={styles.logoutBtnText}>Log Out</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
+              <Ionicons name="notifications-outline" size={22} color="#1F2937" />
+              {unreadCount > 0 && (
+                <View style={styles.unreadBadge}>
+                  <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
+              <Text style={styles.logoutBtnText}>Log Out</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
