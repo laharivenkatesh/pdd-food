@@ -104,30 +104,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <View style={styles.container}>
       {/* Top Header */}
-      {!hideNav && (
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
-            <View style={styles.logoBadge}>
-              <Ionicons name="leaf" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={styles.brandText}>Zerra</Text>
-          </TouchableOpacity>
-
-          <View style={styles.headerRight}>
-            <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={22} color="#1F2937" />
-              {unreadCount > 0 && (
-                <View style={styles.unreadBadge}>
-                  <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
-              <Text style={styles.logoutBtnText}>Log Out</Text>
-            </TouchableOpacity>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
+          <View style={styles.logoBadge}>
+            <Ionicons name="leaf" size={20} color="#FFFFFF" />
           </View>
+          <Text style={styles.brandText}>Zerra</Text>
+        </TouchableOpacity>
+
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
+            <Ionicons name="notifications-outline" size={22} color="#1F2937" />
+            {unreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
+            <Text style={styles.logoutBtnText}>Log Out</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </View>
 
       {/* Main Content Area */}
       <View style={styles.content}>
@@ -170,34 +168,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </Modal>
 
       {/* Bottom Navigation */}
-      {!hideNav && (
-        <View style={styles.bottomNav}>
-          <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.navItem}>
-            <Ionicons name="home-outline" size={22} color={currentRouteName === "Home" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, currentRouteName === "Home" && styles.navLabelActive]}>Home</Text>
-          </TouchableOpacity>
+      <View style={styles.bottomNav}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.navItem}>
+          <Ionicons name="home-outline" size={22} color={currentRouteName === "Home" ? "#16A34A" : "#6B7280"} />
+          <Text style={[styles.navLabel, currentRouteName === "Home" && styles.navLabelActive]}>Home</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Expired" as never)} style={styles.navItem}>
-            <Ionicons name="time-outline" size={22} color={currentRouteName === "Expired" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, currentRouteName === "Expired" && styles.navLabelActive]}>Expired</Text>
-          </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Expired" as never)} style={styles.navItem}>
+          <Ionicons name="time-outline" size={22} color={currentRouteName === "Expired" ? "#16A34A" : "#6B7280"} />
+          <Text style={[styles.navLabel, currentRouteName === "Expired" && styles.navLabelActive]}>Expired</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={[styles.navItem, styles.navHighlight]}>
-            <Ionicons name="add-circle" size={32} color="#16A34A" />
-            <Text style={[styles.navLabel, currentRouteName === "PostFood" && styles.navLabelActive]}>Post</Text>
-          </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={[styles.navItem, styles.navHighlight]}>
+          <Ionicons name="add-circle" size={32} color="#16A34A" />
+          <Text style={[styles.navLabel, currentRouteName === "PostFood" && styles.navLabelActive]}>Post</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Activity" as never)} style={styles.navItem}>
-            <Ionicons name="list-outline" size={22} color={currentRouteName === "Activity" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>Activity</Text>
-          </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Activity" as never)} style={styles.navItem}>
+          <Ionicons name="list-outline" size={22} color={currentRouteName === "Activity" ? "#16A34A" : "#6B7280"} />
+          <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>Activity</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("NGOs" as never)} style={styles.navItem}>
-            <Ionicons name="heart-outline" size={22} color={currentRouteName === "NGOs" ? "#16A34A" : "#6B7280"} />
-            <Text style={[styles.navLabel, currentRouteName === "NGOs" && styles.navLabelActive]}>NGOs</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        <TouchableOpacity onPress={() => navigation.navigate("NGOs" as never)} style={styles.navItem}>
+          <Ionicons name="heart-outline" size={22} color={currentRouteName === "NGOs" ? "#16A34A" : "#6B7280"} />
+          <Text style={[styles.navLabel, currentRouteName === "NGOs" && styles.navLabelActive]}>NGOs</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
