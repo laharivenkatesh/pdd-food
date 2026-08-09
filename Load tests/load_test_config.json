@@ -1,0 +1,49 @@
+{
+  "testName": "Baseline Load Test",
+  "description": "System performance evaluation under normal expected concurrent user traffic",
+  "targetUrl": "http://localhost:5000",
+  "concurrency": 100,
+  "durationSeconds": 60,
+  "slaThresholds": {
+    "targetRps": 120,
+    "avgResponseTimeMs": 250,
+    "minResponseTimeMs": 50,
+    "maxResponseTimeMs": 1500,
+    "p95ResponseTimeMs": 500,
+    "p99ResponseTimeMs": 1000,
+    "maxErrorRatePercent": 1.0
+  },
+  "endpoints": [
+    {
+      "name": "Health Check",
+      "path": "/api/health",
+      "method": "GET",
+      "weight": 30
+    },
+    {
+      "name": "Root Index API",
+      "path": "/",
+      "method": "GET",
+      "weight": 30
+    },
+    {
+      "name": "Send OTP Auth",
+      "path": "/api/auth/send-otp",
+      "method": "POST",
+      "weight": 20,
+      "body": {
+        "phoneNumber": "+919876543210"
+      }
+    },
+    {
+      "name": "Verify OTP Auth",
+      "path": "/api/auth/verify-otp",
+      "method": "POST",
+      "weight": 20,
+      "body": {
+        "phoneNumber": "+919876543210",
+        "otp": "123456"
+      }
+    }
+  ]
+}

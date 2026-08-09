@@ -1,0 +1,15 @@
+{
+  "name": "pdd-food-load-tests",
+  "version": "1.0.0",
+  "description": "Baseline load testing suite for PDD Food API (100 concurrent virtual users, 1 minute duration)",
+  "main": "run_load_test.js",
+  "type": "module",
+  "scripts": {
+    "test:load": "node run_load_test.js",
+    "generate:excel": "node generate_excel_report.js"
+  },
+  "dependencies": {
+    "autocannon": "^7.15.0",
+    "exceljs": "^4.4.0"
+  }
+}
