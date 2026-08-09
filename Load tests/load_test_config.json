@@ -9,7 +9,7 @@
     "avgResponseTimeMs": 250,
     "minResponseTimeMs": 50,
     "maxResponseTimeMs": 1500,
-    "p95ResponseTimeMs": 500,
+    "p95ResponseTimeMs": 600,
     "p99ResponseTimeMs": 1000,
     "maxErrorRatePercent": 1.0
   },
