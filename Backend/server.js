@@ -7,7 +7,23 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    "https://pdd-food-new.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000"
+].filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+    },
+    credentials: true
+}));
 
 // Health check
 app.get("/", (req, res) => {
