@@ -1,4 +1,4 @@
-export type FoodStatus = "available" | "reserved" | "collected";
+export type FoodStatus = "available" | "reserved" | "collected" | "expired";
 export type Purpose = "humans" | "animals" | "both";
 export type Confidence = "High" | "Medium" | "Low";
 export type Category = "Veg" | "Non-Veg" | "Bakery" | "Fried" | "Sweets";
