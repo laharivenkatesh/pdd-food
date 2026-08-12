@@ -138,6 +138,25 @@ export default function FoodDetail() {
     }
   };
 
+const getCategoryStyle = (category: string) => {
+  switch (category) {
+    case "Veg":
+      return { bg: "#F0FDF4", border: "#DCFCE7", text: "#15803D", emoji: "🥗" };
+    case "Non-Veg":
+      return { bg: "#FEF2F2", border: "#FEE2E2", text: "#B91C1C", emoji: "🍗" };
+    case "Bakery":
+      return { bg: "#FFFBEB", border: "#FEF3C7", text: "#B45309", emoji: "🥐" };
+    case "Fried":
+      return { bg: "#FFF7ED", border: "#FFEDD5", text: "#C2410C", emoji: "🍟" };
+    case "Sweets":
+      return { bg: "#FDF2F8", border: "#FCE7F3", text: "#BE185D", emoji: "🍰" };
+    default:
+      return { bg: "#F0FDF4", border: "#DCFCE7", text: "#15803D", emoji: "🍲" };
+  }
+};
+
+  const catStyle = getCategoryStyle(food.category);
+
   return (
     <ScrollView style={styles.container}>
       {/* Image & Header */}
@@ -145,11 +164,9 @@ export default function FoodDetail() {
         {food.image ? (
           <Image source={{ uri: food.image }} style={styles.image} />
         ) : (
-          <View style={styles.noImageBannerDetail}>
-            <Text style={styles.noImageEmojiDetail}>
-              {food.category === "Veg" ? "🥗" : food.category === "Non-Veg" ? "🍗" : food.category === "Bakery" ? "🥐" : food.category === "Fried" ? "🍟" : food.category === "Sweets" ? "🍰" : "🍲"}
-            </Text>
-            <Text style={styles.noImageCategoryTextDetail}>{food.category} Food Listing</Text>
+          <View style={[styles.noImageBannerDetail, { backgroundColor: catStyle.bg }]}>
+            <Text style={styles.noImageEmojiDetail}>{catStyle.emoji}</Text>
+            <Text style={[styles.noImageCategoryTextDetail, { color: catStyle.text }]}>{food.category} Food Listing</Text>
           </View>
         )}
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>

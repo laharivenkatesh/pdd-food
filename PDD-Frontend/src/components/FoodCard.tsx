@@ -9,6 +9,23 @@ import { useMyPosts } from "@/hooks/useMyPosts";
 
 const purposeIcon = (p: string) => (p === "humans" ? "🧑 Humans" : p === "animals" ? "🐾 Animals" : "♻️ Both");
 
+const getCategoryStyle = (category: string) => {
+  switch (category) {
+    case "Veg":
+      return { bg: "#F0FDF4", border: "#DCFCE7", text: "#15803D", emoji: "🥗" };
+    case "Non-Veg":
+      return { bg: "#FEF2F2", border: "#FEE2E2", text: "#B91C1C", emoji: "🍗" };
+    case "Bakery":
+      return { bg: "#FFFBEB", border: "#FEF3C7", text: "#B45309", emoji: "🥐" };
+    case "Fried":
+      return { bg: "#FFF7ED", border: "#FFEDD5", text: "#C2410C", emoji: "🍟" };
+    case "Sweets":
+      return { bg: "#FDF2F8", border: "#FCE7F3", text: "#BE185D", emoji: "🍰" };
+    default:
+      return { bg: "#F0FDF4", border: "#DCFCE7", text: "#15803D", emoji: "🍲" };
+  }
+};
+
 export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
@@ -61,6 +78,8 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
     }
   };
 
+  const catStyle = getCategoryStyle(food.category);
+
   return (
     <View style={[styles.card, isDonor && styles.selfPostedCard]}>
       <TouchableOpacity 
@@ -70,11 +89,9 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
         {food.image ? (
           <Image source={{ uri: food.image }} style={styles.image} />
         ) : (
-          <View style={styles.noImageBanner}>
-            <Text style={styles.noImageEmoji}>
-              {food.category === "Veg" ? "🥗" : food.category === "Non-Veg" ? "🍗" : food.category === "Bakery" ? "🥐" : food.category === "Fried" ? "🍟" : food.category === "Sweets" ? "🍰" : "🍲"}
-            </Text>
-            <Text style={styles.noImageCategoryText}>{food.category} Food Listing</Text>
+          <View style={[styles.noImageBanner, { backgroundColor: catStyle.bg, borderBottomColor: catStyle.border }]}>
+            <Text style={styles.noImageEmoji}>{catStyle.emoji}</Text>
+            <Text style={[styles.noImageCategoryText, { color: catStyle.text }]}>{food.category} Food Listing</Text>
           </View>
         )}
         <View style={[styles.badge, { backgroundColor: statusBg }]}>

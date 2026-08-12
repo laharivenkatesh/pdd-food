@@ -380,7 +380,7 @@ export default function PostFood() {
           />
         </View>
 
-        {/* Section 4: Photo Attachment */}
+        {/* Section 4: Photo Attachment (Optional) */}
         <View style={styles.cardSection}>
           <View style={styles.cardHeader}>
             <Ionicons name="camera" size={18} color="#16A34A" />
@@ -416,7 +416,7 @@ export default function PostFood() {
               <View style={styles.optionalNoticeBox}>
                 <Ionicons name="information-circle" size={16} color="#059669" />
                 <Text style={styles.optionalNoticeText}>
-                  No photo selected? Simply type details and publish your food post!
+                  Photo is optional. If skipped, no photo will be attached.
                 </Text>
               </View>
             </View>
