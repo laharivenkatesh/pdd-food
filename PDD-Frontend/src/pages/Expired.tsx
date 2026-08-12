@@ -95,26 +95,26 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
 
   return (
     <View style={styles.card}>
-      <TouchableOpacity 
-        onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
-        style={styles.imageContainer}
-      >
-        {food.image ? (
+      {food.image ? (
+        <TouchableOpacity 
+          onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
+          style={styles.imageContainer}
+        >
           <Image source={{ uri: food.image }} style={styles.image} />
-        ) : (
-          <View style={styles.noImageBannerExpired}>
-            <Text style={styles.noImageEmojiExpired}>
-              {food.category === "Veg" ? "🥗" : food.category === "Non-Veg" ? "🍗" : food.category === "Bakery" ? "🥐" : food.category === "Fried" ? "🍟" : food.category === "Sweets" ? "🍰" : "🍲"}
-            </Text>
-            <Text style={styles.noImageCategoryTextExpired}>{food.category} Food Listing</Text>
+          <View style={[styles.badge, { backgroundColor: statusBg }]}>
+            <Text style={styles.badgeText}>{statusText}</Text>
           </View>
-        )}
-        <View style={[styles.badge, { backgroundColor: statusBg }]}>
-          <Text style={styles.badgeText}>{statusText}</Text>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      ) : null}
 
       <View style={styles.body}>
+        {!food.image && (
+          <View style={{ flexDirection: 'row', gap: 6, marginBottom: 8 }}>
+            <View style={[styles.badge, { backgroundColor: statusBg, position: 'relative', top: 0, left: 0 }]}>
+              <Text style={styles.badgeText}>{statusText}</Text>
+            </View>
+          </View>
+        )}
         <View style={styles.titleRow}>
           <View style={styles.titleCol}>
             <Text style={styles.title}>{food.name}</Text>

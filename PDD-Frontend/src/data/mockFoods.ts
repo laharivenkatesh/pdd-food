@@ -11,7 +11,7 @@ export const mockFoods: FoodItem[] = [
   {
     id: "f1",
     name: "Vegetable Biryani",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80",
+    image: "",
     feeds: 8,
     price: 0,
     expiryHours: 0.5,
@@ -40,7 +40,7 @@ export const mockFoods: FoodItem[] = [
   {
     id: "f2",
     name: "Fresh Bread Loaves",
-    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
+    image: "",
     feeds: 15,
     price: 0,
     expiryHours: 6,
@@ -65,7 +65,7 @@ export const mockFoods: FoodItem[] = [
   {
     id: "f3",
     name: "Chicken Curry",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80",
+    image: "",
     feeds: 6,
     price: 80,
     expiryHours: 3,
@@ -90,7 +90,7 @@ export const mockFoods: FoodItem[] = [
   {
     id: "f4",
     name: "Gulab Jamun",
-    image: "https://images.unsplash.com/photo-1601303516534-bf12c5c7b9c8?w=800&q=80",
+    image: "",
     feeds: 20,
     price: 50,
     expiryHours: 12,
@@ -115,7 +115,7 @@ export const mockFoods: FoodItem[] = [
   {
     id: "f5",
     name: "Samosa Batch",
-    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80",
+    image: "",
     feeds: 12,
     price: 0,
     expiryHours: 2,
@@ -140,7 +140,7 @@ export const mockFoods: FoodItem[] = [
   {
     id: "f6",
     name: "Leftover Rice & Dal",
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80",
+    image: "",
     feeds: 10,
     price: 0,
     expiryHours: 4,

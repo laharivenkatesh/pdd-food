@@ -82,36 +82,51 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
 
   return (
     <View style={[styles.card, isDonor && styles.selfPostedCard]}>
-      <TouchableOpacity 
-        onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
-        style={styles.imageContainer}
-      >
-        {food.image ? (
+      {food.image ? (
+        <TouchableOpacity 
+          onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
+          style={styles.imageContainer}
+        >
           <Image source={{ uri: food.image }} style={styles.image} />
-        ) : (
-          <View style={[styles.noImageBanner, { backgroundColor: catStyle.bg, borderBottomColor: catStyle.border }]}>
-            <Text style={styles.noImageEmoji}>{catStyle.emoji}</Text>
-            <Text style={[styles.noImageCategoryText, { color: catStyle.text }]}>{food.category} Food Listing</Text>
+          <View style={[styles.badge, { backgroundColor: statusBg }]}>
+            <Text style={[styles.badgeText, { color: statusTextColor }]}>{statusText}</Text>
           </View>
-        )}
-        <View style={[styles.badge, { backgroundColor: statusBg }]}>
-          <Text style={[styles.badgeText, { color: statusTextColor }]}>{statusText}</Text>
-        </View>
 
-        {isDonor && (
-          <View style={styles.selfPostedBadge}>
-            <Text style={styles.selfPostedBadgeText}>🌱 Posted by You</Text>
-          </View>
-        )}
+          {isDonor && (
+            <View style={styles.selfPostedBadge}>
+              <Text style={styles.selfPostedBadgeText}>🌱 Posted by You</Text>
+            </View>
+          )}
 
-        {food.purpose === "animals" && (
-          <View style={[styles.badge, styles.animalBadge, isDonor && { top: 40 }]}>
-            <Text style={styles.animalBadgeText}>🐾 Animal Priority</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+          {food.purpose === "animals" && (
+            <View style={[styles.badge, styles.animalBadge, isDonor && { top: 40 }]}>
+              <Text style={styles.animalBadgeText}>🐾 Animal Priority</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      ) : null}
 
       <View style={styles.body}>
+        {!food.image && (
+          <View style={styles.inlineBadgesRow}>
+            <View style={[styles.inlineBadge, { backgroundColor: statusBg }]}>
+              <Text style={[styles.badgeText, { color: statusTextColor }]}>{statusText}</Text>
+            </View>
+            <View style={[styles.inlineBadge, { backgroundColor: catStyle.bg, borderColor: catStyle.border, borderWidth: 1 }]}>
+              <Text style={[styles.badgeText, { color: catStyle.text }]}>{catStyle.emoji} {food.category}</Text>
+            </View>
+            {isDonor && (
+              <View style={styles.inlineSelfBadge}>
+                <Text style={styles.selfPostedBadgeText}>🌱 Posted by You</Text>
+              </View>
+            )}
+            {food.purpose === "animals" && (
+              <View style={styles.inlineAnimalBadge}>
+                <Text style={styles.animalBadgeText}>🐾 Animal Priority</Text>
+              </View>
+            )}
+          </View>
+        )}
         <TouchableOpacity 
           onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
         >
@@ -457,22 +472,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  noImageBanner: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#F0FDF4',
+  inlineBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#DCFCE7',
   },
-  noImageEmoji: {
-    fontSize: 42,
+  inlineBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
-  noImageCategoryText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#15803D',
+  inlineSelfBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  inlineAnimalBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
   },
 });

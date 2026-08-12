@@ -159,25 +159,33 @@ const getCategoryStyle = (category: string) => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Image & Header */}
-      <View style={styles.imageContainer}>
-        {food.image ? (
+      {/* Header */}
+      {food.image ? (
+        <View style={styles.imageContainer}>
           <Image source={{ uri: food.image }} style={styles.image} />
-        ) : (
-          <View style={[styles.noImageBannerDetail, { backgroundColor: catStyle.bg }]}>
-            <Text style={styles.noImageEmojiDetail}>{catStyle.emoji}</Text>
-            <Text style={[styles.noImageCategoryTextDetail, { color: catStyle.text }]}>{food.category} Food Listing</Text>
-          </View>
-        )}
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={20} color="#111827" />
-        </TouchableOpacity>
-        {isDonor && (
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
-            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color="#111827" />
           </TouchableOpacity>
-        )}
-      </View>
+          {isDonor && (
+            <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
+              <Ionicons name="trash-outline" size={20} color="#EF4444" />
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <View style={styles.noImageTopBar}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.topBarBackBtn}>
+            <Ionicons name="arrow-back" size={20} color="#111827" />
+            <Text style={styles.topBarBackText}>Back to Feed</Text>
+          </TouchableOpacity>
+          {isDonor && (
+            <TouchableOpacity onPress={handleDelete} style={styles.topBarDeleteBtn}>
+              <Ionicons name="trash-outline" size={18} color="#EF4444" />
+              <Text style={styles.topBarDeleteText}>Delete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       <View style={styles.content}>
         <View style={styles.titleRow}>
@@ -719,20 +727,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
   },
-  noImageBannerDetail: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#F0FDF4',
+  noImageTopBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  topBarBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  noImageEmojiDetail: {
-    fontSize: 64,
+  topBarBackText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#111827',
   },
-  noImageCategoryTextDetail: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#15803D',
+  topBarDeleteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  topBarDeleteText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#EF4444',
   },
 });
