@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal, Platform, useWindowDimensions } from 'react-native';
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -64,6 +64,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const { t, setLanguage, currentLanguageOption, languageOptions } = useLanguage();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -105,18 +107,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.desktopContainer]}>
       {/* Top Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, isDesktop && styles.desktopHeader]}>
         <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
           <View style={styles.logoBadge}>
-            <Ionicons name="leaf" size={20} color="#FFFFFF" />
+            <Ionicons name="restaurant" size={20} color="#FFFFFF" />
           </View>
           <Text style={styles.brandText}>Zerra</Text>
         </TouchableOpacity>
 
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
+            <Ionicons name="globe-outline" size={16} color="#16A34A" />
             <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
             <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
             <Ionicons name="chevron-down" size={13} color="#374151" />
@@ -137,7 +140,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </View>
 
       {/* Main Content Area */}
-      <View style={styles.content}>
+      <View style={[styles.content, isDesktop && styles.desktopContent]}>
         {children}
       </View>
 
@@ -257,6 +260,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F5EC',
   },
+  desktopContainer: {
+    backgroundColor: '#FAF8F5',
+  },
   header: {
     height: 60,
     backgroundColor: '#FFFFFF',
@@ -266,6 +272,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+  },
+  desktopHeader: {
+    maxWidth: 1200,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  desktopContent: {
+    maxWidth: 1200,
+    width: '100%',
+    alignSelf: 'center',
   },
   brandRow: {
     flexDirection: 'row',

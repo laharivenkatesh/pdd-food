@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface MapPreviewProps {
   lat: number;
@@ -11,6 +12,7 @@ interface MapPreviewProps {
 }
 
 export default function MapPreview({ lat, lng, label, height = 128, interactive = false }: MapPreviewProps) {
+  const { t } = useLanguage();
   return (
     <TouchableOpacity 
       onPress={() => openInGoogleMaps(lat, lng)}
@@ -18,9 +20,9 @@ export default function MapPreview({ lat, lng, label, height = 128, interactive 
     >
       <View style={styles.content}>
         <Ionicons name="location-sharp" size={28} color="#16A34A" />
-        <Text style={styles.label}>{label || "View Location on Google Maps"}</Text>
+        <Text style={styles.label}>{label || t('viewLocationOnMaps')}</Text>
         <Text style={styles.subtext}>Coordinates: {lat.toFixed(4)}, {lng.toFixed(4)}</Text>
-        <Text style={styles.actionText}>Tap to open Maps ↗</Text>
+        <Text style={styles.actionText}>{t('tapToOpenMaps')}</Text>
       </View>
     </TouchableOpacity>
   );

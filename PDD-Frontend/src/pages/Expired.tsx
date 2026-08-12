@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform, useWindowDimensions } from 'react-native';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useAllFoods, useMyPosts } from "@/hooks/useMyPosts";
@@ -47,6 +47,10 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { posts, removePost } = useMyPosts();
+  const { t } = useLanguage();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
+
   const isDonor = user?.id === food.provider.id || posts.some((p) => p.id === food.id);
   const { secondaryExpiry } = getFoodTimes(food);
   const isReserved = food.status === "reserved";
@@ -57,14 +61,14 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
   const remaining = Math.max(0, total - booked);
   const isFullyBooked = remaining <= 0;
 
-  let statusText = food.status as string;
+  let statusText = t('availableBadge');
   let statusBg = "#16A34A";
 
   if (isCollected) {
-    statusText = "collected";
+    statusText = t('collectedBadge');
     statusBg = "#9CA3AF";
   } else if (isReserved || isFullyBooked) {
-    statusText = isFullyBooked ? "booked" : "reserved";
+    statusText = isFullyBooked ? t('bookedBadge') : t('bookedBadge');
     statusBg = isFullyBooked ? "#EF4444" : "#F59E0B";
   }
 
@@ -95,7 +99,7 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, isDesktop && styles.desktopCard]}>
       {food.image ? (
         <TouchableOpacity 
           onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
@@ -119,9 +123,9 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
         <View style={styles.titleRow}>
           <View style={styles.titleCol}>
             <Text style={styles.title}>{food.name}</Text>
-            <Text style={styles.infoText}>👥 Feeds {total} people · {remaining} remaining</Text>
+            <Text style={styles.infoText}>👥 {t('feedsPeople', { count: total })} · {t('portionsLeft', { remaining, total })}</Text>
           </View>
-          <Text style={styles.priceText}>{food.price === 0 ? "FREE" : `₹${food.price}`}</Text>
+          <Text style={styles.priceText}>{food.price === 0 ? t('free') : `₹${food.price}`}</Text>
         </View>
 
         <View style={styles.tagsRow}>
@@ -137,7 +141,7 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
             onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
             style={[styles.btnPrimary, isCollected && styles.btnCollected]}
           >
-            <Text style={styles.btnPrimaryText}>{isCollected ? "Collected" : "Claim Expired Food"}</Text>
+            <Text style={styles.btnPrimaryText}>{isCollected ? t('collectedBadge') : t('viewDetails')}</Text>
           </TouchableOpacity>
           {isDonor && (
             <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
@@ -155,6 +159,9 @@ export default function Expired() {
   const { foods: dbFoods, loading, refresh } = useAllFoods();
   const [activeCats, setActiveCats] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useLanguage();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
 
   const toggleCat = (c: Category) =>
     setActiveCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
@@ -185,7 +192,7 @@ export default function Expired() {
     return arr;
   }, [activeCats, searchQuery, dbFoods]);
 
-  const { t } = useLanguage();
+  const getCatLabel = (c: Category) => (c === "Veg" ? t('veg') : c === "Non-Veg" ? t('nonVeg') : c === "Bakery" ? t('bakery') : c === "Fried" ? t('fried') : c === "Sweets" ? t('sweets') : c);
 
   return (
     <ScrollView style={styles.pageContainer} contentContainerStyle={styles.scrollContent}>
@@ -196,8 +203,8 @@ export default function Expired() {
             <Ionicons name="arrow-back" size={20} color="#374151" />
           </TouchableOpacity>
           <View>
-            <Text style={styles.pageTitle}>{t('navExpired')} Outlet</Text>
-            <Text style={styles.pageSubtitle}>Requestable for 3 more hours</Text>
+            <Text style={styles.pageTitle}>{t('expiredOutletTitle')}</Text>
+            <Text style={styles.pageSubtitle}>{t('requestableHours')}</Text>
           </View>
         </View>
         <TouchableOpacity onPress={() => refresh()} style={styles.refreshBtn}>
@@ -209,7 +216,7 @@ export default function Expired() {
       <View style={styles.infoBanner}>
         <Ionicons name="time" size={20} color="#D97706" />
         <Text style={styles.infoBannerText}>
-          💡 Sustainability Spotlight: These items remain requestable for pets, composting, or quick consumption for another 3 hours.
+          {t('sustainabilitySpotlight')}
         </Text>
       </View>
 
@@ -217,7 +224,7 @@ export default function Expired() {
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color="#9CA3AF" />
         <TextInput
-          placeholder="Search expired items..."
+          placeholder={t('searchExpiredPlaceholder')}
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={styles.searchInput}
@@ -227,7 +234,7 @@ export default function Expired() {
       {/* Categories */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
         {categories.map((c) => (
-          <Chip key={c} label={c} active={activeCats.includes(c)} onClick={() => toggleCat(c)} />
+          <Chip key={c} label={getCatLabel(c)} active={activeCats.includes(c)} onClick={() => toggleCat(c)} />
         ))}
       </ScrollView>
 
@@ -235,15 +242,15 @@ export default function Expired() {
       {loading ? (
         <Text style={styles.loadingText}>Loading expired items...</Text>
       ) : (
-        <View style={styles.listContainer}>
+        <View style={[styles.listContainer, isDesktop && styles.desktopGrid]}>
           {list.map((f) => (
             <ExpiredFoodCard key={f.id} food={f} />
           ))}
           {list.length === 0 && (
             <View style={styles.emptyCard}>
               <Text style={{ fontSize: 40 }}>🎉</Text>
-              <Text style={styles.emptyTitle}>Zero Food Expired!</Text>
-              <Text style={styles.emptySubtitle}>All food listings were saved before they reached expiration.</Text>
+              <Text style={styles.emptyTitle}>{t('zeroExpiredTitle')}</Text>
+              <Text style={styles.emptySubtitle}>{t('zeroExpiredSub')}</Text>
             </View>
           )}
         </View>
@@ -341,6 +348,12 @@ const styles = StyleSheet.create({
   listContainer: {
     gap: 16,
   },
+  desktopGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
   emptyCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
@@ -351,12 +364,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#111827',
   },
   emptySubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     textAlign: 'center',
   },
@@ -366,6 +379,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#FDE68A',
+  },
+  desktopCard: {
+    width: '48.5%',
   },
   imageContainer: {
     height: 160,

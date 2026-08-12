@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform, useWindowDimensions } from 'react-native';
 import { FoodItem } from "@/types/food";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
@@ -7,8 +7,6 @@ import LiveCountdown from "./LiveCountdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyPosts } from "@/hooks/useMyPosts";
 import { useLanguage } from "@/context/LanguageContext";
-
-const purposeIcon = (p: string) => (p === "humans" ? "🧑 Humans" : p === "animals" ? "🐾 Animals" : "♻️ Both");
 
 const getCategoryStyle = (category: string) => {
   switch (category) {
@@ -31,6 +29,10 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { posts, removePost } = useMyPosts();
+  const { t } = useLanguage();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
+
   const isDonor = user?.id === food.provider.id || posts.some((p) => p.id === food.id);
   const isUrgent = food.expiryHours < 1;
   const isReserved = food.status === "reserved";
@@ -41,15 +43,15 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   const remaining = Math.max(0, total - booked);
   const isFullyBooked = remaining <= 0;
 
-  let statusText = food.status as string;
+  let statusText = t('availableBadge');
   let statusBg = "#16A34A";
   let statusTextColor = "#FFFFFF";
 
   if (isCollected) {
-    statusText = "collected";
+    statusText = t('collectedBadge');
     statusBg = "#9CA3AF";
   } else if (isReserved || isFullyBooked) {
-    statusText = isFullyBooked ? "booked" : "reserved";
+    statusText = isFullyBooked ? t('bookedBadge') : t('bookedBadge');
     statusBg = isFullyBooked ? "#EF4444" : "#F59E0B";
   }
 
@@ -80,11 +82,11 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   };
 
   const catStyle = getCategoryStyle(food.category);
-
-  const { t } = useLanguage();
+  const translatedCategory = food.category === "Veg" ? t('veg') : food.category === "Non-Veg" ? t('nonVeg') : food.category === "Bakery" ? t('bakery') : food.category === "Fried" ? t('fried') : food.category === "Sweets" ? t('sweets') : food.category;
+  const purposeLabel = food.purpose === "humans" ? "🧑 " + t('categoryLabel') : food.purpose === "animals" ? "🐾 " + t('animalPriority') : "♻️ " + t('allPartners');
 
   return (
-    <View style={[styles.card, isDonor && styles.selfPostedCard]}>
+    <View style={[styles.card, isDonor && styles.selfPostedCard, isDesktop && styles.desktopCard]}>
       {food.image ? (
         <TouchableOpacity 
           onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
@@ -97,13 +99,13 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
 
           {isDonor && (
             <View style={styles.selfPostedBadge}>
-              <Text style={styles.selfPostedBadgeText}>🌱 Posted by You</Text>
+              <Text style={styles.selfPostedBadgeText}>{t('postedByYou')}</Text>
             </View>
           )}
 
           {food.purpose === "animals" && (
             <View style={[styles.badge, styles.animalBadge, isDonor && { top: 40 }]}>
-              <Text style={styles.animalBadgeText}>🐾 Animal Priority</Text>
+              <Text style={styles.animalBadgeText}>{t('animalPriority')}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -116,16 +118,16 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
               <Text style={[styles.badgeText, { color: statusTextColor }]}>{statusText}</Text>
             </View>
             <View style={[styles.inlineBadge, { backgroundColor: catStyle.bg, borderColor: catStyle.border, borderWidth: 1 }]}>
-              <Text style={[styles.badgeText, { color: catStyle.text }]}>{catStyle.emoji} {food.category}</Text>
+              <Text style={[styles.badgeText, { color: catStyle.text }]}>{catStyle.emoji} {translatedCategory}</Text>
             </View>
             {isDonor && (
               <View style={styles.inlineSelfBadge}>
-                <Text style={styles.selfPostedBadgeText}>🌱 Posted by You</Text>
+                <Text style={styles.selfPostedBadgeText}>{t('postedByYou')}</Text>
               </View>
             )}
             {food.purpose === "animals" && (
               <View style={styles.inlineAnimalBadge}>
-                <Text style={styles.animalBadgeText}>🐾 Animal Priority</Text>
+                <Text style={styles.animalBadgeText}>{t('animalPriority')}</Text>
               </View>
             )}
           </View>
@@ -161,11 +163,11 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
             <LiveCountdown postedAt={food.postedAt} expiryHours={food.expiryHours} urgent={isUrgent} />
           </View>
           <View style={styles.pillAccent}>
-            <Text style={styles.pillText}>{purposeIcon(food.purpose)}</Text>
+            <Text style={styles.pillText}>{purposeLabel}</Text>
           </View>
           <View style={styles.pillMuted}>
             <Text style={styles.pillText}>
-              {food.safeForAnimals ? "✔ Safe for animals" : "⚠️ Not for animals"}
+              {food.safeForAnimals ? t('safeForAnimalsTag') : t('notForAnimalsTag')}
             </Text>
           </View>
         </View>
@@ -178,7 +180,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
 
         <TouchableOpacity onPress={() => openInGoogleMaps(food.lat, food.lng)} style={styles.mapsBtn}>
           <Ionicons name="navigate-outline" size={16} color="#1F2937" />
-          <Text style={styles.mapsBtnText}>Open in Maps</Text>
+          <Text style={styles.mapsBtnText}>{t('openInMaps')}</Text>
         </TouchableOpacity>
 
         <View style={styles.chipRow}>
@@ -211,7 +213,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
             onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
             style={[styles.btnPrimary, isCollected && styles.btnCollected]}
           >
-            <Text style={styles.btnPrimaryText}>{isCollected ? "Collected" : t('viewDetails')}</Text>
+            <Text style={styles.btnPrimaryText}>{isCollected ? t('collectedBadge') : t('viewDetails')}</Text>
           </TouchableOpacity>
           {isDonor && (
             <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
@@ -242,6 +244,9 @@ const styles = StyleSheet.create({
     borderColor: '#86EFAC',
     borderWidth: 1.5,
     backgroundColor: '#F0FDF4',
+  },
+  desktopCard: {
+    width: '48.5%',
   },
   selfPostedBadge: {
     position: 'absolute',

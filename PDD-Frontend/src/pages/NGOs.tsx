@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking, useWindowDimensions } from 'react-native';
 import { useEffect, useState, useMemo } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { openInGoogleMaps } from "@/components/MapPreview";
@@ -55,6 +55,8 @@ export default function NGOs() {
   const [filter, setFilter] = useState<FilterType>("All");
   const navigation = useNavigation<any>();
   const { t } = useLanguage();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
 
   const nearbyNGOs = useMemo(() => {
     let list = ngosList;
@@ -77,9 +79,9 @@ export default function NGOs() {
         ))}
       </View>
 
-      <View style={styles.listContainer}>
+      <View style={[styles.listContainer, isDesktop && styles.desktopGrid]}>
         {nearbyNGOs.map((ngo) => (
-          <View key={ngo.id} style={styles.card}>
+          <View key={ngo.id} style={[styles.card, isDesktop && styles.desktopCard]}>
             <Text style={styles.ngoName}>{ngo.name}</Text>
             {ngo.description && <Text style={styles.ngoDesc}>{ngo.description}</Text>}
             <Text style={styles.address}>📍 {ngo.address}</Text>
@@ -91,11 +93,11 @@ export default function NGOs() {
             <View style={styles.btnRow}>
               <TouchableOpacity onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)} style={styles.btnNav}>
                 <Ionicons name="navigate" size={16} color="#1F2937" />
-                <Text style={styles.btnNavText}>Directions</Text>
+                <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={styles.btnDonate}>
                 <Ionicons name="heart" size={16} color="#FFFFFF" />
-                <Text style={styles.btnDonateText}>Donate Food</Text>
+                <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -133,6 +135,12 @@ const styles = StyleSheet.create({
   listContainer: {
     gap: 12,
   },
+  desktopGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
   card: {
     backgroundColor: '#FFFFFF',
     padding: 16,
@@ -140,6 +148,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     gap: 8,
+  },
+  desktopCard: {
+    width: '48.5%',
   },
   ngoName: {
     fontSize: 18,

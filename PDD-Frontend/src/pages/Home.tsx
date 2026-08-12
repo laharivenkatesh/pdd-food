@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking, useWindowDimensions } from 'react-native';
 import { useEffect, useMemo, useState, useCallback } from "react";
 import FoodCard from "@/components/FoodCard";
 import Chip from "@/components/Chip";
@@ -165,6 +165,8 @@ export default function Home() {
   }, [userLoc, ngoFilter]);
 
   const { t } = useLanguage();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -182,9 +184,9 @@ export default function Home() {
           <Ionicons name="flame" size={24} color="#EF4444" />
           <View>
             <Text style={styles.statsTitle}>
-              {userStats.postsMade > 0 ? `${userStats.postsMade} Posts Made` : "Start Sharing Food"}
+              {userStats.postsMade > 0 ? t('postsMadeCount', { count: userStats.postsMade }) : t('startSharingFood')}
             </Text>
-            <Text style={styles.statsSubtitle}>Keep saving food!</Text>
+            <Text style={styles.statsSubtitle}>{t('keepSavingFood')}</Text>
           </View>
         </View>
         <Ionicons name="trophy" size={24} color="#16A34A" />
@@ -194,7 +196,7 @@ export default function Home() {
       {loading ? (
         <Text style={styles.loadingText}>Loading available food...</Text>
       ) : (
-        <View style={styles.listContainer}>
+        <View style={[styles.listContainer, isDesktop && styles.desktopGrid]}>
           {list.map((f) => <FoodCard key={f.id} food={f} />)}
           {list.length === 0 && (
             <View style={styles.emptyBox}>
@@ -211,7 +213,7 @@ export default function Home() {
         <TouchableOpacity onPress={() => setShowNGOs(!showNGOs)} style={styles.ngoHeader}>
           <View style={styles.ngoHeaderLeft}>
             <Ionicons name="heart" size={20} color="#16A34A" />
-            <Text style={styles.ngoHeaderTitle}>Nearby NGOs</Text>
+            <Text style={styles.ngoHeaderTitle}>{t('ngoTitle')}</Text>
             <View style={styles.ngoCountBadge}>
               <Text style={styles.ngoCountText}>{nearbyNGOs.length}</Text>
             </View>
@@ -307,6 +309,12 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
   },
   listContainer: {
+    gap: 16,
+  },
+  desktopGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: 16,
   },
   emptyBox: {

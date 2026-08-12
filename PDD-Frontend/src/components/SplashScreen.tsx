@@ -23,7 +23,7 @@ export default function SplashScreen() {
 
         <View style={styles.textContainer}>
           <View style={styles.titleRow}>
-            <Ionicons name="leaf" size={32} color="#34D399" />
+            <Ionicons name="restaurant" size={32} color="#34D399" />
             <Text style={styles.titleText}>Zerra</Text>
           </View>
           <Text style={styles.subtitleText}>

@@ -122,6 +122,38 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "Password",
     loginBtn: "Log In to Account",
     signUpBtn: "Create New Account",
+
+    // Timers & Badges
+    expiresInPrefix: "⏳ Expires in {{time}}",
+    urgentLeft: "🔥 Urgent · {{time}} left",
+    expiredText: "Expired",
+    bookedBadge: "BOOKED",
+    availableBadge: "AVAILABLE",
+    collectedBadge: "COLLECTED",
+    postedByYou: "🌱 Posted by You",
+    animalPriority: "🐾 Animal Priority",
+    safeForAnimalsTag: "✔ Safe for animals",
+    notForAnimalsTag: "⚠️ Not for animals",
+    openInMaps: "Open in Maps 📍",
+    tapToOpenMaps: "Tap to open Maps ↗",
+    viewLocationOnMaps: "View Location on Google Maps",
+
+    // Banner & Stats
+    startSharingFood: "Start Sharing Food",
+    keepSavingFood: "Keep saving food!",
+    postsMadeCount: "{{count}} Posts Made",
+
+    // Expired Page
+    expiredOutletTitle: "Expired Food Outlet",
+    requestableHours: "Requestable for 3 more hours",
+    sustainabilitySpotlight: "Sustainability Spotlight: These items remain requestable for pets, composting, or quick consumption for another 3 hours.",
+    searchExpiredPlaceholder: "Search expired items...",
+    zeroExpiredTitle: "Zero Food Expired! 🎉",
+    zeroExpiredSub: "All food listings were saved before they reached expiration.",
+
+    // NGO Actions
+    directionsBtn: "Directions 🧭",
+    donateFoodBtn: "Donate Food ❤️",
   },
 
   hi: {
@@ -213,6 +245,38 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "पासवर्ड",
     loginBtn: "लॉग इन करें",
     signUpBtn: "नया खाता बनाएं",
+
+    // Timers & Badges
+    expiresInPrefix: "⏳ {{time}} में समाप्त होगा",
+    urgentLeft: "🔥 अति आवश्यक · {{time}} शेष",
+    expiredText: "समाप्त",
+    bookedBadge: "आरक्षित",
+    availableBadge: "उपलब्ध",
+    collectedBadge: "प्राप्त",
+    postedByYou: "🌱 आपके द्वारा पोस्ट किया गया",
+    animalPriority: "🐾 पशु प्राथमिकता",
+    safeForAnimalsTag: "✔ पशुओं के लिए सुरक्षित",
+    notForAnimalsTag: "⚠️ पशुओं के लिए नहीं",
+    openInMaps: "मैप्स में खोलें 📍",
+    tapToOpenMaps: "मैप्स खोलने के लिए टैप करें ↗",
+    viewLocationOnMaps: "गूगल मैप्स पर स्थान देखें",
+
+    // Banner & Stats
+    startSharingFood: "भोजन साझा करना शुरू करें",
+    keepSavingFood: "अन्न बचाते रहें!",
+    postsMadeCount: "{{count}} पोस्ट की गईं",
+
+    // Expired Page
+    expiredOutletTitle: "समाप्त भोजन केंद्र",
+    requestableHours: "3 और घंटों के लिए अनुरोध योग्य",
+    sustainabilitySpotlight: "सतत विकास आकर्षण: ये वस्तुएं पशुओं, खाद या त्वरित उपभोग के लिए 3 घंटे उपलब्ध हैं।",
+    searchExpiredPlaceholder: "समाप्त वस्तुएं खोजें...",
+    zeroExpiredTitle: "कोई भोजन समाप्त नहीं हुआ! 🎉",
+    zeroExpiredSub: "सभी भोजन सूचियों को समय सीमा से पहले बचा लिया गया।",
+
+    // NGO Actions
+    directionsBtn: "दिशा-निर्देश 🧭",
+    donateFoodBtn: "भोजन दान करें ❤️",
   },
 
   te: {
@@ -304,6 +368,38 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "పాస్‌వర్డ్",
     loginBtn: "లాగిన్ అవ్వండి",
     signUpBtn: "కొత్త ఖాతా తెరవండి",
+
+    // Timers & Badges
+    expiresInPrefix: "⏳ గడువు {{time}} లో",
+    urgentLeft: "🔥 అత్యవసరం · {{time}} మిగిలి ఉంది",
+    expiredText: "గడువు ముగిసింది",
+    bookedBadge: "బుక్ అయింది",
+    availableBadge: "అందుబాటులో ఉంది",
+    collectedBadge: "స్వీకరించబడింది",
+    postedByYou: "🌱 మీరు పోస్ట్ చేసినది",
+    animalPriority: "🐾 జంతువుల ప్రాధాన్యత",
+    safeForAnimalsTag: "✔ జంతువులకు సురక్షితం",
+    notForAnimalsTag: "⚠️ జంతువులకు కాదు",
+    openInMaps: "మ్యాప్స్‌లో తెరువు 📍",
+    tapToOpenMaps: "మ్యాప్స్‌లో తెరవడానికి నొక్కండి ↗",
+    viewLocationOnMaps: "గూగుల్ మ్యాప్స్‌లో స్థానాన్ని చూడండి",
+
+    // Banner & Stats
+    startSharingFood: "ఆహారాన్ని పంచుకోవడం ప్రారంభించండి",
+    keepSavingFood: "ఆహారాన్ని ఆదా చేస్తూ ఉండండి!",
+    postsMadeCount: "{{count}} పోస్ట్‌లు చేయబడ్డాయి",
+
+    // Expired Page
+    expiredOutletTitle: "గడువు ముగిసిన సరుకుల విభాగం",
+    requestableHours: "మరొక 3 గంటల వరకు కోరవచ్చు",
+    sustainabilitySpotlight: "సుస్థిరత ముఖ్యాంశం: ఈ ఆహార పదార్థాలు పెంపుడు జంతువులకు లేదా ఎరువుగా మరో 3 గంటల వరకు ఉపయోగపడతాయి.",
+    searchExpiredPlaceholder: "గడువు ముగిసిన పదార్థాలను శోధించండి...",
+    zeroExpiredTitle: "ఏ ఆహారం గడువు ముగియలేదు! 🎉",
+    zeroExpiredSub: "అన్ని ఆహార పదార్థాలు గడువు ముగిసేలోపే ఆదా చేయబడ్డాయి.",
+
+    // NGO Actions
+    directionsBtn: "దారి చూపు 🧭",
+    donateFoodBtn: "ఆహారం దానం చేయి ❤️",
   },
 
   ta: {
@@ -395,6 +491,38 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "கடவுச்சொல்",
     loginBtn: "உள்நுழைக",
     signUpBtn: "கணக்கு தொடங்க",
+
+    // Timers & Badges
+    expiresInPrefix: "⏳ {{time}} இல் காலாவதியாகும்",
+    urgentLeft: "🔥 அவசரம் · {{time}} உள்ளது",
+    expiredText: "காலாவதியானது",
+    bookedBadge: "முன்பதிவு செய்யப்பட்டது",
+    availableBadge: "கிடைக்கிறது",
+    collectedBadge: "பெறப்பட்டது",
+    postedByYou: "🌱 நீங்கள் பதிவிட்டது",
+    animalPriority: "🐾 விலங்குகள் முன்னுரிமை",
+    safeForAnimalsTag: "✔ விலங்குகளுக்கு பாதுகாப்பானது",
+    notForAnimalsTag: "⚠️ விலங்குகளுக்கு இல்லை",
+    openInMaps: "மேப்பில் திறக்க 📍",
+    tapToOpenMaps: "மேப்பில் திறக்க தட்டவும் ↗",
+    viewLocationOnMaps: "கூகுள் மேப்பில் இடத்தை பார்க்க",
+
+    // Banner & Stats
+    startSharingFood: "உணவை பகிரத் தொடங்குங்கள்",
+    keepSavingFood: "உணவை சேமித்துக் கொண்டே இருங்கள்!",
+    postsMadeCount: "{{count}} பதிவுகள் செய்யப்பட்டது",
+
+    // Expired Page
+    expiredOutletTitle: "காலாவதியான உணவு பிரிவு",
+    requestableHours: "மேலும் 3 மணிநேరத்திற்கு கோரலாம்",
+    sustainabilitySpotlight: "சுற்றுச்சூழல் விழிப்புணர்வு: இந்த உணவுகள் விலங்குகளுக்கு அல்லது உரத்திற்கு 3 மணிநேരം கிடைக்கும்.",
+    searchExpiredPlaceholder: "காலாவதியான உணவுகளைத் தேடுக...",
+    zeroExpiredTitle: "எந்த உணவும் காலாவதியாகவில்லை! 🎉",
+    zeroExpiredSub: "அனைத்து உணவுகளும் காலாவதியாவதற்கு முன் காப்பாற்றப்பட்டன.",
+
+    // NGO Actions
+    directionsBtn: "வழிப்பாதை 🧭",
+    donateFoodBtn: "உணவு தானம் செய் ❤️",
   },
 
   kn: {
@@ -486,6 +614,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "ಪಾಸ್‌ವರ್ಡ್",
     loginBtn: "ಲಾಗ್ ಇನ್ ಮಾಡಿ",
     signUpBtn: "ಹೊಸ ಖಾತೆ ತೆರೆಯಿರಿ",
+
+    expiresInPrefix: "⏳ {{time}} ರಲ್ಲಿ ಮುಕ್ತಾಯಗೊಳ್ಳುತ್ತದೆ",
+    urgentLeft: "🔥 ತುರ್ತು · {{time}} ಬಾಕಿ ಇದೆ",
+    expiredText: "ಅವಧಿ ಮುಗಿದಿದೆ",
+    bookedBadge: "ಬುಕ್ ಆಗಿದೆ",
+    availableBadge: "ಲಭ್ಯವಿದೆ",
+    collectedBadge: "ಪಡೆಯಲಾಗಿದೆ",
+    postedByYou: "🌱 ನೀವು ಪೋಸ್ಟ್ ಮಾಡಿದ್ದು",
+    animalPriority: "🐾 ಪ್ರಾಣಿ ಆದ್ಯತೆ",
+    safeForAnimalsTag: "✔ ಪ್ರಾಣಿಗಳಿಗೆ ಸುರಕ್ಷಿತ",
+    notForAnimalsTag: "⚠️ ಪ್ರಾಣಿಗಳಿಗೆ ಅಲ್ಲ",
+    openInMaps: "ಮ್ಯಾಪ್స్‌ನಲ್ಲಿ ತೆರೆಯಿರಿ 📍",
+    tapToOpenMaps: "ಮ್ಯಾಪ್ಸ್ ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ ↗",
+    viewLocationOnMaps: "ಗೂಗಲ್ ಮ್ಯಾಪ್ስ‌ನಲ್ಲಿ ಸ್ಥಳವನ್ನು ನೋಡಿ",
+
+    startSharingFood: "ಆಹಾರ ಹಂಚಿಕೊಳ್ಳಲು ಪ್ರಾರಂಭಿಸಿ",
+    keepSavingFood: "ಆಹಾರ ಉಳಿಸುತ್ತಿರಿ!",
+    postsMadeCount: "{{count}} ಪೋಸ್ಟ್‌ಗಳನ್ನು ಮಾಡಲಾಗಿದೆ",
+
+    expiredOutletTitle: "ಅವಧಿ ಮುಗಿದ ಆಹಾರ ವಿಭಾಗ",
+    requestableHours: "ಇನ್ನೂ 3 ಗಂಟೆಗಳ ಕಾಲ ಕೋರಬಹುದು",
+    sustainabilitySpotlight: "ಪರಿಸರ ಕಾಳಜಿ: ಈ ಆಹಾರಗಳು ಪ್ರಾಣಿಗಳಿಗೆ ಅಥವಾ ಗೊಬ್ಬರಕ್ಕಾಗಿ עוד 3 ಗಂಟೆಗಳ ಕಾಲ ಲಭ್ಯವಿರುತ್ತವೆ.",
+    searchExpiredPlaceholder: "ಅವಧಿ ಮುಗಿದ ಆಹಾರಗಳನ್ನು ಹುಡುಕಿ...",
+    zeroExpiredTitle: "ಯಾವ ಆಹಾರವೂ ಅವಧಿ ಮುಗಿದಿಲ್ಲ! 🎉",
+    zeroExpiredSub: "ಎಲ್ಲಾ ಆಹಾರಗಳನ್ನು ಅವಧಿ ಮುಗಿಯುವ ಮುನ್ನವೇ ಉಳಿಸಲಾಗಿದೆ.",
+
+    directionsBtn: "ದಾರಿ 🧭",
+    donateFoodBtn: "ಆಹಾರ ದಾನ ಮಾಡಿ ❤️",
   },
 
   mr: {
@@ -577,6 +733,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "पासवर्ड",
     loginBtn: "लॉग इन करा",
     signUpBtn: "नवीन खाते उघडा",
+
+    expiresInPrefix: "⏳ {{time}} मध्ये मुदत संपेल",
+    urgentLeft: "🔥 तातडीचे · {{time}} शिल्लक",
+    expiredText: "मुदत संपली",
+    bookedBadge: "आरक्षित",
+    availableBadge: "उपलब्ध",
+    collectedBadge: "मिळाले",
+    postedByYou: "🌱 तुम्ही पोस्ट केलेले",
+    animalPriority: "🐾 प्राण्यांसाठी प्राधान्य",
+    safeForAnimalsTag: "✔ प्राण्यांसाठी सुरक्षित",
+    notForAnimalsTag: "⚠️ प्राण्यांसाठी नाही",
+    openInMaps: "मॅप्सवर पहा 📍",
+    tapToOpenMaps: "मॅप्स उघडण्यासाठी टॅप करा ↗",
+    viewLocationOnMaps: "गूगल मॅप्सवर ठिकाण पहा",
+
+    startSharingFood: "अन्न शेअर करणे सुरू करा",
+    keepSavingFood: "अन्न वाचवत राहा!",
+    postsMadeCount: "{{count}} पोस्ट केल्या",
+
+    expiredOutletTitle: "मुदत संपलेले अन्न केंद्र",
+    requestableHours: "अजून 3 तास मागवता येईल",
+    sustainabilitySpotlight: "पर्यावरण संदेश: हे अन्न प्राण्यांसाठी किंवा खतासाठी 3 तास उपलब्ध आहे.",
+    searchExpiredPlaceholder: "मुदत संपलेले पदार्थ शोधा...",
+    zeroExpiredTitle: "कोणतेही अन्न वाया गेले नाही! 🎉",
+    zeroExpiredSub: "सर्व अन्न मुदत संपण्यापूर्वी वाचवले गेले.",
+
+    directionsBtn: "दिशा 🧭",
+    donateFoodBtn: "अन्न दान करा ❤️",
   },
 
   bn: {
@@ -668,6 +852,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "পাসওয়ার্ড",
     loginBtn: "লগ ইন করুন",
     signUpBtn: "নতুন অ্যাকাউন্ট খুলুন",
+
+    expiresInPrefix: "⏳ {{time}} এ মেয়াদ শেষ হবে",
+    urgentLeft: "🔥 জরুরি · {{time}} বাকি",
+    expiredText: "মেয়াদোত্তীর্ণ",
+    bookedBadge: "বুক করা হয়েছে",
+    availableBadge: "প্রাপ্য",
+    collectedBadge: "সংগৃহীত",
+    postedByYou: "🌱 আপনার পোস্ট করা",
+    animalPriority: "🐾 পশুদের অগ্রাধিকার",
+    safeForAnimalsTag: "✔ পশুদের জন্য নিরাপদ",
+    notForAnimalsTag: "⚠️ পশুদের জন্য নয়",
+    openInMaps: "ম্যাপে খুলুন 📍",
+    tapToOpenMaps: "ম্যাপ খুলতে ট্যাপ করুন ↗",
+    viewLocationOnMaps: "গুগল ম্যাপে অবস্থান দেখুন",
+
+    startSharingFood: "খাবার শেয়ার করা শুরু করুন",
+    keepSavingFood: "খাবার বাঁচাতে থাকুন!",
+    postsMadeCount: "{{count}} টি পোস্ট করা হয়েছে",
+
+    expiredOutletTitle: "মেয়াদোত্তীর্ণ খাবারের বিভাগ",
+    requestableHours: "আরও ৩ ঘণ্টার জন্য অনুরোধ করা যাবে",
+    sustainabilitySpotlight: "পরিবেশ সচেতনতা: এই খাবার পশুদের বা সারের জন্য আরও ৩ ঘণ্টা রাখা আছে।",
+    searchExpiredPlaceholder: "মেয়াদোত্তীর্ণ খাবার খুঁজুন...",
+    zeroExpiredTitle: "কোনো খাবার মেয়াদোত্তীর্ণ হয়নি! 🎉",
+    zeroExpiredSub: "সমস্ত খাবার মেয়াদের আগেই বাঁচানো সম্ভব হয়েছে।",
+
+    directionsBtn: "দিকনির্দেশ 🧭",
+    donateFoodBtn: "খাবার দান করুন ❤️",
   },
 
   ml: {
@@ -759,6 +971,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "പാസ്‌വേഡ്",
     loginBtn: "ലോഗിൻ ചെയ്യുക",
     signUpBtn: "പുതിയ അക്കൗണ്ട് തുടങ്ങുക",
+
+    expiresInPrefix: "⏳ {{time}} ൽ കാലാവധി കഴിയും",
+    urgentLeft: "🔥 അത്യാവശ്യം · {{time}} ബാക്കി",
+    expiredText: "കാലാവധി കഴിഞ്ഞു",
+    bookedBadge: "ബുക്ക് ചെയ്തു",
+    availableBadge: "ലഭ്യമാണ്",
+    collectedBadge: "ലഭിച്ചു",
+    postedByYou: "🌱 നിങ്ങൾ പോസ്റ്റ് ചെയ്തത്",
+    animalPriority: "🐾 മൃഗങ്ങൾക്കുള്ള മുൻഗണന",
+    safeForAnimalsTag: "✔ മൃഗങ്ങൾക്ക് സുരക്ഷിതം",
+    notForAnimalsTag: "⚠️ മൃഗങ്ങൾക്ക് അല്ല",
+    openInMaps: "മാപ്പിൽ തുറക്കുക 📍",
+    tapToOpenMaps: "മാപ്പ് തുറക്കാൻ ടാപ്പ് ചെയ്യുക ↗",
+    viewLocationOnMaps: "ഗൂഗിൾ മാപ്പിൽ സ്ഥലം കാണുക",
+
+    startSharingFood: "ഭക്ഷണം പങ്കുവെക്കാൻ തുടങ്ങൂ",
+    keepSavingFood: "ഭക്ഷണം ലാഭിക്കൂ!",
+    postsMadeCount: "{{count}} പോസ്റ്റുകൾ ചെയ്തു",
+
+    expiredOutletTitle: "കാലാവധി കഴിഞ്ഞ ഭക്ഷണ വിഭാഗം",
+    requestableHours: "3 മണിക്കൂർ കൂടി ആവശ്യപ്പെടാം",
+    sustainabilitySpotlight: "പരിസ്ഥിതി സന്ദേശം: ഈ ഭക്ഷണം മൃഗങ്ങൾക്കോ വളത്തിനോ 3 മണിക്കൂർ കൂടി ലഭിക്കും.",
+    searchExpiredPlaceholder: "കാലാവധി കഴിഞ്ഞവ തിരയുക...",
+    zeroExpiredTitle: "ഒരു ഭക്ഷണവും പാഴായില്ല! 🎉",
+    zeroExpiredSub: "എല്ലാ ഭക്ഷണങ്ങളും കാലാവധി കഴിയുന്നതിന് മുൻപ് രക്ഷിച്ചു.",
+
+    directionsBtn: "വഴി 🧭",
+    donateFoodBtn: "ഭക്ഷണം നൽകുക ❤️",
   },
 
   gu: {
@@ -850,6 +1090,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "પાસવર્ડ",
     loginBtn: "લોગ ઇન કરો",
     signUpBtn: "નવું એકાઉન્ટ બનાવો",
+
+    expiresInPrefix: "⏳ {{time}} માં મુદત પૂરી થશે",
+    urgentLeft: "🔥 અત્યંત જરૂરી · {{time}} બાકી",
+    expiredText: "મુદત પૂરી થઈ",
+    bookedBadge: "બુક થયેલ",
+    availableBadge: "ઉપલબ્ધ",
+    collectedBadge: "મળેલ",
+    postedByYou: "🌱 તમારા દ્વારા પોસ્ટ થયેલ",
+    animalPriority: "🐾 પ્રાણી પ્રાથમિકતા",
+    safeForAnimalsTag: "✔ પ્રાણીઓ માટે સુરક્ષિત",
+    notForAnimalsTag: "⚠️ પ્રાણીઓ માટે નથી",
+    openInMaps: "મેપ્સમાં ખોલો 📍",
+    tapToOpenMaps: "મેપ્સ ખોલવા માટે ટેપ કરો ↗",
+    viewLocationOnMaps: "ગુગલ મેપ્સ પર સ્થળ જુઓ",
+
+    startSharingFood: "ભોજન શેર કરવાનું શરૂ કરો",
+    keepSavingFood: "અન્ન બચાવતા રહો!",
+    postsMadeCount: "{{count}} પોસ્ટ્સ કરી",
+
+    expiredOutletTitle: "મુદત પૂરી થયેલ ભોજન વિભાગ",
+    requestableHours: "હજુ 3 કલાક સુધી વિનંતી કરી શકાય",
+    sustainabilitySpotlight: "પર્યાવરણ સંદેશ: આ ભોજન પ્રાણીઓ અથવા ખાતર માટે 3 કલાક ઉપલબ્ધ છે.",
+    searchExpiredPlaceholder: "મુદત પૂરી થયેલ આઇટમ્સ શોધો...",
+    zeroExpiredTitle: "કોઈ ભોજન બગાડ્યું નથી! 🎉",
+    zeroExpiredSub: "તમામ ભોજન સમયસર બચાવી લેવામાં આવ્યું.",
+
+    directionsBtn: "દિશા 🧭",
+    donateFoodBtn: "ભોજન દાન કરો ❤️",
   },
 
   pa: {
@@ -941,6 +1209,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "ਪਾਸਵਰਡ",
     loginBtn: "ਲੌਗ ਇਨ ਕਰੋ",
     signUpBtn: "ਨਵਾਂ ਖਾਤਾ ਬਣਾਓ",
+
+    expiresInPrefix: "⏳ {{time}} ਵਿੱਚ ਮਿਆਦ ਖਤਮ",
+    urgentLeft: "🔥 ਜ਼ਰੂਰੀ · {{time}} ਬਾਕੀ",
+    expiredText: "ਮਿਆਦ ਪੁੱਗ ਗਈ",
+    bookedBadge: "ਬੁੱਕ ਕੀਤਾ",
+    availableBadge: "ਮੌਜੂਦ",
+    collectedBadge: "ਮਿਲ ਗਿਆ",
+    postedByYou: "🌱 ਤੁਹਾਡੇ ਦੁਆਰਾ ਪੋਸਟ ਕੀਤਾ",
+    animalPriority: "🐾 ਜਾਨਵਰ ਪਹਿਲ",
+    safeForAnimalsTag: "✔ ਜਾਨਵਰਾਂ ਲਈ ਸੁਰੱਖਿਅਤ",
+    notForAnimalsTag: "⚠️ ਜਾਨਵਰਾਂ ਲਈ ਨਹੀਂ",
+    openInMaps: "ਮੈਪਸ 'ਤੇ ਖੋਲ੍ਹੋ 📍",
+    tapToOpenMaps: "ਮੈਪਸ ਖੋਲ੍ਹਣ ਲਈ ਟੈਪ ਕਰੋ ↗",
+    viewLocationOnMaps: "ਗੂਗਲ ਮੈਪਸ 'ਤੇ ਸਥਾਨ ਦੇਖੋ",
+
+    startSharingFood: "ਭੋਜਨ ਸਾਂਝਾ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ",
+    keepSavingFood: "ਭੋਜਨ ਬਚਾਉਂਦੇ ਰਹੋ!",
+    postsMadeCount: "{{count}} ਪੋਸਟਾਂ ਕੀਤੀਆਂ",
+
+    expiredOutletTitle: "ਮਿਆਦ ਪੁੱਗਿਆ ਭੋਜਨ ਵਿਭਾਗ",
+    requestableHours: "ਹੋਰ 3 ਘੰਟੇ ਮੰਗਿਆ ਜਾ ਸਕਦਾ ਹੈ",
+    sustainabilitySpotlight: "ਵਾਤਾਵਰਣ ਸੰਦੇਸ਼: ਇਹ ਭੋਜਨ ਜਾਨਵਰਾਂ ਜਾਂ ਖਾਦ ਲਈ 3 ਘੰਟੇ ਹੋਰ ਉਪਲਬਧ ਹੈ।",
+    searchExpiredPlaceholder: "ਮਿਆਦ ਪੁੱਗੀਆਂ ਚੀਜ਼ਾਂ ਖੋਜੋ...",
+    zeroExpiredTitle: "ਕੋਈ ਭੋਜਨ ਖਰਾਬ ਨਹੀਂ ਹੋਇਆ! 🎉",
+    zeroExpiredSub: "ਸਾਰਾ ਭੋਜਨ ਸਮੇਂ ਸਿਰ ਬਚਾਇਆ ਗਿਆ।",
+
+    directionsBtn: "ਦਿਸ਼ਾ 🧭",
+    donateFoodBtn: "ਭੋਜਨ ਦਾਨ ਕਰੋ ❤️",
   },
 
   or: {
@@ -1032,6 +1328,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "ପାସୱାର୍ଡ",
     loginBtn: "ଲଗ୍ ଇନ୍ କରନ୍ତୁ",
     signUpBtn: "ନୂଆ ଆକାଉଣ୍ଟ ଖୋଲନ୍ତୁ",
+
+    expiresInPrefix: "⏳ {{time}} ରେ ଅବଧି ଶେଷ ହେବ",
+    urgentLeft: "🔥 ଜରୁରୀ · {{time}} ବାକି",
+    expiredText: "ଅବଧି ଶେଷ",
+    bookedBadge: "ବୁକ୍ ହୋଇଛି",
+    availableBadge: "ଉପଲବ୍ଧ",
+    collectedBadge: "ସଂଗୃହିତ",
+    postedByYou: "🌱 ଆପଣଙ୍କ ଦ୍ୱାରା ପୋଷ୍ଟ",
+    animalPriority: "🐾 ପଶୁ ପ୍ରାଥମିକତା",
+    safeForAnimalsTag: "✔ ପଶୁଙ୍କ ପାଇଁ ସୁରକ୍ଷିତ",
+    notForAnimalsTag: "⚠️ ପଶୁଙ୍କ ପାଇଁ ନୁହେଁ",
+    openInMaps: "ମ୍ୟାପରେ ଖୋଲନ୍ତୁ 📍",
+    tapToOpenMaps: "ମ୍ୟାପ୍ ଖୋଲିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ ↗",
+    viewLocationOnMaps: "ଗୁଗଲ ମ୍ୟାପରେ ସ୍ଥାନ ଦେଖନ୍ତୁ",
+
+    startSharingFood: "ଖାଦ୍ୟ ବାଣ୍ଟିବା ଆରମ୍ଭ କରନ୍ତୁ",
+    keepSavingFood: "ଖାଦ୍ୟ ବଞ୍ଚାନ୍ତୁ!",
+    postsMadeCount: "{{count}} ପୋଷ୍ଟ କରାଯାଇଛି",
+
+    expiredOutletTitle: "ଅବଧି ଶେଷ ଖାଦ୍ୟ ବିଭାଗ",
+    requestableHours: "ଆଉ ୩ ଘଣ୍ଟା ଅନୁରୋଧ କରିପାରିବେ",
+    sustainabilitySpotlight: "ସଚେତନତା: ଏହି ଖାଦ୍ୟ ପଶୁଙ୍କ ପାଇଁ କିମ୍ବା ଖତ ପାଇଁ ଆଉ ୩ ଘଣ୍ଟା ରହିବ।",
+    searchExpiredPlaceholder: "ଅବଧି ଶେଷ ଜିନିଷ ଖୋଜନ୍ତୁ...",
+    zeroExpiredTitle: "କୌଣସି ଖାଦ୍ୟ ନଷ୍ଟ ହୋଇନାହିଁ! 🎉",
+    zeroExpiredSub: "ସମସ୍ତ ଖାଦ୍ୟ ସମୟ ପୂର୍ବରୁ ରକ୍ଷା କରାଗଲା।",
+
+    directionsBtn: "ଦିଗ 🧭",
+    donateFoodBtn: "ଖାଦ୍ୟ ଦାନ କରନ୍ତୁ ❤️",
   },
 
   ur: {
@@ -1123,6 +1447,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "پاس ورڈ",
     loginBtn: "لاگ ان کریں",
     signUpBtn: "نیا اکاؤنٹ بنائیں",
+
+    expiresInPrefix: "⏳ {{time}} میں میعاد ختم ہوگی",
+    urgentLeft: "🔥 فوری · {{time}} باقی",
+    expiredText: "میعاد ختم ہوگئی",
+    bookedBadge: "بک شدہ",
+    availableBadge: "دستیاب",
+    collectedBadge: "مصول شد",
+    postedByYou: "🌱 آپ کی پوسٹ",
+    animalPriority: "🐾 جانوروں کی ترجیح",
+    safeForAnimalsTag: "✔ جانوروں کے لیے محفوظ",
+    notForAnimalsTag: "⚠️ جانوروں کے لیے نہیں",
+    openInMaps: "میپس میں دیکھیں 📍",
+    tapToOpenMaps: "میپس کھولنے کے لیے ٹیپ کریں ↗",
+    viewLocationOnMaps: "گوگل میپس پر مقام دیکھیں",
+
+    startSharingFood: "کھانا شیئر کرنا شروع کریں",
+    keepSavingFood: "کھانا بچاتے رہیں!",
+    postsMadeCount: "{{count}} پوسٹس کی گئیں",
+
+    expiredOutletTitle: "منسوخ شدہ کھانا سیکشن",
+    requestableHours: "مزید 3 گھنٹے طلب کیا جا سکتا ہے",
+    sustainabilitySpotlight: "ماحولیاتی پیغام: یہ کھانا جانوروں یا کھاد کے لیے مزید 3 گھنٹے دستیاب ہے۔",
+    searchExpiredPlaceholder: "منسوخ اشیاء تلاش کریں...",
+    zeroExpiredTitle: "کوئی کھانا ضائع نہیں ہوا! 🎉",
+    zeroExpiredSub: "تمام کھانا وقت سے پہلے بچا لیا گیا۔",
+
+    directionsBtn: "راستہ 🧭",
+    donateFoodBtn: "کھانا عطیہ کریں ❤️",
   },
 
   es: {
@@ -1214,6 +1566,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "Contraseña",
     loginBtn: "Iniciar sesión",
     signUpBtn: "Crear nueva cuenta",
+
+    expiresInPrefix: "⏳ Expira en {{time}}",
+    urgentLeft: "🔥 URGENTE · Quedan {{time}}",
+    expiredText: "Expirado",
+    bookedBadge: "RESERVADO",
+    availableBadge: "DISPONIBLE",
+    collectedBadge: "RECOGIDO",
+    postedByYou: "🌱 Publicado por ti",
+    animalPriority: "🐾 Prioridad animal",
+    safeForAnimalsTag: "✔ Apto para animales",
+    notForAnimalsTag: "⚠️ No apto para animales",
+    openInMaps: "Abrir en Mapas 📍",
+    tapToOpenMaps: "Toca para abrir mapas ↗",
+    viewLocationOnMaps: "Ver ubicación en Google Maps",
+
+    startSharingFood: "Empieza a compartir comida",
+    keepSavingFood: "¡Sigue salvando comida!",
+    postsMadeCount: "{{count}} publicaciones realizadas",
+
+    expiredOutletTitle: "Alimentos expirados",
+    requestableHours: "Solicitable por 3 horas más",
+    sustainabilitySpotlight: "Atención ecológica: Estos productos están disponibles 3 horas más para mascotas o compostaje.",
+    searchExpiredPlaceholder: "Buscar productos expirados...",
+    zeroExpiredTitle: "¡Ningún alimento expiró! 🎉",
+    zeroExpiredSub: "Todos los alimentos se salvaron antes de expirar.",
+
+    directionsBtn: "Indicaciones 🧭",
+    donateFoodBtn: "Donar comida ❤️",
   },
 
   fr: {
@@ -1305,6 +1685,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "Mot de passe",
     loginBtn: "Se connecter",
     signUpBtn: "Créer un compte",
+
+    expiresInPrefix: "⏳ Expire dans {{time}}",
+    urgentLeft: "🔥 URGENT · Restant {{time}}",
+    expiredText: "Expiré",
+    bookedBadge: "RÉSERVÉ",
+    availableBadge: "DISPONIBLE",
+    collectedBadge: "RÉCUPÉRÉ",
+    postedByYou: "🌱 Publié par vous",
+    animalPriority: "🐾 Priorité animaux",
+    safeForAnimalsTag: "✔ Sans danger animaux",
+    notForAnimalsTag: "⚠️ Pas pour animaux",
+    openInMaps: "Ouvrir dans Cartes 📍",
+    tapToOpenMaps: "Appuyez pour ouvrir ↗",
+    viewLocationOnMaps: "Voir sur Google Maps",
+
+    startSharingFood: "Commencer le partage",
+    keepSavingFood: "Continuez à sauver la nourriture!",
+    postsMadeCount: "{{count}} annonces publiées",
+
+    expiredOutletTitle: "Nourriture expirée",
+    requestableHours: "Demandable encore 3 heures",
+    sustainabilitySpotlight: "Focus Écologie: Disponible encore 3h pour animaux ou compost.",
+    searchExpiredPlaceholder: "Rechercher éléments expirés...",
+    zeroExpiredTitle: "Aucun aliment expiré! 🎉",
+    zeroExpiredSub: "Tous les aliments ont été sauvés à temps.",
+
+    directionsBtn: "Itinéraire 🧭",
+    donateFoodBtn: "Faire un don ❤️",
   },
 
   ar: {
@@ -1396,6 +1804,34 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "كلمة المرور",
     loginBtn: "تسجيل الدخول",
     signUpBtn: "إنشاء حساب جديد",
+
+    expiresInPrefix: "⏳ ينتهي خلال {{time}}",
+    urgentLeft: "🔥 عاجل · متبقي {{time}}",
+    expiredText: "منتهي الصلاحية",
+    bookedBadge: "محجوز",
+    availableBadge: "متاح",
+    collectedBadge: "تم الاستلام",
+    postedByYou: "🌱 منشور بواسطة ك",
+    animalPriority: "🐾 أولوية للحيوانات",
+    safeForAnimalsTag: "✔ آمن للحيوانات",
+    notForAnimalsTag: "⚠️ غير مخصص للحيوانات",
+    openInMaps: "فتح في الخرائط 📍",
+    tapToOpenMaps: "انقر لفتح الخرائط ↗",
+    viewLocationOnMaps: "عرض الموقع في خرائط جوجل",
+
+    startSharingFood: "ابدأ بمشاركة الطعام",
+    keepSavingFood: "واصل حفظ الطعام!",
+    postsMadeCount: "تم إنشاء {{count}} منشورات",
+
+    expiredOutletTitle: "قسم الطعام المنتهي",
+    requestableHours: "متاح للطلب لمدة 3 ساعات إضافية",
+    sustainabilitySpotlight: "تنبيه بيئي: هذه المواد متاح طلبها للحيوانات أو التسميد لمدة 3 ساعات أخرى.",
+    searchExpiredPlaceholder: "ابحث عن مواد منتهية الصلاحية...",
+    zeroExpiredTitle: "لم ينتهِ أي طعام! 🎉",
+    zeroExpiredSub: "تم حفظ جميع منشورات الطعام قبل انتهاء صلاحيتها.",
+
+    directionsBtn: "الاتجاهات 🧭",
+    donateFoodBtn: "تبرع بالطعام ❤️",
   },
 
   de: {
@@ -1487,5 +1923,33 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     passwordPlaceholder: "Passwort",
     loginBtn: "Anmelden",
     signUpBtn: "Konto erstellen",
+
+    expiresInPrefix: "⏳ Läuft ab in {{time}}",
+    urgentLeft: "🔥 Dringend · {{time}} verbleibend",
+    expiredText: "Abgelaufen",
+    bookedBadge: "RESERVIERT",
+    availableBadge: "VERFÜGBAR",
+    collectedBadge: "ABGEHOLT",
+    postedByYou: "🌱 Inseriert von dir",
+    animalPriority: "🐾 Tier-Priorität",
+    safeForAnimalsTag: "✔ Für Tiere geeignet",
+    notForAnimalsTag: "⚠️ Nicht für Tiere",
+    openInMaps: "In Karten öffnen 📍",
+    tapToOpenMaps: "Tippen zum Öffnen ↗",
+    viewLocationOnMaps: "Standort in Google Maps ansehen",
+
+    startSharingFood: "Starte Teilen",
+    keepSavingFood: "Rette weiter Essen!",
+    postsMadeCount: "{{count}} Inserate erstellt",
+
+    expiredOutletTitle: "Abgelaufenes Essen",
+    requestableHours: "Noch 3 Stunden anfragbar",
+    sustainabilitySpotlight: "Nachhaltigkeit: Noch 3 Std. für Tiere oder Kompost anfragbar.",
+    searchExpiredPlaceholder: "Abgelaufenes suchen...",
+    zeroExpiredTitle: "Kein Essen abgelaufen! 🎉",
+    zeroExpiredSub: "Alle Inserate wurden rechtzeitig gerettet.",
+
+    directionsBtn: "Route 🧭",
+    donateFoodBtn: "Essen spenden ❤️",
   },
 };
