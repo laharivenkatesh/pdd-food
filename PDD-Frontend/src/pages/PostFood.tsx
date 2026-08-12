@@ -180,8 +180,7 @@ export default function PostFood() {
 
     setBusy(true);
 
-    const defaultFallbackImage = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
-    let finalImageUrl = defaultFallbackImage;
+    let finalImageUrl = "";
     if (imageUri) {
       finalImageUrl = await uploadFoodImage(imageUri);
     }
@@ -386,7 +385,13 @@ export default function PostFood() {
           <View style={styles.cardHeader}>
             <Ionicons name="camera" size={18} color="#16A34A" />
             <Text style={styles.cardTitle}>Food Photo</Text>
+            <View style={styles.optionalBadge}>
+              <Text style={styles.optionalBadgeText}>Optional</Text>
+            </View>
           </View>
+          <Text style={styles.subLabel}>
+            Uploading a photo from camera or gallery is completely optional. If skipped, your post will be published without an image.
+          </Text>
 
           {imageUri ? (
             <View style={styles.imagePreviewWrapper}>
@@ -397,15 +402,23 @@ export default function PostFood() {
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.imageBtnRow}>
-              <TouchableOpacity onPress={takePhotoWithCamera} style={styles.imageBtn}>
-                <Ionicons name="camera" size={20} color="#16A34A" />
-                <Text style={styles.imageBtnText}>Take Photo</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={pickImageFromGallery} style={styles.imageBtn}>
-                <Ionicons name="images" size={20} color="#16A34A" />
-                <Text style={styles.imageBtnText}>Choose Gallery</Text>
-              </TouchableOpacity>
+            <View style={styles.photoContainer}>
+              <View style={styles.imageBtnRow}>
+                <TouchableOpacity onPress={takePhotoWithCamera} style={styles.imageBtn}>
+                  <Ionicons name="camera" size={20} color="#16A34A" />
+                  <Text style={styles.imageBtnText}>Take Photo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={pickImageFromGallery} style={styles.imageBtn}>
+                  <Ionicons name="images" size={20} color="#16A34A" />
+                  <Text style={styles.imageBtnText}>Choose Gallery</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.optionalNoticeBox}>
+                <Ionicons name="information-circle" size={16} color="#059669" />
+                <Text style={styles.optionalNoticeText}>
+                  No photo selected? Simply type details and publish your food post!
+                </Text>
+              </View>
             </View>
           )}
         </View>
@@ -699,5 +712,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#DC2626',
+  },
+  optionalBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    marginLeft: 6,
+  },
+  optionalBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#16A34A',
+    textTransform: 'uppercase',
+  },
+  photoContainer: {
+    gap: 10,
+  },
+  optionalNoticeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  optionalNoticeText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#047857',
+    fontWeight: '500',
   },
 });

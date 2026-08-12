@@ -142,10 +142,16 @@ export default function FoodDetail() {
     <ScrollView style={styles.container}>
       {/* Image & Header */}
       <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: food.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80" }}
-          style={styles.image}
-        />
+        {food.image ? (
+          <Image source={{ uri: food.image }} style={styles.image} />
+        ) : (
+          <View style={styles.noImageBannerDetail}>
+            <Text style={styles.noImageEmojiDetail}>
+              {food.category === "Veg" ? "🥗" : food.category === "Non-Veg" ? "🍗" : food.category === "Bakery" ? "🥐" : food.category === "Fried" ? "🍟" : food.category === "Sweets" ? "🍰" : "🍲"}
+            </Text>
+            <Text style={styles.noImageCategoryTextDetail}>{food.category} Food Listing</Text>
+          </View>
+        )}
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={20} color="#111827" />
         </TouchableOpacity>
@@ -695,5 +701,21 @@ const styles = StyleSheet.create({
     color: '#16A34A',
     fontSize: 12,
     fontWeight: '800',
+  },
+  noImageBannerDetail: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F0FDF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  noImageEmojiDetail: {
+    fontSize: 64,
+  },
+  noImageCategoryTextDetail: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#15803D',
   },
 });

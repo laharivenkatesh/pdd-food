@@ -67,10 +67,16 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
         onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
         style={styles.imageContainer}
       >
-        <Image
-          source={{ uri: food.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80" }}
-          style={styles.image}
-        />
+        {food.image ? (
+          <Image source={{ uri: food.image }} style={styles.image} />
+        ) : (
+          <View style={styles.noImageBanner}>
+            <Text style={styles.noImageEmoji}>
+              {food.category === "Veg" ? "🥗" : food.category === "Non-Veg" ? "🍗" : food.category === "Bakery" ? "🥐" : food.category === "Fried" ? "🍟" : food.category === "Sweets" ? "🍰" : "🍲"}
+            </Text>
+            <Text style={styles.noImageCategoryText}>{food.category} Food Listing</Text>
+          </View>
+        )}
         <View style={[styles.badge, { backgroundColor: statusBg }]}>
           <Text style={[styles.badgeText, { color: statusTextColor }]}>{statusText}</Text>
         </View>
@@ -433,5 +439,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEE2E2',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  noImageBanner: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F0FDF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#DCFCE7',
+  },
+  noImageEmoji: {
+    fontSize: 42,
+  },
+  noImageCategoryText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#15803D',
   },
 });

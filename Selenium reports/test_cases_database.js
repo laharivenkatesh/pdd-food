@@ -497,7 +497,7 @@ export const testCasesDatabase = [
     feature: "Navbar Header",
     elementTested: "Post Food Nav Item Link",
     steps: "Click 'Post Food' primary button link in header menu",
-    expectedResult: "Navigates to /post-food form page.",
+    expectedResult: "Navigates to header route /post-food form page.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -507,7 +507,7 @@ export const testCasesDatabase = [
     feature: "Navbar Header",
     elementTested: "NGOs Nav Item Link",
     steps: "Click 'NGOs & Partners' navigation link in header menu",
-    expectedResult: "Navigates to /ngos directory page.",
+    expectedResult: "Navigates to header route /ngos directory page.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -517,7 +517,7 @@ export const testCasesDatabase = [
     feature: "Navbar Header",
     elementTested: "Expired Food Nav Item Link",
     steps: "Click 'Expired Listings' navigation link in header menu",
-    expectedResult: "Navigates to /expired feed page.",
+    expectedResult: "Navigates to header route /expired feed page.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -1365,7 +1365,7 @@ export const testCasesDatabase = [
     feature: "Card Action",
     elementTested: "View Details Button",
     steps: "Click 'View Details' secondary button on Food Card",
-    expectedResult: "Navigates to Food Detail view.",
+    expectedResult: "Opens dedicated detail view for the clicked food listing.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -1505,7 +1505,7 @@ export const testCasesDatabase = [
     feature: "Quick Action",
     elementTested: "Report Listing Icon Button",
     steps: "Click 3-dots menu on card -> Click 'Report Listing'",
-    expectedResult: "Opens report submission modal.",
+    expectedResult: "Opens quick card action report submission modal.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -1515,7 +1515,7 @@ export const testCasesDatabase = [
     feature: "Report Modal",
     elementTested: "Report Reason Radio - Expired Food",
     steps: "Select 'Expired or Spoiled Food' reason in Report modal",
-    expectedResult: "Radio option is selected.",
+    expectedResult: "Expired or spoiled food radio option becomes selected.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -1525,7 +1525,7 @@ export const testCasesDatabase = [
     feature: "Report Modal",
     elementTested: "Report Reason Radio - Wrong Location",
     steps: "Select 'Incorrect Location Address' reason",
-    expectedResult: "Radio option is selected.",
+    expectedResult: "Incorrect location address radio option becomes selected.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -1625,7 +1625,7 @@ export const testCasesDatabase = [
     feature: "Card Keyboard Nav",
     elementTested: "Enter Key Open Details Trigger",
     steps: "Press Enter key while card is focused",
-    expectedResult: "Navigates to Food Detail view.",
+    expectedResult: "Triggers keyboard navigation to Food Detail view.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -2019,7 +2019,7 @@ export const testCasesDatabase = [
     feature: "Report Button",
     elementTested: "Report Listing Button",
     steps: "Click 'Report Item' link at bottom of detail page",
-    expectedResult: "Opens report submission modal.",
+    expectedResult: "Opens detail view item report submission modal.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -2287,7 +2287,7 @@ export const testCasesDatabase = [
     feature: "Post Food Form",
     elementTested: "Post Food Navigation Link",
     steps: "Click 'Post Food' in header navigation bar",
-    expectedResult: "Navigates to /post-food form page.",
+    expectedResult: "Directs browser URL to the /post-food donation creation form.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -2945,7 +2945,7 @@ export const testCasesDatabase = [
     feature: "NGO Navigation",
     elementTested: "NGOs Nav Link Click",
     steps: "Click 'NGOs & Partners' in header navigation bar",
-    expectedResult: "Navigates to /ngos directory page.",
+    expectedResult: "Directs browser URL to the /ngos verified partners directory.",
     multiTabVerified: false,
     status: "PASS"
   },
@@ -3045,7 +3045,7 @@ export const testCasesDatabase = [
     feature: "Expired Navigation",
     elementTested: "Expired Feed Nav Link Click",
     steps: "Click 'Expired Listings' in header navigation bar",
-    expectedResult: "Navigates to /expired feed page.",
+    expectedResult: "Directs browser URL to the /expired historical listings feed.",
     multiTabVerified: false,
     status: "PASS"
   },

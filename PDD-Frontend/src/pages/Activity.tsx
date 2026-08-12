@@ -107,10 +107,15 @@ export default function Activity() {
                 onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
                 style={styles.postCard}
               >
-                <Image
-                  source={{ uri: food.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80" }}
-                  style={styles.postImage}
-                />
+                {food.image ? (
+                  <Image source={{ uri: food.image }} style={styles.postImage} />
+                ) : (
+                  <View style={[styles.postImage, styles.noImageThumb]}>
+                    <Text style={styles.noImageThumbText}>
+                      {food.category === "Veg" ? "🥗" : food.category === "Non-Veg" ? "🍗" : food.category === "Bakery" ? "🥐" : food.category === "Fried" ? "🍟" : food.category === "Sweets" ? "🍰" : "🍲"}
+                    </Text>
+                  </View>
+                )}
                 <View style={styles.postInfo}>
                   <Text style={styles.postName}>{food.name}</Text>
                   <Text style={styles.postSub}>
@@ -285,5 +290,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 14,
+  },
+  noImageThumb: {
+    backgroundColor: '#F0FDF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  noImageThumbText: {
+    fontSize: 24,
   },
 });

@@ -6,13 +6,12 @@ import { supabase } from "@/lib/supabase";
 const deletedFoodIds = new Set<string>();
 
 function resolveImageUrl(image: string | null | undefined): string {
-  const fallback = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
-  if (!image || typeof image !== 'string') return fallback;
-  if (image.includes("address at") || image.includes("flushPassiveEffects") || image.includes("TypeError") || image.includes("bundle-")) return fallback;
+  if (!image || typeof image !== 'string' || image.trim() === '' || image === 'none') return '';
+  if (image.includes("address at") || image.includes("flushPassiveEffects") || image.includes("TypeError") || image.includes("bundle-")) return '';
   if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("data:")) return image;
-  if (image.startsWith("file:") || image.startsWith("ph:") || image.startsWith("blob:")) return fallback;
+  if (image.startsWith("file:") || image.startsWith("ph:") || image.startsWith("blob:")) return '';
   const { data } = supabase.storage.from("food-images").getPublicUrl(image);
-  return data?.publicUrl || fallback;
+  return data?.publicUrl || '';
 }
 
 function mapRow(row: any): FoodItem {
@@ -39,7 +38,7 @@ function mapRow(row: any): FoodItem {
     allowSplit: row.allow_split,
     postedAt: row.created_at,
     bookedPortions: row.booked_portions || 0,
-    trustScore: 4.5,
+    trustScore: 92,
     confidence: "High",
     reviews: (row.reviews || []).map((r: any) => ({
       id: r.id,
@@ -49,13 +48,13 @@ function mapRow(row: any): FoodItem {
       date: new Date(r.created_at).toLocaleDateString(),
     })),
     provider: {
-      id: profileInfo.id || row.user_id,
-      name: profileInfo.name || "Community Member",
-      trustScore: 4.5,
-      badges: ["Community Member"],
-      streak: 1,
+      id: row.user_id,
+      name: profileInfo.name || "Community Donor",
+      trustScore: 92,
+      badges: ["🌱 Donor"],
+      streak: 3,
       reliability: "high",
-      avatar: "🧑",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80",
       email: profileInfo.email || "",
       phone: profileInfo.phone || "",
     },
@@ -64,7 +63,6 @@ function mapRow(row: any): FoodItem {
 
 async function cleanupExpiredImages(rawData: any[]) {
   if (!rawData || rawData.length === 0) return;
-  const fallback = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
   const now = Date.now();
 
   for (const item of rawData) {
@@ -72,14 +70,14 @@ async function cleanupExpiredImages(rawData: any[]) {
     const expiryTime = preparedTime + (item.expiry_hours || 4) * 3600 * 1000;
     const isExpired = now >= expiryTime || item.status === "expired";
 
-    if (isExpired && item.image && item.image !== fallback) {
+    if (isExpired && item.image) {
       try {
         if (!item.image.startsWith("http") && !item.image.startsWith("data:")) {
           await supabase.storage.from("food-images").remove([item.image]);
         }
         await supabase
           .from("foods")
-          .update({ image: fallback, status: "expired" })
+          .update({ image: "", status: "expired" })
           .eq("id", item.id);
       } catch (err) {
         console.warn("Storage cleanup notice:", err);

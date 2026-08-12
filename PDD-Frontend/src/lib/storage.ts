@@ -1,8 +1,7 @@
 import { supabase } from './supabase';
 
 export async function uploadFoodImage(uri: string): Promise<string> {
-  const fallback = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=80";
-  if (!uri) return fallback;
+  if (!uri) return "";
 
   // If already a remote HTTP URL, return as is
   if (uri.startsWith("http://") || uri.startsWith("https://")) {
@@ -31,19 +30,19 @@ export async function uploadFoodImage(uri: string): Promise<string> {
         const reader = new FileReader();
         reader.onloadend = () => {
           const result = reader.result as string;
-          resolve(result || fallback);
+          resolve(result || "");
         };
-        reader.onerror = () => resolve(fallback);
+        reader.onerror = () => resolve("");
         reader.readAsDataURL(blob);
       });
     }
 
     // 3. Get Public CDN URL
     const { data: publicUrlData } = supabase.storage.from("food-images").getPublicUrl(fileName);
-    return publicUrlData?.publicUrl || fallback;
+    return publicUrlData?.publicUrl || "";
   } catch (err) {
     console.warn("Image processing error:", err);
-    // If data URI, use directly; otherwise fallback
-    return uri.startsWith("data:") ? uri : fallback;
+    // If data URI, use directly; otherwise return empty string
+    return uri.startsWith("data:") ? uri : "";
   }
 }
