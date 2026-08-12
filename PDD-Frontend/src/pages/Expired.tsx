@@ -8,6 +8,7 @@ import { getFoodTimes } from "@/lib/utils";
 import Chip from "@/components/Chip";
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from "@/context/LanguageContext";
+import { translateFoodName } from "@/i18n/translations";
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 
@@ -47,7 +48,7 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { posts, removePost } = useMyPosts();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
 
@@ -122,7 +123,7 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
         )}
         <View style={styles.titleRow}>
           <View style={styles.titleCol}>
-            <Text style={styles.title}>{food.name}</Text>
+            <Text style={styles.title}>{translateFoodName(food.name, language)}</Text>
             <Text style={styles.infoText}>👥 {t('feedsPeople', { count: total })} · {t('portionsLeft', { remaining, total })}</Text>
           </View>
           <Text style={styles.priceText}>{food.price === 0 ? t('free') : `₹${food.price}`}</Text>
@@ -210,14 +211,6 @@ export default function Expired() {
         <TouchableOpacity onPress={() => refresh()} style={styles.refreshBtn}>
           <Ionicons name="refresh" size={18} color="#374151" />
         </TouchableOpacity>
-      </View>
-
-      {/* Info Banner */}
-      <View style={styles.infoBanner}>
-        <Ionicons name="time" size={20} color="#D97706" />
-        <Text style={styles.infoBannerText}>
-          {t('sustainabilitySpotlight')}
-        </Text>
       </View>
 
       {/* Search Bar */}

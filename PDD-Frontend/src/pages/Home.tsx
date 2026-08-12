@@ -178,20 +178,6 @@ export default function Home() {
         </View>
       </View>
 
-      {/* Stats Banner */}
-      <View style={styles.statsBanner}>
-        <View style={styles.statsLeft}>
-          <Ionicons name="flame" size={24} color="#EF4444" />
-          <View>
-            <Text style={styles.statsTitle}>
-              {userStats.postsMade > 0 ? t('postsMadeCount', { count: userStats.postsMade }) : t('startSharingFood')}
-            </Text>
-            <Text style={styles.statsSubtitle}>{t('keepSavingFood')}</Text>
-          </View>
-        </View>
-        <Ionicons name="trophy" size={24} color="#16A34A" />
-      </View>
-
       {/* Food Listings */}
       {loading ? (
         <Text style={styles.loadingText}>Loading available food...</Text>
@@ -280,14 +266,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   statsBanner: {
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 20,
+    backgroundColor: '#059669',
+    padding: 20,
+    borderRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#10B981',
   },
   statsLeft: {
     flexDirection: 'row',
@@ -295,13 +281,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statsTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#111827',
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
   statsSubtitle: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: 13,
+    color: '#D1FAE5',
+    marginTop: 2,
   },
   loadingText: {
     textAlign: 'center',

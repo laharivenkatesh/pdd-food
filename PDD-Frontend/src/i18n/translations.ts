@@ -1953,3 +1953,88 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     donateFoodBtn: "Essen spenden ❤️",
   },
 };
+
+const foodDictionary: Record<string, Record<LanguageCode, string>> = {
+  maggie: {
+    en: "Maggie", te: "మ్యాగీ రొట్టెలు/నూడుల్స్", hi: "मैगी", ta: "மேகி", kn: "ಮ್ಯಾಗಿ", mr: "मॅगी", bn: "ম্যাগি", ml: "മാഗി", gu: "મેગી", pa: "ਮੈਗੀ", or: "ମ୍ୟାଗି", ur: "میگی", es: "Fideos Maggie", fr: "Nouilles Maggie", ar: "نودلز ماجي", de: "Maggie Nudeln"
+  },
+  hello: {
+    en: "Fresh Home Meals", te: "తాజా గృహ భోజనం", hi: "ताजा घरेलू भोजन", ta: "புதிய வீட்டு உணவு", kn: "ತಾಜಾ ಮನೆ ಊಟ", mr: "ताजे घरगुती जेवण", bn: "তাজা বাড়ির খাবার", ml: "ഫ്രഷ് വീട്ടിലെ ഭക്ഷണം", gu: "તાજું ઘરનું ભોજન", pa: "ਤਾਜ਼ਾ ਘਰੇਲੂ ਖਾਣਾ", or: "ତାଜା ଘରୋଇ ଖାଦ୍ୟ", ur: "تازہ گھریلو کھانا", es: "Comida Casera Fresca", fr: "Repas Maison Frais", ar: "وجبة منزلية طازجة", de: "Frisches Hausgemachtes Essen"
+  },
+  biryani: {
+    en: "Biryani", te: "బిర్యానీ", hi: "बिरयानी", ta: "பிரியாணி", kn: "ಬಿರಿಯಾನಿ", mr: "बिर्याणी", bn: "বিরিয়ানি", ml: "ബിരിയാണി", gu: "બિરયાની", pa: "ਬਿਰਯਾਨੀ", or: "ବିରିୟାନି", ur: "بریانی", es: "Biryani", fr: "Biryani", ar: "برياني", de: "Biryani"
+  },
+  chapati: {
+    en: "Chapati & Curry", te: "చపాతీ & కూర", hi: "चपाती और सब्जी", ta: "சப்பாத்தி & கறி", kn: "ಚಪಾತಿ ಮತ್ತು ಪಲ್ಯ", mr: "चपाती आणि भाजी", bn: "চাপাতি ও তরকারি", ml: "ചപ്പാത്തിയും കറിയും", gu: "રોટલી અને શાક", pa: "ਚਪਾਤੀ ਅਤੇ ਸਬਜ਼ੀ", or: "ଚପାତି ଓ ତରକାରି", ur: "چپاتی اور سالن", es: "Chapati y Curry", fr: "Chapati et Curry", ar: "خبز كباتي وكاري", de: "Chapati mit Curry"
+  },
+  curry: {
+    en: "Curry", te: "కూర", hi: "करी/सब्जी", ta: "கறி", kn: "ಪಲ್ಯ/ಸಾರು", mr: "भाजी", bn: "তরকারি", ml: "കറി", gu: "શાક", pa: "ਸਬਜ਼ੀ", or: "ତରକାରି", ur: "سالن", es: "Curry", fr: "Curry", ar: "كاري", de: "Curry"
+  },
+  rice: {
+    en: "Steamed Rice", te: "వేడి అన్నం", hi: "चावल", ta: "சாதம்", kn: "ಅನ್ನ", mr: "भात", bn: "ভাত", ml: "ചോറ്", gu: "ભાત", pa: "ਚਾਵਲ", or: "ଭାତ", ur: "چاول", es: "Arroz", fr: "Riz", ar: "أرز مطبوخ", de: "Reis"
+  },
+  dosa: {
+    en: "Crispy Dosa", te: "మసాలా దోస", hi: "डोसा", ta: "தோசை", kn: "ದೋಸೆ", mr: "डोसा", bn: "ডোসা", ml: "ദോശ", gu: "ઢોંસા", pa: "ਡੋਸਾ", or: "ଦୋସା", ur: "ڈوسا", es: "Dosa", fr: "Dosa", ar: "دوسا", de: "Dosa"
+  },
+  idli: {
+    en: "Soft Idli", te: "ఇడ్లీ", hi: "इडली", ta: "இட்லி", kn: "ಇಡ್ಲಿ", mr: "इडली", bn: "ইডলি", ml: "ഇഡ്ഡലി", gu: "ઇડલી", pa: "ਇਡਲੀ", or: "ଇଡ୍ଲି", ur: "اڈلی", es: "Idli", fr: "Idli", ar: "إدلي", de: "Idli"
+  },
+  samosa: {
+    en: "Hot Samosa", te: "సమోసా", hi: "समोसा", ta: "சமோசா", kn: "ಸಮೋಸಾ", mr: "समोसा", bn: "সিঙাড়া", ml: "സമോസ", gu: "સમોસા", pa: "ਸਮੋਸਾ", or: "ସିଙ୍ଗଡ଼ା", ur: "سموسہ", es: "Samosa", fr: "Samosa", ar: "سمبوسة", de: "Samosa"
+  },
+  cake: {
+    en: "Fresh Cake", te: "కేక్", hi: "केक", ta: "கேக்", kn: "ಕೇಕ್", mr: "केक", bn: "কেক", ml: "കേക്ക്", gu: "કેક", pa: "ਕੇਕ", or: "କେକ୍", ur: "کیک", es: "Pastel", fr: "Gâteau", ar: "كعكة", de: "Kuchen"
+  },
+  bread: {
+    en: "Bakery Bread", te: "బ్రెడ్/రొట్టె", hi: "ब्रेड", ta: "ரொட்டி", kn: "ಬ್ರೆಡ್", mr: "ब्रेड", bn: "পাউরুটি", ml: "ബ്രെഡ്", gu: "બ્રેડ", pa: "ਬ੍ਰੈੱਡ", or: "ପାଉରୁଟି", ur: "ڈبل روٹی", es: "Pan", fr: "Pain", ar: "خبز", de: "Brot"
+  },
+  veg: {
+    en: "Veg Meal", te: "శాకాహార భోజనం", hi: "शाकाहारी भोजन", ta: "சைவ உணவு", kn: "ಸಸ್ಯಾಹಾರ ಊಟ", mr: "शाकाहारी जेवण", bn: "নিরামিষ খাবার", ml: "വെജിറ്റേറിയൻ ഭക്ഷണം", gu: "શાકાહારી ભોજન", pa: "ਸ਼ਾਕਾਹਾਰੀ ਖਾਣਾ", or: "ନିରାମିଷ ଖାଦ୍ୟ", ur: "سبزی خوری کھانا", es: "Comida Vegetariana", fr: "Repas Végétarien", ar: "وجبة نباتية", de: "Vegetarisches Essen"
+  }
+};
+
+const ngoDictionary: Record<string, Record<LanguageCode, string>> = {
+  "Akshaya Trust": {
+    en: "Akshaya Trust", te: "అక్షయ ట్రస్ట్", hi: "अक्षय ट्रस्ट", ta: "அக்ஷயா டிரஸ்ட்", kn: "ಅಕ್ಷಯ ಟ್ರಸ್ಟ್", mr: "अक्षय ट्रस्ट", bn: "অক্ষয় ট্রাস্ট", ml: "അക്ഷയ ട്രസ്റ്റ്", gu: "અક્ષય ટ્રસ્ટ", pa: "ਅਕਸ਼ੈ ਟਰੱਸਟ", or: "ଅକ୍ଷୟ ଟ୍ରଷ୍ଟ", ur: "اکشے ٹرسٹ", es: "Fundación Akshaya", fr: "Fondation Akshaya", ar: "مؤسسة أكشايا", de: "Akshaya Stiftung"
+  },
+  "Siragu Montessori School Trust": {
+    en: "Siragu Montessori School Trust", te: "సిరగు మాంటిస్సోరి స్కూల్ ట్రస్ట్", hi: "सिरगु मोंटेसरी स्कूल ट्रस्ट", ta: "சிறகு மாண்டிசோரி பள்ளி அறக்கட்டளை", kn: "ಸಿರಗು ಮಾಂಟೆಸ್ಸರಿ ಸ್ಕೂಲ್ ಟ್ರಸ್ಟ್", mr: "सिरगु मोंटेसॉरी स्कूल ट्रस्ट", bn: "সিরাগু মন্টেসরি স্কুল ট্রাস্ট", ml: "സിറഗു മോണ്ടെസ്സോറി സ്കൂൾ ട്രസ്റ്റ്", gu: "સિરગુ મોન્ટેસરી સ્કૂલ ટ્રસ્ટ", pa: "ਸਿਰਗੂ ਮੋਂਟੇਸਰੀ ਸਕੂਲ ਟਰੱਸਟ", or: "ସିରଗୁ ମୋଣ୍ଟେସରୀ ସ୍କୁଲ ଟ୍ରଷ୍ଟ", ur: "سرگو مونٹیسوری اسکول ٹرسٹ", es: "Fundación Escuela Siragu", fr: "Fondation École Siragu", ar: "مؤسسة سيراغو مونتيسوري", de: "Siragu Montessori Stiftung"
+  },
+  "Blue Cross of India": {
+    en: "Blue Cross of India", te: "బ్లూ క్రాస్ ఆఫ్ ఇండియా", hi: "ब्लू क्रॉस ऑफ इंडिया", ta: "ப்ளூ க்ராஸ் ஆஃப் இந்தியா", kn: "ಬ್ಲೂ ಕ್ರಾಸ್ ಆಫ್ ಇಂಡಿಯಾ", mr: "ब्लू क्रॉस ऑफ इंडिया", bn: "ব্লু ক্রস অব ইন্ডিয়া", ml: "ബ്ലൂ ക്രോസ് ഓഫ് ഇന്ത്യ", gu: "બ્લુ ક્રોસ ઓફ ઇન્ડિયા", pa: "ਬਲੂ ਕਰਾਸ ਆਫ ਇੰਡੀਆ", or: "ବ୍ଲୁ କ୍ରସ ଅଫ ଇଣ୍ଡିଆ", ur: "بلیو کراس آف انڈیا", es: "Cruz Azul de India", fr: "Croix Bleue de l'Inde", ar: "الصليب الأزرق الهندي", de: "Blaues Kreuz Indien"
+  },
+  "Chennai Animal Action Group": {
+    en: "Chennai Animal Action Group", te: "చెన్నై యానిమల్ యాక్షన్ గ్రూప్", hi: "चेन्नई एनिमल एक्शन ग्रुप", ta: "சென்னையில் விலங்குகள் நலக் குழு", kn: "ಚೆನ್ನೈ ಅನಿಮಲ್ ಆಕ್ಷನ್ ಗ್ರೂಪ್", mr: "चेन्नई ॲनिमल ॲक्शन ग्रुप", bn: "চেন্নাই অ্যানিম্যাল অ্যাকশন গ্রুপ", ml: "ചെന്നൈ അനിമൽ ആക്ഷൻ ഗ്രൂപ്പ്", gu: "ચેન્નઈ એસિમલ એક્શન ગ્રુપ", pa: "ਚੇਨਈ ਐਨੀਮਲ ਐਕਸ਼ਨ ਗਰੁੱਪ", or: "ଚେନ୍ନାଇ ଆନିମଲ ଆକ୍ସନ ଗ୍ରୁପ", ur: "چنئی اینیمل ایکشن گروپ", es: "Grupo de Acción Animal Chennai", fr: "Groupe d'Action Animale Chennai", ar: "مجموعة العمل الحيواني بفيناي", de: "Tierschutzgruppe Chennai"
+  },
+  "The Robin Hood Army": {
+    en: "The Robin Hood Army", te: "ది రాబిన్ హుడ్ ఆర్మీ", hi: "द रॉबिन हुड आर्मी", ta: "தி ராபின் ஹூட் ஆர்மி", kn: "ದಿ ರಾಬಿನ್ ಹುಡ್ ಆರ್ಮಿ", mr: "द रॉबिन हूड आर्मी", bn: "দ্য রবিন হুড আর্মি", ml: "ദി റോബിൻ ഹുഡ് ആർമി", gu: "ધી રોબિન હૂડ આર્મી", pa: "ਦ ਰੋਬਿਨ ਹੁੱਡ ਆਰਮੀ", or: "ଦି ରବିନ୍ ଫୁଡ୍ ଆର୍ମି", ur: "دی رابن ہوڈ آرمی", es: "Ejército Robin Hood", fr: "Armée Robin des Bois", ar: "جيش روبن هود", de: "Robin Hood Armee"
+  },
+  "Roti Bank Delhi": {
+    en: "Roti Bank Delhi", te: "రోటీ బ్యాంక్ ఢిల్లీ", hi: "रोटी बैंक दिल्ली", ta: "ரோட்டி பேங்க் டெல்லி", kn: "ರೊಟ್ಟಿ ಬ್ಯಾಂಕ್ ದೆಹಲಿ", mr: "रोटी बँक दिल्ली", bn: "রুটি ব্যাংক দিল্লি", ml: "റൊട്ടി ബാങ്ക് ഡൽഹി", gu: "રોટી બેંક દિલ્હી", pa: "ਰੋਟੀ ਬੈਂਕ ਦਿੱਲੀ", or: "ରୋଟି ବ୍ୟାଙ୍କ ଦିଲ୍ଲୀ", ur: "روٹی بینک دہلی", es: "Banco de Alimentos Delhi", fr: "Banque Alimentaire Delhi", ar: "بنك الخبز دلهي", de: "Roti Bank Delhi"
+  }
+};
+
+export function translateFoodName(name: string, lang: LanguageCode): string {
+  if (!name) return name;
+  const key = name.toLowerCase().trim();
+  if (foodDictionary[key] && foodDictionary[key][lang]) {
+    return foodDictionary[key][lang];
+  }
+  // Partial keyword matching if exact key isn't found
+  for (const dictKey in foodDictionary) {
+    if (key.includes(dictKey) && foodDictionary[dictKey][lang]) {
+      return foodDictionary[dictKey][lang];
+    }
+  }
+  return name;
+}
+
+export function translateNGOName(name: string, lang: LanguageCode): string {
+  if (!name) return name;
+  const key = name.trim();
+  if (ngoDictionary[key] && ngoDictionary[key][lang]) {
+    return ngoDictionary[key][lang];
+  }
+  return name;
+}
+

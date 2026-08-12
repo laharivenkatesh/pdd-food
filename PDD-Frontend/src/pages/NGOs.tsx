@@ -5,6 +5,7 @@ import { openInGoogleMaps } from "@/components/MapPreview";
 import Chip from "@/components/Chip";
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from "@/context/LanguageContext";
+import { translateNGOName } from "@/i18n/translations";
 
 interface NGO {
   id: string;
@@ -54,7 +55,7 @@ type FilterType = "All" | "Humans" | "Animals";
 export default function NGOs() {
   const [filter, setFilter] = useState<FilterType>("All");
   const navigation = useNavigation<any>();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
 
@@ -82,7 +83,7 @@ export default function NGOs() {
       <View style={[styles.listContainer, isDesktop && styles.desktopGrid]}>
         {nearbyNGOs.map((ngo) => (
           <View key={ngo.id} style={[styles.card, isDesktop && styles.desktopCard]}>
-            <Text style={styles.ngoName}>{ngo.name}</Text>
+            <Text style={styles.ngoName}>{translateNGOName(ngo.name, language)}</Text>
             {ngo.description && <Text style={styles.ngoDesc}>{ngo.description}</Text>}
             <Text style={styles.address}>📍 {ngo.address}</Text>
 

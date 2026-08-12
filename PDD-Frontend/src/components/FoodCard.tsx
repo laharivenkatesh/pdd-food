@@ -7,6 +7,7 @@ import LiveCountdown from "./LiveCountdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyPosts } from "@/hooks/useMyPosts";
 import { useLanguage } from "@/context/LanguageContext";
+import { translateFoodName } from "@/i18n/translations";
 
 const getCategoryStyle = (category: string) => {
   switch (category) {
@@ -29,7 +30,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { posts, removePost } = useMyPosts();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
 
@@ -84,6 +85,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   const catStyle = getCategoryStyle(food.category);
   const translatedCategory = food.category === "Veg" ? t('veg') : food.category === "Non-Veg" ? t('nonVeg') : food.category === "Bakery" ? t('bakery') : food.category === "Fried" ? t('fried') : food.category === "Sweets" ? t('sweets') : food.category;
   const purposeLabel = food.purpose === "humans" ? "🧑 " + t('categoryLabel') : food.purpose === "animals" ? "🐾 " + t('animalPriority') : "♻️ " + t('allPartners');
+  const translatedTitle = translateFoodName(food.name, language);
 
   return (
     <View style={[styles.card, isDonor && styles.selfPostedCard, isDesktop && styles.desktopCard]}>
@@ -137,7 +139,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
         >
           <View style={styles.titleRow}>
             <View style={styles.titleCol}>
-              <Text style={styles.title}>{food.name}</Text>
+              <Text style={styles.title}>{translatedTitle}</Text>
               <View style={styles.infoRow}>
                 <Text style={styles.infoText}>👥 {t('feedsPeople', { count: total })}</Text>
                 <Text style={styles.remainingText}>📊 {t('portionsLeft', { remaining, total })}</Text>
