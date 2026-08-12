@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Auth() {
   const navigation = useNavigation<any>();
   const { user, loading, login, sendOtp, verifyOtp, resetPassword, updateUserPassword } = useAuth();
+  const { t } = useLanguage();
 
   const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_otp" | "forgot_password" | "reset_link_sent" | "reset_password">("login");
   const [otpReason, setOtpReason] = useState<"signup" | "recovery">("signup");
@@ -201,13 +203,13 @@ export default function Auth() {
               onPress={() => setAuthMode("login")}
               style={[styles.tab, authMode === "login" && styles.activeTab]}
             >
-              <Text style={[styles.tabText, authMode === "login" && styles.activeTabText]}>Log In</Text>
+              <Text style={[styles.tabText, authMode === "login" && styles.activeTabText]}>{t('loginTab')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setAuthMode("signup")}
               style={[styles.tab, authMode === "signup" && styles.activeTab]}
             >
-              <Text style={[styles.tabText, authMode === "signup" && styles.activeTabText]}>Sign Up</Text>
+              <Text style={[styles.tabText, authMode === "signup" && styles.activeTabText]}>{t('signUpTab')}</Text>
             </TouchableOpacity>
           </View>
         )}

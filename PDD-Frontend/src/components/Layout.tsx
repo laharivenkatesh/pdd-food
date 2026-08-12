@@ -7,6 +7,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useAllFoods } from "@/hooks/useMyPosts";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from "@/context/LanguageContext";
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
@@ -61,6 +62,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [oppositeProfiles, setOppositeProfiles] = useState<Record<string, any>>({});
   const bellDistancesRef = useRef<Record<string, number>>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [langModalOpen, setLangModalOpen] = useState(false);
+  const { t, setLanguage, currentLanguageOption, languageOptions } = useLanguage();
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -113,6 +116,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </TouchableOpacity>
 
         <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
+            <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
+            <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
+            <Ionicons name="chevron-down" size={13} color="#374151" />
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
             <Ionicons name="notifications-outline" size={22} color="#1F2937" />
             {unreadCount > 0 && (
@@ -122,7 +131,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
-            <Text style={styles.logoutBtnText}>Log Out</Text>
+            <Text style={styles.logoutBtnText}>{t('logOut')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -132,12 +141,57 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </View>
 
+      {/* Language Picker Modal */}
+      <Modal visible={langModalOpen} animationType="fade" transparent>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setLangModalOpen(false)}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.langModalContent} onStartShouldSetResponder={() => true}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="globe-outline" size={20} color="#16A34A" />
+                <Text style={styles.modalTitle}>{t('selectLanguage')}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setLangModalOpen(false)}>
+                <Ionicons name="close" size={24} color="#1F2937" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.langOptionsList}>
+              {languageOptions.map((opt) => {
+                const active = currentLanguageOption.code === opt.code;
+                return (
+                  <TouchableOpacity
+                    key={opt.code}
+                    onPress={() => {
+                      setLanguage(opt.code);
+                      setLangModalOpen(false);
+                    }}
+                    style={[styles.langOptionItem, active && styles.langOptionActive]}
+                  >
+                    <Text style={styles.langOptionFlag}>{opt.flag}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.langOptionNative, active && styles.langTextActive]}>
+                        {opt.nativeLabel}
+                      </Text>
+                      <Text style={styles.langOptionSub}>{opt.label}</Text>
+                    </View>
+                    {active && <Ionicons name="checkmark-circle" size={20} color="#16A34A" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* Notifications Drawer Modal */}
       <Modal visible={drawerOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Notifications</Text>
+              <Text style={styles.modalTitle}>{t('notifications')}</Text>
               <TouchableOpacity onPress={() => setDrawerOpen(false)}>
                 <Ionicons name="close" size={24} color="#1F2937" />
               </TouchableOpacity>
@@ -171,27 +225,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <View style={styles.bottomNav}>
         <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.navItem}>
           <Ionicons name="home-outline" size={22} color={currentRouteName === "Home" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "Home" && styles.navLabelActive]}>Home</Text>
+          <Text style={[styles.navLabel, currentRouteName === "Home" && styles.navLabelActive]}>{t('navHome')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("Expired" as never)} style={styles.navItem}>
           <Ionicons name="time-outline" size={22} color={currentRouteName === "Expired" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "Expired" && styles.navLabelActive]}>Expired</Text>
+          <Text style={[styles.navLabel, currentRouteName === "Expired" && styles.navLabelActive]}>{t('navExpired')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={[styles.navItem, styles.navHighlight]}>
           <Ionicons name="add-circle" size={32} color="#16A34A" />
-          <Text style={[styles.navLabel, currentRouteName === "PostFood" && styles.navLabelActive]}>Post</Text>
+          <Text style={[styles.navLabel, currentRouteName === "PostFood" && styles.navLabelActive]}>{t('navPost')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("Activity" as never)} style={styles.navItem}>
           <Ionicons name="list-outline" size={22} color={currentRouteName === "Activity" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>Activity</Text>
+          <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>{t('navActivity')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("NGOs" as never)} style={styles.navItem}>
           <Ionicons name="heart-outline" size={22} color={currentRouteName === "NGOs" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "NGOs" && styles.navLabelActive]}>NGOs</Text>
+          <Text style={[styles.navLabel, currentRouteName === "NGOs" && styles.navLabelActive]}>{t('navNGOs')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -371,5 +425,67 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#9CA3AF',
     marginTop: 4,
+  },
+  langBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  langBtnFlag: {
+    fontSize: 14,
+  },
+  langBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#374151',
+  },
+  langModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '70%',
+    padding: 20,
+    marginTop: 'auto',
+  },
+  langOptionsList: {
+    marginTop: 10,
+  },
+  langOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    marginBottom: 6,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  langOptionActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#DCFCE7',
+  },
+  langOptionFlag: {
+    fontSize: 22,
+  },
+  langOptionNative: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  langOptionSub: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 1,
+  },
+  langTextActive: {
+    color: '#15803D',
   },
 });

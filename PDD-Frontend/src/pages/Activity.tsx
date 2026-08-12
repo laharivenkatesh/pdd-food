@@ -4,12 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useMyPosts } from "@/hooks/useMyPosts";
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Activity() {
   const navigation = useNavigation<any>();
   const { profile } = useAuth();
   const { userStats } = useTransactions();
   const { posts, removePost } = useMyPosts();
+  const { t } = useLanguage();
 
   if (!profile) {
     return (
@@ -90,7 +92,7 @@ export default function Activity() {
       {/* My Listings */}
       <View style={styles.listingsSection}>
         <View style={styles.listingsHeader}>
-          <Text style={styles.listingsTitle}>My Listings</Text>
+          <Text style={styles.listingsTitle}>{t('myDonations')}</Text>
           <Text style={styles.listingsCount}>{posts.length} Total</Text>
         </View>
 

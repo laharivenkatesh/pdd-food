@@ -10,6 +10,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { supabase } from "@/lib/supabase";
 import { getFoodTimes } from "@/lib/utils";
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from "@/context/LanguageContext";
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
@@ -156,6 +157,7 @@ const getCategoryStyle = (category: string) => {
 };
 
   const catStyle = getCategoryStyle(food.category);
+  const { t } = useLanguage();
 
   return (
     <ScrollView style={styles.container}>
@@ -176,12 +178,12 @@ const getCategoryStyle = (category: string) => {
         <View style={styles.noImageTopBar}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.topBarBackBtn}>
             <Ionicons name="arrow-back" size={20} color="#111827" />
-            <Text style={styles.topBarBackText}>Back to Feed</Text>
+            <Text style={styles.topBarBackText}>{t('backToFeed')}</Text>
           </TouchableOpacity>
           {isDonor && (
             <TouchableOpacity onPress={handleDelete} style={styles.topBarDeleteBtn}>
               <Ionicons name="trash-outline" size={18} color="#EF4444" />
-              <Text style={styles.topBarDeleteText}>Delete</Text>
+              <Text style={styles.topBarDeleteText}>{t('delete')}</Text>
             </TouchableOpacity>
           )}
         </View>

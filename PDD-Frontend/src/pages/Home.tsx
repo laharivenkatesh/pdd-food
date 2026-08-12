@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getFoodTimes } from "@/lib/utils";
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { useLanguage } from "@/context/LanguageContext";
 
 interface NGO {
   id: string;
@@ -163,13 +164,15 @@ export default function Home() {
     return filtered.map((n) => ({ ...n, distance: null }));
   }, [userLoc, ngoFilter]);
 
+  const { t } = useLanguage();
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Available Food</Text>
-          <Text style={styles.subtitle}>Rescue meals near you, today.</Text>
+          <Text style={styles.title}>{t('homeTitle')}</Text>
+          <Text style={styles.subtitle}>{t('homeSubtitle')}</Text>
         </View>
       </View>
 

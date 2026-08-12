@@ -7,6 +7,7 @@ import { Category, FoodItem } from "@/types/food";
 import { getFoodTimes } from "@/lib/utils";
 import Chip from "@/components/Chip";
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from "@/context/LanguageContext";
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 
@@ -184,6 +185,8 @@ export default function Expired() {
     return arr;
   }, [activeCats, searchQuery, dbFoods]);
 
+  const { t } = useLanguage();
+
   return (
     <ScrollView style={styles.pageContainer} contentContainerStyle={styles.scrollContent}>
       {/* Header */}
@@ -193,7 +196,7 @@ export default function Expired() {
             <Ionicons name="arrow-back" size={20} color="#374151" />
           </TouchableOpacity>
           <View>
-            <Text style={styles.pageTitle}>Expired Outlet</Text>
+            <Text style={styles.pageTitle}>{t('navExpired')} Outlet</Text>
             <Text style={styles.pageSubtitle}>Requestable for 3 more hours</Text>
           </View>
         </View>

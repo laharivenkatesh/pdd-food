@@ -11,6 +11,7 @@ import * as Location from 'expo-location';
 import LocationPickerModal from '@/components/LocationPickerModal';
 import { getReverseGeocodeAddress } from "@/lib/location";
 import { uploadFoodImage } from "@/lib/storage";
+import { useLanguage } from "@/context/LanguageContext";
 
 const categories: Category[] = ["Veg", "Non-Veg", "Bakery", "Fried", "Sweets"];
 const purposes: { key: Purpose; label: string }[] = [
@@ -227,12 +228,13 @@ export default function PostFood() {
 
   const [selectedPrepChip, setSelectedPrepChip] = useState("Freshly Prepared (Just Now)");
   const [selectedExpiryChip, setSelectedExpiryChip] = useState("4");
+  const { t } = useLanguage();
 
   return (
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.pageHeader}>
-        <Text style={styles.title}>Post Leftover Food 🌱</Text>
-        <Text style={styles.subtitle}>Share excess food with nearby community members and NGOs</Text>
+        <Text style={styles.title}>{t('postTitle')}</Text>
+        <Text style={styles.subtitle}>{t('postSubtitle')}</Text>
       </View>
 
       <View style={styles.formContainer}>
@@ -240,13 +242,13 @@ export default function PostFood() {
         <View style={styles.cardSection}>
           <View style={styles.cardHeader}>
             <Ionicons name="fast-food" size={18} color="#16A34A" />
-            <Text style={styles.cardTitle}>Food Overview</Text>
+            <Text style={styles.cardTitle}>{t('foodOverview')}</Text>
           </View>
 
           <TextInput
             ref={nameInputRef}
             style={styles.input}
-            placeholder="Food name (e.g. Biryani, Chapati & Curry)"
+            placeholder={t('foodNamePlaceholder')}
             placeholderTextColor="#9CA3AF"
             value={name}
             onChangeText={setName}
@@ -255,7 +257,7 @@ export default function PostFood() {
             <TextInput
               ref={quantityInputRef}
               style={[styles.input, { flex: 1 }]}
-              placeholder="Quantity (e.g. 5 kg, 10 plates)"
+              placeholder={t('quantityPlaceholder')}
               placeholderTextColor="#9CA3AF"
               value={quantity}
               onChangeText={setQuantity}
@@ -263,7 +265,7 @@ export default function PostFood() {
             <TextInput
               ref={feedsInputRef}
               style={[styles.input, { flex: 1 }]}
-              placeholder="Feeds count (e.g. 8)"
+              placeholder={t('feedsPlaceholder')}
               placeholderTextColor="#9CA3AF"
               keyboardType="numeric"
               value={feeds}
@@ -276,11 +278,11 @@ export default function PostFood() {
         <View style={styles.cardSection}>
           <View style={styles.cardHeader}>
             <Ionicons name="time" size={18} color="#16A34A" />
-            <Text style={styles.cardTitle}>Preparation Time & Expiry</Text>
+            <Text style={styles.cardTitle}>{t('prepAndExpiry')}</Text>
           </View>
 
           <View style={styles.fieldSubSection}>
-            <Text style={styles.subLabel}>When was it prepared?</Text>
+            <Text style={styles.subLabel}>{t('whenPrepared')}</Text>
             <View style={styles.chipRow}>
               {preparedTimeOptions.map((opt) => (
                 <Chip
@@ -308,7 +310,7 @@ export default function PostFood() {
           </View>
 
           <View style={styles.fieldSubSection}>
-            <Text style={styles.subLabel}>Expires In (Hours)</Text>
+            <Text style={styles.subLabel}>{t('expiresInHours')}</Text>
             <View style={styles.chipRow}>
               {expiryOptions.map((opt) => (
                 <Chip
@@ -341,13 +343,13 @@ export default function PostFood() {
         <View style={styles.cardSection}>
           <View style={styles.cardHeader}>
             <Ionicons name="location" size={18} color="#16A34A" />
-            <Text style={styles.cardTitle}>Pickup Location</Text>
+            <Text style={styles.cardTitle}>{t('pickupLocation')}</Text>
           </View>
 
           <TextInput
             ref={addressInputRef}
             style={styles.input}
-            placeholder="Enter street, area, or landmark"
+            placeholder={t('addressPlaceholder')}
             placeholderTextColor="#9CA3AF"
             value={address}
             onChangeText={setAddress}
@@ -357,13 +359,13 @@ export default function PostFood() {
             <TouchableOpacity onPress={detectLocation} style={styles.detectBtn}>
               <Ionicons name="navigate" size={15} color="#16A34A" />
               <Text style={styles.detectBtnText}>
-                {detectingLoc ? "Detecting..." : "Auto-Detect GPS"}
+                {detectingLoc ? "Detecting..." : t('autoDetectGPS')}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setShowMapPicker(true)} style={styles.mapPinBtn}>
               <Ionicons name="map" size={15} color="#2563EB" />
-              <Text style={styles.mapPinBtnText}>Drag Pin on Map 📍</Text>
+              <Text style={styles.mapPinBtnText}>{t('dragPinOnMap')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -384,21 +386,18 @@ export default function PostFood() {
         <View style={styles.cardSection}>
           <View style={styles.cardHeader}>
             <Ionicons name="camera" size={18} color="#16A34A" />
-            <Text style={styles.cardTitle}>Food Photo</Text>
+            <Text style={styles.cardTitle}>{t('photoAttachment')}</Text>
             <View style={styles.optionalBadge}>
               <Text style={styles.optionalBadgeText}>Optional</Text>
             </View>
           </View>
-          <Text style={styles.subLabel}>
-            Uploading a photo from camera or gallery is completely optional. If skipped, your post will be published without an image.
-          </Text>
 
           {imageUri ? (
             <View style={styles.imagePreviewWrapper}>
               <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="cover" />
               <TouchableOpacity onPress={() => setImageUri(null)} style={styles.removeImageBtn}>
                 <Ionicons name="trash-outline" size={15} color="#DC2626" />
-                <Text style={styles.removeImageBtnText}>Remove Photo</Text>
+                <Text style={styles.removeImageBtnText}>{t('removePhoto')}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -406,17 +405,17 @@ export default function PostFood() {
               <View style={styles.imageBtnRow}>
                 <TouchableOpacity onPress={takePhotoWithCamera} style={styles.imageBtn}>
                   <Ionicons name="camera" size={20} color="#16A34A" />
-                  <Text style={styles.imageBtnText}>Take Photo</Text>
+                  <Text style={styles.imageBtnText}>{t('takePhoto')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={pickImageFromGallery} style={styles.imageBtn}>
                   <Ionicons name="images" size={20} color="#16A34A" />
-                  <Text style={styles.imageBtnText}>Choose Gallery</Text>
+                  <Text style={styles.imageBtnText}>{t('chooseGallery')}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.optionalNoticeBox}>
                 <Ionicons name="information-circle" size={16} color="#059669" />
                 <Text style={styles.optionalNoticeText}>
-                  Photo is optional. If skipped, no photo will be attached.
+                  {t('photoOptionalNote')}
                 </Text>
               </View>
             </View>
@@ -427,11 +426,11 @@ export default function PostFood() {
         <View style={styles.cardSection}>
           <View style={styles.cardHeader}>
             <Ionicons name="pricetags" size={18} color="#16A34A" />
-            <Text style={styles.cardTitle}>Category & Purpose</Text>
+            <Text style={styles.cardTitle}>{t('categoryAndPurpose')}</Text>
           </View>
 
           <View style={styles.fieldSubSection}>
-            <Text style={styles.subLabel}>Category</Text>
+            <Text style={styles.subLabel}>{t('categoryLabel')}</Text>
             <View style={styles.chipRow}>
               {categories.map((c) => (
                 <Chip key={c} label={c} active={category === c} onClick={() => setCategory(c)} />
@@ -440,7 +439,7 @@ export default function PostFood() {
           </View>
 
           <View style={styles.fieldSubSection}>
-            <Text style={styles.subLabel}>Target Audience / Purpose</Text>
+            <Text style={styles.subLabel}>{t('purposeLabel')}</Text>
             <View style={styles.chipRow}>
               {purposes.map((p) => (
                 <Chip key={p.key} label={p.label} active={purpose === p.key} onClick={() => setPurpose(p.key)} />
@@ -449,19 +448,19 @@ export default function PostFood() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Safe for animals</Text>
+            <Text style={styles.toggleLabel}>{t('safeForAnimals')}</Text>
             <Switch value={safe} onValueChange={setSafe} trackColor={{ true: '#16A34A' }} />
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>{paid ? "Paid listing" : "Free listing"}</Text>
+            <Text style={styles.toggleLabel}>{paid ? t('paidListing') : t('freeListing')}</Text>
             <Switch value={paid} onValueChange={setPaid} trackColor={{ true: '#16A34A' }} />
           </View>
 
           {paid && (
             <TextInput
               style={styles.input}
-              placeholder="Price in ₹ (e.g. 50)"
+              placeholder={t('pricePlaceholder')}
               keyboardType="numeric"
               value={price}
               onChangeText={setPrice}
@@ -473,12 +472,12 @@ export default function PostFood() {
         <View style={styles.cardSection}>
           <View style={styles.cardHeader}>
             <Ionicons name="create-outline" size={18} color="#16A34A" />
-            <Text style={styles.cardTitle}>Notes for Collector</Text>
+            <Text style={styles.cardTitle}>{t('notesForCollector')}</Text>
           </View>
 
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Mention pickup instructions or packaging details..."
+            placeholder={t('notesPlaceholder')}
             placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={3}
@@ -488,7 +487,7 @@ export default function PostFood() {
         </View>
 
         <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
-          <Text style={styles.submitBtnText}>{busy ? "Uploading & Posting…" : "Publish Food Post 🌱"}</Text>
+          <Text style={styles.submitBtnText}>{busy ? t('publishingBtn') : t('publishPostBtn')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

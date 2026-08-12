@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { openInGoogleMaps } from "@/components/MapPreview";
 import Chip from "@/components/Chip";
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from "@/context/LanguageContext";
 
 interface NGO {
   id: string;
@@ -53,6 +54,7 @@ type FilterType = "All" | "Humans" | "Animals";
 export default function NGOs() {
   const [filter, setFilter] = useState<FilterType>("All");
   const navigation = useNavigation<any>();
+  const { t } = useLanguage();
 
   const nearbyNGOs = useMemo(() => {
     let list = ngosList;
@@ -65,8 +67,8 @@ export default function NGOs() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
-        <Text style={styles.title}>Nearby NGOs</Text>
-        <Text style={styles.subtitle}>Donate directly to verified organizations.</Text>
+        <Text style={styles.title}>{t('ngoTitle')}</Text>
+        <Text style={styles.subtitle}>{t('ngoSubtitle')}</Text>
       </View>
 
       <View style={styles.filterRow}>

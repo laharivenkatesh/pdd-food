@@ -15,6 +15,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Layout from "./components/Layout";
 import RequireAuth from "./components/RequireAuth";
 import { AuthProvider } from "./hooks/useAuth";
+import { LanguageProvider } from "./context/LanguageContext";
 import { TransactionProvider } from "./hooks/useTransactions";
 import { NotificationProvider } from "./hooks/useNotifications";
 import Auth from "./pages/Auth";
@@ -195,26 +196,28 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <OtaUpdateModal />
         <AuthProvider>
-          <NotificationProvider>
-            <TransactionProvider>
-              <View style={{ flex: 1, width: '100%', height: '100%' }}>
-                <NavigationContainer>
-                  <Layout>
-                    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
-                      <Stack.Screen name="Auth" component={Auth} />
-                      <Stack.Screen name="Home" component={Home} />
-                      <Stack.Screen name="Expired" component={Expired} />
-                      <Stack.Screen name="FoodDetail" component={FoodDetail} />
-                      <Stack.Screen name="PostFood" component={PostFood} />
-                      <Stack.Screen name="Activity" component={Activity} />
-                      <Stack.Screen name="NGOs" component={NGOs} />
-                      <Stack.Screen name="NotFound" component={NotFound} />
-                    </Stack.Navigator>
-                  </Layout>
-                </NavigationContainer>
-              </View>
-            </TransactionProvider>
-          </NotificationProvider>
+          <LanguageProvider>
+            <NotificationProvider>
+              <TransactionProvider>
+                <View style={{ flex: 1, width: '100%', height: '100%' }}>
+                  <NavigationContainer>
+                    <Layout>
+                      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
+                        <Stack.Screen name="Auth" component={Auth} />
+                        <Stack.Screen name="Home" component={Home} />
+                        <Stack.Screen name="Expired" component={Expired} />
+                        <Stack.Screen name="FoodDetail" component={FoodDetail} />
+                        <Stack.Screen name="PostFood" component={PostFood} />
+                        <Stack.Screen name="Activity" component={Activity} />
+                        <Stack.Screen name="NGOs" component={NGOs} />
+                        <Stack.Screen name="NotFound" component={NotFound} />
+                      </Stack.Navigator>
+                    </Layout>
+                  </NavigationContainer>
+                </View>
+              </TransactionProvider>
+            </NotificationProvider>
+          </LanguageProvider>
         </AuthProvider>
       </QueryClientProvider>
     </GlobalErrorBoundary>

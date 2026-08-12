@@ -6,6 +6,7 @@ import MapPreview, { openInGoogleMaps } from "./MapPreview";
 import LiveCountdown from "./LiveCountdown";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyPosts } from "@/hooks/useMyPosts";
+import { useLanguage } from "@/context/LanguageContext";
 
 const purposeIcon = (p: string) => (p === "humans" ? "🧑 Humans" : p === "animals" ? "🐾 Animals" : "♻️ Both");
 
@@ -80,6 +81,8 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
 
   const catStyle = getCategoryStyle(food.category);
 
+  const { t } = useLanguage();
+
   return (
     <View style={[styles.card, isDonor && styles.selfPostedCard]}>
       {food.image ? (
@@ -134,8 +137,8 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
             <View style={styles.titleCol}>
               <Text style={styles.title}>{food.name}</Text>
               <View style={styles.infoRow}>
-                <Text style={styles.infoText}>👥 Feeds {total} people</Text>
-                <Text style={styles.remainingText}>📊 {remaining} / {total} portions left</Text>
+                <Text style={styles.infoText}>👥 {t('feedsPeople', { count: total })}</Text>
+                <Text style={styles.remainingText}>📊 {t('portionsLeft', { remaining, total })}</Text>
               </View>
               <View style={styles.progressTrack}>
                 <View style={[styles.progressBar, { width: `${(remaining / total) * 100}%` }]} />
@@ -144,7 +147,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
             <View>
               {food.price === 0 ? (
                 <View style={styles.freeBadge}>
-                  <Text style={styles.freeText}>FREE</Text>
+                  <Text style={styles.freeText}>{t('free')}</Text>
                 </View>
               ) : (
                 <Text style={styles.priceText}>₹{food.price}</Text>
@@ -201,14 +204,14 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
               onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
               style={styles.btnBook}
             >
-              <Text style={styles.btnBookText}>Book Food 🍽️</Text>
+              <Text style={styles.btnBookText}>{t('reservePortion')} 🍽️</Text>
             </TouchableOpacity>
           ) : null}
           <TouchableOpacity
             onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
             style={[styles.btnPrimary, isCollected && styles.btnCollected]}
           >
-            <Text style={styles.btnPrimaryText}>{isCollected ? "Collected" : "Details"}</Text>
+            <Text style={styles.btnPrimaryText}>{isCollected ? "Collected" : t('viewDetails')}</Text>
           </TouchableOpacity>
           {isDonor && (
             <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
