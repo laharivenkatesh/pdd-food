@@ -1,5 +1,6 @@
 # 🥗 Zerra Food Hub (PDD Food) - Automated Testing & CI/CD Pipelines
 
+[![PDD Food CI/CD Pipeline](https://github.com/laharivenkatesh/pdd-food/actions/workflows/pdd-food-ci.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/pdd-food-ci.yml)
 [![Web Build Audit](https://github.com/laharivenkatesh/pdd-food/actions/workflows/web-build-tests.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/web-build-tests.yml)
 [![Appium Mobile E2E Tests](https://github.com/laharivenkatesh/pdd-food/actions/workflows/appium-tests.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/appium-tests.yml)
 [![Selenium E2E Tests](https://github.com/laharivenkatesh/pdd-food/actions/workflows/selenium-tests.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/selenium-tests.yml)

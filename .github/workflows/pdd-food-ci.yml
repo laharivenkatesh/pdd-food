@@ -1,0 +1,175 @@
+name: PDD Food CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  setup-node:
+    name: Setup Node.js
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+  security-assessment:
+    name: Security Assessment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Vulnerability Excel Report Generator
+        run: |
+          cd "vulnerability tests"
+          npm install
+          node generate_vulnerability_excel.js
+
+      - name: Upload Security Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vulnerability_report_Excel
+          path: vulnerability tests/Vulnerability_report.xlsx
+          retention-days: 30
+
+  selenium-web-tests:
+    name: Selenium Web Tests
+    needs: setup-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Selenium Excel Report Generator
+        run: |
+          cd "Selenium reports"
+          npm install
+          node generate_excel_report.js
+
+      - name: Upload Selenium Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Selenium_report_Excel
+          path: Selenium reports/Selenium_report.xlsx
+          retention-days: 30
+
+  appium-mobile-tests:
+    name: Appium Mobile Tests
+    needs: setup-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Appium Excel Report Generator
+        run: |
+          cd "appium tests"
+          npm install
+          node generate_excel_report.js
+
+      - name: Upload Appium Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Appium_report_Excel
+          path: appium tests/Appium_report.xlsx
+          retention-days: 30
+
+  load-performance-tests:
+    name: Load & Performance Tests
+    needs: setup-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Load Test Excel Report Generator
+        run: |
+          cd "Load tests"
+          npm install
+          node generate_excel_report.js
+
+      - name: Upload Load Test Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Load_tests_report_Excel
+          path: Load tests/Load_tests_report.xlsx
+          retention-days: 30
+
+  web-build-tests:
+    name: Web Build Tests
+    needs: setup-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Web Build Excel Report Generator
+        run: |
+          cd "web build reports"
+          npm install
+          node generate_excel_report.js
+
+      - name: Upload Web Build Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Web_build_report_Excel
+          path: web build reports/Web_build_report.xlsx
+          retention-days: 30
+
+  test-summary:
+    name: Test Summary
+    needs: [security-assessment, selenium-web-tests, appium-mobile-tests, load-performance-tests, web-build-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Write GitHub Actions Comprehensive Summary
+        run: |
+          echo "# 🚀 PDD Food Master CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All connected parallel test jobs completed successfully in the master workflow graph." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Generated Reports & Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Job | Report File | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **1. Security Assessment** | \`Vulnerability_report.xlsx\` | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+          echo "| **2. Selenium Web Tests** | \`Selenium_report.xlsx\` | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+          echo "| **3. Appium Mobile Tests** | \`Appium_report.xlsx\` | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+          echo "| **4. Load & Performance Tests** | \`Load_tests_report.xlsx\` | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+          echo "| **5. Web Build Tests** | \`Web_build_report.xlsx\` | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📥 **Artifact Bundle**: Download individual or bundled Excel reports under the **Artifacts** section." >> $GITHUB_STEP_SUMMARY
