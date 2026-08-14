@@ -39,6 +39,12 @@ jobs:
           npm install
           node generate_vulnerability_excel.js
 
+      - name: Install Appium Test Dependencies & Run Generator
+        run: |
+          cd "appium tests"
+          npm install
+          node generate_excel_report.js
+
       - name: Upload All Excel Reports as Single Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -47,6 +53,7 @@ jobs:
             Load tests/Load_tests_report.xlsx
             Selenium reports/Selenium_report.xlsx
             vulnerability tests/Vulnerability_report.xlsx
+            appium tests/Appium_report.xlsx
           retention-days: 30
 
       - name: Write GitHub Actions Comprehensive Summary
@@ -61,5 +68,6 @@ jobs:
           echo "| **1. Load Testing** | \`Load_tests_report.xlsx\` | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
           echo "| **2. Selenium E2E Tests** | \`Selenium_report.xlsx\` | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
           echo "| **3. Vulnerability Audit** | \`Vulnerability_report.xlsx\` | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
+          echo "| **4. Appium Mobile E2E** | \`Appium_report.xlsx\` | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📥 **Artifact Bundle**: Download **All_PDD_Food_Excel_Test_Reports** from the Action Run Artifacts section." >> $GITHUB_STEP_SUMMARY

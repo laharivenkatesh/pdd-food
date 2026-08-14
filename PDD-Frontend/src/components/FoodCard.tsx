@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform, useWindowDimensions, Animated } from 'react-native';
+import { useRef, useEffect } from 'react';
 import { FoodItem } from "@/types/food";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
@@ -33,6 +34,25 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   const { t, language } = useLanguage();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(22)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.timing(translateYAnim, {
+        toValue: 0,
+        duration: 350,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start();
+  }, []);
 
   const isDonor = user?.id === food.provider.id || posts.some((p) => p.id === food.id);
   const isUrgent = food.expiryHours < 1;
@@ -88,10 +108,20 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
   const translatedTitle = translateFoodName(food.name, language);
 
   return (
-    <View style={[styles.card, isDonor && styles.selfPostedCard, isDesktop && styles.desktopCard]}>
+    <Animated.View
+      style={[
+        styles.card,
+        isDonor && styles.selfPostedCard,
+        isDesktop && styles.desktopCard,
+        {
+          opacity: fadeAnim,
+          transform: [{ translateY: translateYAnim }, { scale: scaleAnim }],
+        },
+      ]}
+    >
       {food.image ? (
-        <TouchableOpacity 
-          onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)} 
+        <TouchableOpacity
+          onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
           style={styles.imageContainer}
         >
           <Image source={{ uri: food.image }} style={styles.image} />
@@ -134,7 +164,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
             )}
           </View>
         )}
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
         >
           <View style={styles.titleRow}>
@@ -224,7 +254,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
           )}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

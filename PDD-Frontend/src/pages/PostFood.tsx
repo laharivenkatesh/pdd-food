@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Switch, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Switch, Platform, Animated } from 'react-native';
 import { useState, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Chip from "@/components/Chip";
@@ -229,6 +229,24 @@ export default function PostFood() {
   const [selectedPrepChip, setSelectedPrepChip] = useState("Freshly Prepared (Just Now)");
   const [selectedExpiryChip, setSelectedExpiryChip] = useState("4");
   const { t } = useLanguage();
+
+  const btnScale = useRef(new Animated.Value(1)).current;
+
+  const handleBtnPressIn = () => {
+    Animated.spring(btnScale, {
+      toValue: 0.94,
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  };
+
+  const handleBtnPressOut = () => {
+    Animated.spring(btnScale, {
+      toValue: 1,
+      friction: 4,
+      tension: 50,
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  };
 
   return (
     <ScrollView ref={scrollViewRef} style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -486,9 +504,17 @@ export default function PostFood() {
           />
         </View>
 
-        <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
-          <Text style={styles.submitBtnText}>{busy ? t('publishingBtn') : t('publishPostBtn')}</Text>
-        </TouchableOpacity>
+        <Animated.View style={{ transform: [{ scale: btnScale }] }}>
+          <TouchableOpacity
+            onPress={handleSubmit}
+            onPressIn={handleBtnPressIn}
+            onPressOut={handleBtnPressOut}
+            disabled={busy}
+            style={styles.submitBtn}
+          >
+            <Text style={styles.submitBtnText}>{busy ? t('publishingBtn') : t('publishPostBtn')}</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     </ScrollView>
   );

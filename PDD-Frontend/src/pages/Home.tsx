@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking, useWindowDimensions } from 'react-native';
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking, useWindowDimensions, Animated, Platform } from 'react-native';
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import FoodCard from "@/components/FoodCard";
 import Chip from "@/components/Chip";
 import { useAllFoods } from "@/hooks/useMyPosts";
@@ -55,9 +55,33 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-function NGOCard({ ngo, distance, onDonate }: { key?: React.Key; ngo: NGO; distance: number | null; onDonate: () => void }) {
+function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; ngo: NGO; distance: number | null; onDonate: () => void; index: number; filter: string }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    fadeAnim.setValue(0);
+    translateY.setValue(20);
+    const delay = Math.min(index * 60, 350);
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 350,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [ngo.id, filter]);
+
   return (
-    <View style={styles.ngoCard}>
+    <Animated.View style={[styles.ngoCard, { opacity: fadeAnim, transform: [{ translateY }] }]}>
       <View style={styles.ngoCardHeader}>
         <View style={{ flex: 1 }}>
           <Text style={styles.ngoCardTitle}>{ngo.name}</Text>
@@ -84,7 +108,7 @@ function NGOCard({ ngo, distance, onDonate }: { key?: React.Key; ngo: NGO; dista
           <Text style={styles.btnDonateText}>Donate Food</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -168,15 +192,25 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
 
+  const heroFade = useRef(new Animated.Value(0)).current;
+  const heroSlide = useRef(new Animated.Value(-20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(heroFade, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(heroSlide, { toValue: 0, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+    ]).start();
+  }, []);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       {/* Header */}
-      <View style={styles.header}>
+      <Animated.View style={[styles.header, { opacity: heroFade, transform: [{ translateY: heroSlide }] }]}>
         <View>
           <Text style={styles.title}>{t('homeTitle')}</Text>
           <Text style={styles.subtitle}>{t('homeSubtitle')}</Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Food Listings */}
       {loading ? (
@@ -216,12 +250,14 @@ export default function Home() {
             </View>
 
             <View style={styles.ngoList}>
-              {nearbyNGOs.map((ngo) => (
+              {nearbyNGOs.map((ngo, index) => (
                 <NGOCard
-                  key={ngo.id}
+                  key={`${ngoFilter}-${ngo.id}`}
                   ngo={ngo}
                   distance={ngo.distance}
                   onDonate={() => navigation.navigate("PostFood" as never)}
+                  index={index}
+                  filter={ngoFilter}
                 />
               ))}
             </View>

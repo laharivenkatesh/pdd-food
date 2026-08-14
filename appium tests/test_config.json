@@ -1,0 +1,29 @@
+{
+  "testSuiteName": "PDD-Food Mobile Application Appium Testing Suite",
+  "targetApp": "Zerra Food Hub (React Native Expo Mobile / Web)",
+  "targetUrl": "https://pdd-food-new.vercel.app",
+  "credentials": {
+    "email": "bunny.akki21@gmail.com",
+    "password": "Bunny123"
+  },
+  "appiumServer": {
+    "host": "127.0.0.1",
+    "port": 4723,
+    "path": "/"
+  },
+  "capabilities": {
+    "platformName": "Android",
+    "automationName": "UiAutomator2",
+    "deviceName": "Android Emulator / Real Device",
+    "browserName": "Chrome"
+  },
+  "defaultTimeoutMs": 15000,
+  "mobileVerification": {
+    "enabled": true,
+    "supportedOS": ["Android 14+", "iOS 17+"]
+  },
+  "excelReport": {
+    "outputDirectory": "./",
+    "fileName": "Appium_report.xlsx"
+  }
+}

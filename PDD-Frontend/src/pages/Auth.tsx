@@ -23,6 +23,59 @@ export default function Auth() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(60);
+  const [expiryTimer, setExpiryTimer] = useState(180);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (authMode === "verify_otp") {
+      interval = setInterval(() => {
+        setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+        setExpiryTimer((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [authMode]);
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || resending) return;
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setResending(true);
+    const res = await sendOtp(email, password, name, phone, otpReason === "recovery" ? "login" : "signup");
+    setResending(false);
+    if (!res.ok) {
+      const rawErr = "error" in res ? String(res.error) : "Failed to resend OTP code.";
+      setErrorMessage(rawErr);
+      Alert.alert("Resend Failed", rawErr);
+      return;
+    }
+    setResendCooldown(60);
+    setExpiryTimer(180);
+    const msg = "A new OTP has been sent.";
+    setSuccessMessage(msg);
+    Alert.alert("OTP Resent ✉️", msg);
+  };
+
+  const formatMinutesSeconds = (totalSec: number) => {
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")} MIN`;
+  };
+
+  const getUiText = (key: string, fallback: string, params?: Record<string, string | number>) => {
+    try {
+      const val = t(key, params);
+      if (!val || val === key) return fallback;
+      return val;
+    } catch {
+      return fallback;
+    }
+  };
 
   useEffect(() => {
     if (!loading && user) {
@@ -93,6 +146,12 @@ export default function Auth() {
     }
 
     if (authMode === "verify_otp") {
+      if (expiryTimer === 0) {
+        const msg = "This OTP has expired. Please request a new OTP.";
+        setErrorMessage(msg);
+        Alert.alert("OTP Expired", msg);
+        return;
+      }
       if (!otp.trim() || otp.trim().length < 6) {
         const msg = "Please enter the 6-digit OTP code sent to your email.";
         setErrorMessage(msg);
@@ -149,14 +208,14 @@ export default function Auth() {
       const res = await sendOtp(email, password, name, phone, "signup");
       setBusy(false);
       if (!res.ok) {
-        const friendlyErr = "error" in res ? String(res.error) : "An error occurred during registration.";
+        const friendlyErr = "error" in res ? String(res.error) : t('registrationErr');
         setErrorMessage(friendlyErr);
-        Alert.alert("Registration Failed", friendlyErr);
+        Alert.alert(t('regFailedTitle'), friendlyErr);
         return;
       }
       setErrorMessage(null);
       setOtpReason("signup");
-      Alert.alert("Verification Code Sent", `Check ${email} for your 6-digit OTP verification code!`);
+      Alert.alert(t('otpSentTitle'), t('otpSentMsg', { email }));
       setAuthMode("verify_otp");
     }
   };
@@ -185,14 +244,14 @@ export default function Auth() {
             <Text style={styles.title}>Zerra Food Hub</Text>
             <Text style={styles.subtitle}>
               {authMode === "reset_password"
-                ? "Create a new password for your account"
+                ? (getUiText('resetPassSubtitle', 'Create a new password for your account'))
                 : authMode === "forgot_password"
-                ? "Enter your email to receive reset instructions"
-                : authMode === "verify_otp"
-                ? `Enter the 6-digit ${otpReason === "recovery" ? "password reset " : ""}OTP sent to ${email}`
-                : authMode === "login"
-                ? "Welcome back! Sign in to continue."
-                : "Create an account to start sharing food."}
+                  ? (getUiText('forgotPassSubtitle', 'Enter your email to receive reset instructions'))
+                  : authMode === "verify_otp"
+                    ? (email ? `Enter the 6-digit OTP sent to ${email}` : getUiText('otpSubtitle', 'Enter the 6-digit OTP sent to your email'))
+                    : authMode === "login"
+                      ? (getUiText('loginSubtitle', 'Welcome back! Sign in to continue.'))
+                      : (getUiText('signupSubtitle', 'Create an account to start sharing food.'))}
             </Text>
           </View>
         )}
@@ -203,13 +262,13 @@ export default function Auth() {
               onPress={() => setAuthMode("login")}
               style={[styles.tab, authMode === "login" && styles.activeTab]}
             >
-              <Text style={[styles.tabText, authMode === "login" && styles.activeTabText]}>{t('loginTab')}</Text>
+              <Text style={[styles.tabText, authMode === "login" && styles.activeTabText]}>{getUiText('loginTab', 'Log In')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setAuthMode("signup")}
               style={[styles.tab, authMode === "signup" && styles.activeTab]}
             >
-              <Text style={[styles.tabText, authMode === "signup" && styles.activeTabText]}>{t('signUpTab')}</Text>
+              <Text style={[styles.tabText, authMode === "signup" && styles.activeTabText]}>{getUiText('signUpTab', 'Sign Up')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -222,14 +281,21 @@ export default function Auth() {
             </View>
           )}
 
+          {successMessage && (
+            <View style={styles.successBox}>
+              <Ionicons name="checkmark-circle" size={18} color="#16A34A" />
+              <Text style={styles.successText}>{successMessage}</Text>
+            </View>
+          )}
+
           {authMode === "reset_link_sent" ? (
             <View style={styles.resetSuccessContainer}>
               <View style={styles.mailBadge}>
                 <Ionicons name="mail-open-outline" size={40} color="#16A34A" />
               </View>
-              <Text style={styles.resetSuccessTitle}>Password Reset Link Sent! ✉️</Text>
+              <Text style={styles.resetSuccessTitle}>{getUiText('resetLinkSentHeader', 'Password Reset Link Sent! ✉️')}</Text>
               <Text style={styles.resetSuccessMessage}>
-                We've sent a password reset link to <Text style={{ fontWeight: '800', color: '#111827' }}>{email}</Text>. Please check your inbox and spam folder, then tap the link to reset your password.
+                {getUiText('resetLinkSentBody', `We sent a password reset link to ${email}. Please check your inbox.`, { email })}
               </Text>
 
               <TouchableOpacity
@@ -239,7 +305,7 @@ export default function Auth() {
                 }}
                 style={styles.resetBackBtn}
               >
-                <Text style={styles.resetBackBtnText}>← Back to Log In</Text>
+                <Text style={styles.resetBackBtnText}>{getUiText('backToLoginBtn', '← Back to Login')}</Text>
               </TouchableOpacity>
             </View>
           ) : authMode === "reset_password" ? (
@@ -248,7 +314,7 @@ export default function Auth() {
               <View style={styles.passwordWrapper}>
                 <TextInput
                   style={[styles.input, { flex: 1, paddingRight: 40 }]}
-                  placeholder="New Password (min 6 characters)"
+                  placeholder={getUiText('newPasswordPlaceholder', 'New Password (at least 6 characters)')}
                   secureTextEntry={!showPassword}
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -269,7 +335,7 @@ export default function Auth() {
               <View style={styles.passwordWrapper}>
                 <TextInput
                   style={[styles.input, { flex: 1, paddingRight: 40 }]}
-                  placeholder="Confirm New Password"
+                  placeholder={getUiText('confirmPasswordPlaceholder', 'Confirm New Password')}
                   secureTextEntry={!showPassword}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -278,7 +344,7 @@ export default function Auth() {
 
               <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>
-                  {busy ? "Updating Password..." : "Update Password & Log In"}
+                  {busy ? getUiText('updatingPasswordState', 'Updating password...') : getUiText('updatePasswordBtn', 'Update Password & Log In')}
                 </Text>
               </TouchableOpacity>
             </>
@@ -286,7 +352,7 @@ export default function Auth() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Enter your registered email address"
+                placeholder={getUiText('emailInputPlaceholder', 'Enter your registered email address')}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -294,7 +360,7 @@ export default function Auth() {
               />
               <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>
-                  {busy ? "Sending Link..." : "Send Password Reset Email"}
+                  {busy ? getUiText('sendingLinkState', 'Sending link...') : getUiText('sendResetEmailBtn', 'Send Password Reset Email')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -304,11 +370,21 @@ export default function Auth() {
                 }}
                 style={styles.backToLoginBtn}
               >
-                <Text style={styles.backToLoginText}>← Back to Log In</Text>
+                <Text style={styles.backToLoginText}>{getUiText('backToLoginBtn', '← Back to Login')}</Text>
               </TouchableOpacity>
             </>
           ) : authMode === "verify_otp" ? (
             <>
+              {/* Code Expiration Countdown Banner */}
+              <View style={styles.timerBox}>
+                <Ionicons name="time-outline" size={16} color="#059669" />
+                <Text style={styles.timerText}>
+                  {expiryTimer > 0
+                    ? `Code expires in ${formatMinutesSeconds(expiryTimer)}`
+                    : "Code expired! Please resend a new OTP."}
+                </Text>
+              </View>
+
               {/* Single Unified 6-Digit OTP Input Field */}
               <View style={styles.otpContainer}>
                 <View style={styles.otpBoxesRow}>
@@ -347,11 +423,28 @@ export default function Auth() {
                 />
               </View>
 
-              <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
+              <TouchableOpacity onPress={handleSubmit} disabled={busy || expiryTimer === 0} style={[styles.submitBtn, expiryTimer === 0 && { opacity: 0.6 }]}>
                 <Text style={styles.submitBtnText}>
-                  {busy ? "Verifying..." : "Verify Code & Log In"}
+                  {busy ? getUiText('verifyingState', 'Verifying...') : getUiText('verifyCodeBtn', 'Verify Code & Log In')}
                 </Text>
               </TouchableOpacity>
+
+              {/* Resend OTP Button with 60s Cooldown */}
+              <View style={styles.resendContainer}>
+                <TouchableOpacity
+                  onPress={handleResendOtp}
+                  disabled={resendCooldown > 0 || resending}
+                  style={[styles.resendBtn, resendCooldown > 0 && styles.resendBtnDisabled]}
+                >
+                  <Text style={[styles.resendBtnText, resendCooldown > 0 && styles.resendBtnTextDisabled]}>
+                    {resending
+                      ? "Sending..."
+                      : resendCooldown > 0
+                      ? `Resend OTP in ${resendCooldown}s`
+                      : "Resend OTP"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </>
           ) : (
             <>
@@ -359,13 +452,13 @@ export default function Auth() {
                 <>
                   <TextInput
                     style={styles.input}
-                    placeholder="Full Name"
+                    placeholder={getUiText('fullNamePlaceholder', 'Full Name')}
                     value={name}
                     onChangeText={setName}
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Phone Number"
+                    placeholder={getUiText('phoneNumberPlaceholder', 'Phone Number')}
                     keyboardType="phone-pad"
                     value={phone}
                     onChangeText={setPhone}
@@ -375,7 +468,7 @@ export default function Auth() {
 
               <TextInput
                 style={styles.input}
-                placeholder="Email address"
+                placeholder={getUiText('emailPlaceholder', 'Email Address')}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -386,7 +479,7 @@ export default function Auth() {
               <View style={styles.passwordWrapper}>
                 <TextInput
                   style={[styles.input, { flex: 1, paddingRight: 40 }]}
-                  placeholder="Password"
+                  placeholder={getUiText('passwordPlaceholder', 'Password')}
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
@@ -411,13 +504,13 @@ export default function Auth() {
                   }}
                   style={styles.forgotBtn}
                 >
-                  <Text style={styles.forgotBtnText}>Forgot Password?</Text>
+                  <Text style={styles.forgotBtnText}>{getUiText('forgotPasswordLink', 'Forgot Password?')}</Text>
                 </TouchableOpacity>
               )}
 
               <TouchableOpacity onPress={handleSubmit} disabled={busy} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>
-                  {busy ? "Processing..." : authMode === "login" ? "Log In" : "Register Account"}
+                  {busy ? getUiText('processingState', 'Processing...') : authMode === "login" ? getUiText('loginTab', 'Log In') : getUiText('registerAccountBtn', 'Register Account')}
                 </Text>
               </TouchableOpacity>
             </>
@@ -691,5 +784,63 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '800',
     fontSize: 15,
+  },
+  timerBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 14,
+  },
+  timerText: {
+    color: '#047857',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  successBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F0FDF4',
+    borderColor: '#86EFAC',
+    borderWidth: 1,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  successText: {
+    flex: 1,
+    color: '#15803D',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  resendContainer: {
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  resendBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+  },
+  resendBtnDisabled: {
+    backgroundColor: '#F9FAFB',
+    opacity: 0.7,
+  },
+  resendBtnText: {
+    color: '#16A34A',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  resendBtnTextDisabled: {
+    color: '#9CA3AF',
+    fontWeight: '600',
   },
 });

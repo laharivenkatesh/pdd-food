@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal, Platform, useWindowDimensions, Animated } from 'react-native';
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,29 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+}
+
+function NavTabItem({ name, route, icon, label, currentRoute, onPress }: { name: string; route: string; icon: any; label: string; currentRoute: string; onPress: () => void }) {
+  const isActive = currentRoute === route;
+  const scaleAnim = useRef(new Animated.Value(isActive ? 1.15 : 1)).current;
+
+  useEffect(() => {
+    Animated.spring(scaleAnim, {
+      toValue: isActive ? 1.15 : 1,
+      friction: 5,
+      tension: 60,
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [isActive]);
+
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.navItem}>
+      <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
+        <Ionicons name={icon} size={name === "PostFood" ? 30 : 22} color={isActive ? "#16A34A" : "#6B7280"} />
+        <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{label}</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
 }
 
 function formatTimeAgo(dateStr: string) {
@@ -226,30 +249,46 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.navItem}>
-          <Ionicons name="home-outline" size={22} color={currentRouteName === "Home" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "Home" && styles.navLabelActive]}>{t('navHome')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("Expired" as never)} style={styles.navItem}>
-          <Ionicons name="time-outline" size={22} color={currentRouteName === "Expired" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "Expired" && styles.navLabelActive]}>{t('navExpired')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={[styles.navItem, styles.navHighlight]}>
-          <Ionicons name="add-circle" size={32} color="#16A34A" />
-          <Text style={[styles.navLabel, currentRouteName === "PostFood" && styles.navLabelActive]}>{t('navPost')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("Activity" as never)} style={styles.navItem}>
-          <Ionicons name="list-outline" size={22} color={currentRouteName === "Activity" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "Activity" && styles.navLabelActive]}>{t('navActivity')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate("NGOs" as never)} style={styles.navItem}>
-          <Ionicons name="heart-outline" size={22} color={currentRouteName === "NGOs" ? "#16A34A" : "#6B7280"} />
-          <Text style={[styles.navLabel, currentRouteName === "NGOs" && styles.navLabelActive]}>{t('navNGOs')}</Text>
-        </TouchableOpacity>
+        <NavTabItem
+          name="Home"
+          route="Home"
+          icon="home-outline"
+          label={t('navHome')}
+          currentRoute={currentRouteName}
+          onPress={() => navigation.navigate("Home" as never)}
+        />
+        <NavTabItem
+          name="Expired"
+          route="Expired"
+          icon="time-outline"
+          label={t('navExpired')}
+          currentRoute={currentRouteName}
+          onPress={() => navigation.navigate("Expired" as never)}
+        />
+        <NavTabItem
+          name="PostFood"
+          route="PostFood"
+          icon="add-circle"
+          label={t('navPost')}
+          currentRoute={currentRouteName}
+          onPress={() => navigation.navigate("PostFood" as never)}
+        />
+        <NavTabItem
+          name="Activity"
+          route="Activity"
+          icon="list-outline"
+          label={t('navActivity')}
+          currentRoute={currentRouteName}
+          onPress={() => navigation.navigate("Activity" as never)}
+        />
+        <NavTabItem
+          name="NGOs"
+          route="NGOs"
+          icon="heart-outline"
+          label={t('navNGOs')}
+          currentRoute={currentRouteName}
+          onPress={() => navigation.navigate("NGOs" as never)}
+        />
       </View>
     </View>
   );

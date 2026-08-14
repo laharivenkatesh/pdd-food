@@ -94,7 +94,7 @@ const getInitialUser = (): JWTUser | null => {
       const stored = localStorage.getItem(LOCAL_STORAGE_USER);
       if (stored) return JSON.parse(stored);
     }
-  } catch (e) {}
+  } catch (e) { }
   return null;
 };
 
@@ -104,7 +104,7 @@ const getInitialProfile = (): UserProfile | null => {
       const stored = localStorage.getItem(LOCAL_STORAGE_PROFILE);
       if (stored) return JSON.parse(stored);
     }
-  } catch (e) {}
+  } catch (e) { }
   return null;
 };
 
@@ -286,7 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sendOtp = async (email: string, password?: string, name?: string, phone?: string, mode?: "signup" | "login") => {
     try {
       if (mode === "signup" && password) {
-        const { error } = await (supabase.auth as any).signUp({
+        const { data, error } = await (supabase.auth as any).signUp({
           email,
           password,
           options: {
@@ -296,16 +296,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         });
-        if (error) throw error;
+
+        const hasUser = Boolean(data?.user);
+        const isIdentitiesEmpty = Array.isArray(data?.user?.identities) && data.user.identities.length === 0;
+
+        console.log("[Supabase Auth Diagnostic] signUp response:", {
+          success: !error,
+          errorMessage: error?.message || null,
+          errorStatus: (error as any)?.status || null,
+          hasUser,
+          isIdentitiesEmpty
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        // If user already exists in Supabase Auth (identities is empty []), send confirmation OTP via resend()
+        if (hasUser && isIdentitiesEmpty) {
+          console.log("[Supabase Auth] Existing unconfirmed user identity detected. Triggering resend...");
+          const resendResult = await (supabase.auth as any).resend({
+            type: "signup",
+            email
+          });
+          if (resendResult.error) {
+            console.error("[Supabase Auth Error] resend failed for:", email, "Message:", resendResult.error.message);
+            throw resendResult.error;
+          }
+          console.log("[Supabase Auth Success] resend succeeded for:", email);
+        }
+
         return { ok: true as const };
       } else {
-        const { error } = await (supabase.auth as any).signInWithOtp({
+        const { data, error } = await (supabase.auth as any).signInWithOtp({
           email,
         });
-        if (error) throw error;
+
+        console.log("[Supabase Auth Diagnostic] signInWithOtp response:", {
+          success: !error,
+          errorMessage: error?.message || null,
+          errorStatus: (error as any)?.status || null,
+          hasUser: Boolean(data?.user)
+        });
+
+        if (error) {
+          throw error;
+        }
+
         return { ok: true as const };
       }
     } catch (err: any) {
+      console.error("[Supabase Auth Error] sendOtp catch error:", err?.message || err);
       return { ok: false as const, error: err.message || "Failed to send OTP code." };
     }
   };
@@ -315,16 +356,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const verifyOtp = async (email: string, otp: string, type: "signup" | "recovery" | "magiclink" = "signup") => {
     try {
-      let verificationType: any = "signup";
-      if (type === "recovery") verificationType = "recovery";
-      else if (type === "magiclink") verificationType = "magiclink";
-      else verificationType = "email";
+      let verificationType: any = type === "recovery" ? "recovery" : type === "magiclink" ? "magiclink" : "signup";
 
-      const { data, error } = await (supabase.auth as any).verifyOtp({
+      let { data, error } = await (supabase.auth as any).verifyOtp({
         email,
         token: otp,
         type: verificationType,
       });
+
+      if (error && (verificationType === "signup" || verificationType === "email")) {
+        const fallbackType = verificationType === "signup" ? "email" : "signup";
+        const res2 = await (supabase.auth as any).verifyOtp({
+          email,
+          token: otp,
+          type: fallbackType,
+        });
+        if (!res2.error) {
+          data = res2.data;
+          error = null;
+        }
+      }
 
       if (error) throw error;
 

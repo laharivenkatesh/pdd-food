@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking, useWindowDimensions } from 'react-native';
-import { useEffect, useState, useMemo } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Linking, useWindowDimensions, Animated, Platform } from 'react-native';
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { openInGoogleMaps } from "@/components/MapPreview";
 import Chip from "@/components/Chip";
@@ -52,6 +52,55 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 type FilterType = "All" | "Humans" | "Animals";
 
+function AnimatedNGOCard({ ngo, index, isDesktop, language, t, navigation }: { ngo: NGO; index: number; isDesktop: boolean; language: any; t: any; navigation: any }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    fadeAnim.setValue(0);
+    translateY.setValue(20);
+    const delay = Math.min(index * 60, 400);
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 350,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [ngo.id]);
+
+  return (
+    <Animated.View style={[styles.card, isDesktop && styles.desktopCard, { opacity: fadeAnim, transform: [{ translateY }] }]}>
+      <Text style={styles.ngoName}>{translateNGOName(ngo.name, language)}</Text>
+      {ngo.description && <Text style={styles.ngoDesc}>{ngo.description}</Text>}
+      <Text style={styles.address}>📍 {ngo.address}</Text>
+
+      <TouchableOpacity onPress={() => Linking.openURL(`tel:${ngo.phone}`)}>
+        <Text style={styles.phoneText}>📞 {ngo.phone}</Text>
+      </TouchableOpacity>
+
+      <View style={styles.btnRow}>
+        <TouchableOpacity onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)} style={styles.btnNav}>
+          <Ionicons name="navigate" size={16} color="#1F2937" />
+          <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={styles.btnDonate}>
+          <Ionicons name="heart" size={16} color="#FFFFFF" />
+          <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
+
 export default function NGOs() {
   const [filter, setFilter] = useState<FilterType>("All");
   const navigation = useNavigation<any>();
@@ -81,27 +130,8 @@ export default function NGOs() {
       </View>
 
       <View style={[styles.listContainer, isDesktop && styles.desktopGrid]}>
-        {nearbyNGOs.map((ngo) => (
-          <View key={ngo.id} style={[styles.card, isDesktop && styles.desktopCard]}>
-            <Text style={styles.ngoName}>{translateNGOName(ngo.name, language)}</Text>
-            {ngo.description && <Text style={styles.ngoDesc}>{ngo.description}</Text>}
-            <Text style={styles.address}>📍 {ngo.address}</Text>
-
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${ngo.phone}`)}>
-              <Text style={styles.phoneText}>📞 {ngo.phone}</Text>
-            </TouchableOpacity>
-
-            <View style={styles.btnRow}>
-              <TouchableOpacity onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)} style={styles.btnNav}>
-                <Ionicons name="navigate" size={16} color="#1F2937" />
-                <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={styles.btnDonate}>
-                <Ionicons name="heart" size={16} color="#FFFFFF" />
-                <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        {nearbyNGOs.map((ngo, index) => (
+          <AnimatedNGOCard key={`${filter}-${ngo.id}`} ngo={ngo} index={index} isDesktop={isDesktop} language={language} t={t} navigation={navigation} />
         ))}
       </View>
     </ScrollView>
