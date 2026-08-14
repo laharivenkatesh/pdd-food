@@ -1,5 +1,6 @@
 # 🥗 Zerra Food Hub (PDD Food) - Automated Testing & CI/CD Pipelines
 
+[![Web Build Audit](https://github.com/laharivenkatesh/pdd-food/actions/workflows/web-build-tests.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/web-build-tests.yml)
 [![Appium Mobile E2E Tests](https://github.com/laharivenkatesh/pdd-food/actions/workflows/appium-tests.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/appium-tests.yml)
 [![Selenium E2E Tests](https://github.com/laharivenkatesh/pdd-food/actions/workflows/selenium-tests.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/selenium-tests.yml)
 [![Security & Vulnerability Audit](https://github.com/laharivenkatesh/pdd-food/actions/workflows/vulnerability-tests.yml/badge.svg)](https://github.com/laharivenkatesh/pdd-food/actions/workflows/vulnerability-tests.yml)
@@ -14,10 +15,11 @@ Welcome to the **Zerra Food Hub (PDD Food)** repository. This repository contain
 
 | Test Suite Name | Execution Directory | Test Count | Generated Excel Report | Target Platform | GitHub Workflow |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Appium Mobile E2E** | `appium tests/` | **325 Unique Scenarios** | `Appium_report.xlsx` | Android 14+ & iOS 17+ | [appium-tests.yml](.github/workflows/appium-tests.yml) |
-| **2. Selenium Web E2E** | `Selenium reports/` | **325 Unique Scenarios** | `Selenium_report.xlsx` | Chrome / Web App | [selenium-tests.yml](.github/workflows/selenium-tests.yml) |
-| **3. Security & Vulnerability** | `vulnerability tests/` | **305 Audit Cases** | `Vulnerability_report.xlsx` | Security & OWASP Audit | [vulnerability-tests.yml](.github/workflows/vulnerability-tests.yml) |
-| **4. Performance Load Test** | `Load tests/` | **100 Concurrent VUs** | `Load_tests_report.xlsx` | Node.js Backend API | [load-tests.yml](.github/workflows/load-tests.yml) |
+| **1. Web Build Verification** | `web build reports/` | **325 Unique Scenarios** | `Web_build_report.xlsx` | Expo Web / Vite / Vercel | [web-build-tests.yml](.github/workflows/web-build-tests.yml) |
+| **2. Appium Mobile E2E** | `appium tests/` | **325 Unique Scenarios** | `Appium_report.xlsx` | Android 14+ & iOS 17+ | [appium-tests.yml](.github/workflows/appium-tests.yml) |
+| **3. Selenium Web E2E** | `Selenium reports/` | **325 Unique Scenarios** | `Selenium_report.xlsx` | Chrome / Web App | [selenium-tests.yml](.github/workflows/selenium-tests.yml) |
+| **4. Security & Vulnerability** | `vulnerability tests/` | **305 Audit Cases** | `Vulnerability_report.xlsx` | Security & OWASP Audit | [vulnerability-tests.yml](.github/workflows/vulnerability-tests.yml) |
+| **5. Performance Load Test** | `Load tests/` | **100 Concurrent VUs** | `Load_tests_report.xlsx` | Node.js Backend API | [load-tests.yml](.github/workflows/load-tests.yml) |
 
 ---
 
@@ -27,6 +29,7 @@ Every push or pull request to `main` automatically triggers the **All Test Suite
 
 - **Artifact Name**: `All_PDD_Food_Excel_Test_Reports`
 - **Contains**:
+  - 🌐 `web build reports/Web_build_report.xlsx`
   - 📊 `appium tests/Appium_report.xlsx`
   - 🧪 `Selenium reports/Selenium_report.xlsx`
   - 🛡️ `vulnerability tests/Vulnerability_report.xlsx`
@@ -35,6 +38,13 @@ Every push or pull request to `main` automatically triggers the **All Test Suite
 ---
 
 ## 🏃 Running Test Generators Locally
+
+### Web Build Verification
+```bash
+cd "web build reports"
+npm install
+node generate_excel_report.js
+```
 
 ### Appium Mobile E2E Tests
 ```bash

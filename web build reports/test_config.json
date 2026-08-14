@@ -1,0 +1,10 @@
+{
+  "testSuiteName": "PDD-Food Web Build Verification & Asset Audit Suite",
+  "targetUrl": "https://pdd-food-new.vercel.app",
+  "buildEngine": "Expo Web / Vite / Vercel Serverless",
+  "browsersSupported": ["Google Chrome", "Apple Safari", "Mozilla Firefox", "Microsoft Edge"],
+  "excelReport": {
+    "outputDirectory": "./",
+    "fileName": "Web_build_report.xlsx"
+  }
+}

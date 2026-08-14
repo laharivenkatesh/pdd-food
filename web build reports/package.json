@@ -1,0 +1,14 @@
+{
+  "name": "pdd-food-web-build-reports",
+  "version": "1.0.0",
+  "description": "Web Build Verification & Asset Audit Test Suite for PDD Food App (300+ unique web build test cases)",
+  "main": "run_web_build_tests.js",
+  "type": "module",
+  "scripts": {
+    "test:web-build": "node run_web_build_tests.js",
+    "generate:report": "node generate_excel_report.js"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}
