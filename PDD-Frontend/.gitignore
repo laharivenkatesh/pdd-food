@@ -35,4 +35,5 @@ android/build/
 android/app/build/
 android/app/.cxx/
 .expo/
+audit_all.ts
 
