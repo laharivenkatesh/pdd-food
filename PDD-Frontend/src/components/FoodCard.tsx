@@ -104,7 +104,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
 
   const catStyle = getCategoryStyle(food.category);
   const translatedCategory = food.category === "Veg" ? t('veg') : food.category === "Non-Veg" ? t('nonVeg') : food.category === "Bakery" ? t('bakery') : food.category === "Fried" ? t('fried') : food.category === "Sweets" ? t('sweets') : food.category;
-  const purposeLabel = food.purpose === "humans" ? "🧑 " + t('categoryLabel') : food.purpose === "animals" ? "🐾 " + t('animalPriority') : "♻️ " + t('allPartners');
+  const purposeLabel = food.purpose === "humans" ? "🧑 " + t('humansAudience') : food.purpose === "animals" ? "🐾 " + t('animalsAudience') : "♻️ " + t('bothAudience');
   const translatedTitle = translateFoodName(food.name, language);
 
   return (

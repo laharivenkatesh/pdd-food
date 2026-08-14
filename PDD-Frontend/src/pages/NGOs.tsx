@@ -125,7 +125,7 @@ export default function NGOs() {
 
       <View style={styles.filterRow}>
         {(["All", "Humans", "Animals"] as FilterType[]).map((f) => (
-          <Chip key={f} label={f} active={filter === f} onClick={() => setFilter(f)} />
+          <Chip key={f} label={f === "All" ? t('allCategory') : f === "Humans" ? t('humansAudience') : t('animalsAudience')} active={filter === f} onClick={() => setFilter(f)} />
         ))}
       </View>
 

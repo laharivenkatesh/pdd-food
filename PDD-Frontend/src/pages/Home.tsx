@@ -11,6 +11,7 @@ import { getFoodTimes } from "@/lib/utils";
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useLanguage } from "@/context/LanguageContext";
+import { translateNGOName } from "@/i18n/translations";
 
 interface NGO {
   id: string;
@@ -56,6 +57,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; ngo: NGO; distance: number | null; onDonate: () => void; index: number; filter: string }) {
+  const { t, language } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(20)).current;
 
@@ -84,11 +86,11 @@ function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; 
     <Animated.View style={[styles.ngoCard, { opacity: fadeAnim, transform: [{ translateY }] }]}>
       <View style={styles.ngoCardHeader}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.ngoCardTitle}>{ngo.name}</Text>
+          <Text style={styles.ngoCardTitle}>{translateNGOName(ngo.name, language)}</Text>
           {ngo.description && <Text style={styles.ngoCardDesc}>{ngo.description}</Text>}
         </View>
         {distance !== null && (
-          <Text style={styles.distText}>{distance.toFixed(1)} km</Text>
+          <Text style={styles.distText}>{distance.toFixed(1)} {t('kmSuffix')}</Text>
         )}
       </View>
 
@@ -101,11 +103,11 @@ function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; 
       <View style={styles.ngoBtnRow}>
         <TouchableOpacity onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)} style={styles.btnNav}>
           <Ionicons name="navigate-outline" size={14} color="#1F2937" />
-          <Text style={styles.btnNavText}>Directions</Text>
+          <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={onDonate} style={styles.btnDonate}>
           <Ionicons name="heart" size={14} color="#FFFFFF" />
-          <Text style={styles.btnDonateText}>Donate Food</Text>
+          <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -214,15 +216,15 @@ export default function Home() {
 
       {/* Food Listings */}
       {loading ? (
-        <Text style={styles.loadingText}>Loading available food...</Text>
+        <Text style={styles.loadingText}>{t('loadingFood')}</Text>
       ) : (
         <View style={[styles.listContainer, isDesktop && styles.desktopGrid]}>
           {list.map((f) => <FoodCard key={f.id} food={f} />)}
           {list.length === 0 && (
             <View style={styles.emptyBox}>
               <Text style={{ fontSize: 40 }}>🍱</Text>
-              <Text style={styles.emptyTitle}>No food listings found</Text>
-              <Text style={styles.emptySubtitle}>Check back soon for fresh listings!</Text>
+              <Text style={styles.emptyTitle}>{t('noFoodFound')}</Text>
+              <Text style={styles.emptySubtitle}>{t('checkBackSoon')}</Text>
             </View>
           )}
         </View>
@@ -245,7 +247,7 @@ export default function Home() {
           <View style={styles.ngoBody}>
             <View style={styles.chipRow}>
               {(["All", "Humans", "Animals"] as const).map((f) => (
-                <Chip key={f} label={f} active={ngoFilter === f} onClick={() => setNgoFilter(f)} />
+                <Chip key={f} label={f === "All" ? t('allCategory') : f === "Humans" ? t('humansAudience') : t('animalsAudience')} active={ngoFilter === f} onClick={() => setNgoFilter(f)} />
               ))}
             </View>
 

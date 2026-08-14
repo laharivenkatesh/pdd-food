@@ -17,9 +17,9 @@ export default function Activity() {
     return (
       <View style={styles.centerContainer}>
         <Ionicons name="person-circle-outline" size={64} color="#9CA3AF" />
-        <Text style={styles.loadingText}>Please log in to view your profile</Text>
+        <Text style={styles.loadingText}>{t('pleaseLogInProfile')}</Text>
         <TouchableOpacity onPress={() => navigation.navigate("Auth" as never)} style={styles.loginBtn}>
-          <Text style={styles.loginBtnText}>Log In or Sign Up</Text>
+          <Text style={styles.loginBtnText}>{t('logInOrSignUp')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -53,7 +53,7 @@ export default function Activity() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <Text style={styles.title}>Profile</Text>
+      <Text style={styles.title}>{t('profileTitle')}</Text>
 
       {/* Profile Banner */}
       <View style={styles.profileCard}>
@@ -63,7 +63,7 @@ export default function Activity() {
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.userName}>{profile.name}</Text>
-            <Text style={styles.userRole}>Community Member</Text>
+            <Text style={styles.userRole}>{t('communityMember')}</Text>
             {profile.phone && <Text style={styles.userPhone}>📞 {profile.phone}</Text>}
           </View>
         </View>
@@ -73,19 +73,19 @@ export default function Activity() {
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <Text style={styles.statVal}>{userStats.mealsCollected}</Text>
-          <Text style={styles.statLabel}>Meals Collected</Text>
+          <Text style={styles.statLabel}>{t('mealsCollected')}</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statVal}>{userStats.animalsFed}</Text>
-          <Text style={styles.statLabel}>Animals Fed</Text>
+          <Text style={styles.statLabel}>{t('animalsFed')}</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statVal}>{userStats.postsMade}</Text>
-          <Text style={styles.statLabel}>Posts Made</Text>
+          <Text style={styles.statLabel}>{t('postsMade')}</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statVal}>{userStats.pickupSuccess}%</Text>
-          <Text style={styles.statLabel}>Pickup Success</Text>
+          <Text style={styles.statLabel}>{t('pickupSuccess')}</Text>
         </View>
       </View>
 
@@ -93,13 +93,13 @@ export default function Activity() {
       <View style={styles.listingsSection}>
         <View style={styles.listingsHeader}>
           <Text style={styles.listingsTitle}>{t('myDonations')}</Text>
-          <Text style={styles.listingsCount}>{posts.length} Total</Text>
+          <Text style={styles.listingsCount}>{posts.length} {t('totalSuffix')}</Text>
         </View>
 
         {posts.length === 0 ? (
           <View style={styles.emptyBox}>
             <Text style={{ fontSize: 32 }}>📤</Text>
-            <Text style={styles.emptyText}>You haven't posted any food yet.</Text>
+            <Text style={styles.emptyText}>{t('noPostsYet')}</Text>
           </View>
         ) : (
           <View style={styles.listingsList}>
@@ -121,7 +121,7 @@ export default function Activity() {
                 <View style={styles.postInfo}>
                   <Text style={styles.postName}>{food.name}</Text>
                   <Text style={styles.postSub}>
-                    {food.feeds - (food.bookedPortions || 0)} / {food.feeds} left
+                    {food.feeds - (food.bookedPortions || 0)} / {food.feeds} {t('remainingLabel')}
                   </Text>
                 </View>
                 <TouchableOpacity onPress={() => handleDelete(food.id, food.name)} style={styles.deleteBtn}>

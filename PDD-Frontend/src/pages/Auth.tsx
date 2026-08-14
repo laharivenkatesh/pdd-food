@@ -380,8 +380,8 @@ export default function Auth() {
                 <Ionicons name="time-outline" size={16} color="#059669" />
                 <Text style={styles.timerText}>
                   {expiryTimer > 0
-                    ? `Code expires in ${formatMinutesSeconds(expiryTimer)}`
-                    : "Code expired! Please resend a new OTP."}
+                    ? getUiText('codeExpiresIn', `Code expires in ${formatMinutesSeconds(expiryTimer)}`, { time: formatMinutesSeconds(expiryTimer) })
+                    : getUiText('codeExpiredMsg', 'Code expired! Please resend a new OTP.')}
                 </Text>
               </View>
 
@@ -438,10 +438,10 @@ export default function Auth() {
                 >
                   <Text style={[styles.resendBtnText, resendCooldown > 0 && styles.resendBtnTextDisabled]}>
                     {resending
-                      ? "Sending..."
+                      ? getUiText('resendingState', 'Resending...')
                       : resendCooldown > 0
-                      ? `Resend OTP in ${resendCooldown}s`
-                      : "Resend OTP"}
+                      ? getUiText('resendOtpIn', `Resend OTP in ${resendCooldown}s`, { seconds: resendCooldown })
+                      : getUiText('resendOtpBtn', 'Resend OTP')}
                   </Text>
                 </TouchableOpacity>
               </View>

@@ -305,7 +305,13 @@ export default function PostFood() {
               {preparedTimeOptions.map((opt) => (
                 <Chip
                   key={opt}
-                  label={opt}
+                  label={
+                    opt === "Freshly Prepared (Just Now)" ? t('freshJustNow') :
+                    opt === "30 mins ago" ? t('minsAgo30') :
+                    opt === "1 hour ago" ? t('hourAgo1') :
+                    opt === "2 hours ago" ? t('hoursAgo2') :
+                    t('custom')
+                  }
                   active={selectedPrepChip === opt}
                   onClick={() => {
                     setSelectedPrepChip(opt);
@@ -333,7 +339,7 @@ export default function PostFood() {
               {expiryOptions.map((opt) => (
                 <Chip
                   key={opt}
-                  label={opt === "Custom" ? "Custom Hours" : `⏳ ${opt} Hours`}
+                  label={opt === "Custom" ? t('custom') : `⏳ ${opt} ${t('hoursLabel')}`}
                   active={selectedExpiryChip === opt}
                   onClick={() => {
                     setSelectedExpiryChip(opt);
@@ -451,7 +457,7 @@ export default function PostFood() {
             <Text style={styles.subLabel}>{t('categoryLabel')}</Text>
             <View style={styles.chipRow}>
               {categories.map((c) => (
-                <Chip key={c} label={c} active={category === c} onClick={() => setCategory(c)} />
+                <Chip key={c} label={c === "Veg" ? t('veg') : c === "Non-Veg" ? t('nonVeg') : c === "Bakery" ? t('bakery') : c === "Fried" ? t('fried') : t('sweets')} active={category === c} onClick={() => setCategory(c)} />
               ))}
             </View>
           </View>
@@ -460,7 +466,7 @@ export default function PostFood() {
             <Text style={styles.subLabel}>{t('purposeLabel')}</Text>
             <View style={styles.chipRow}>
               {purposes.map((p) => (
-                <Chip key={p.key} label={p.label} active={purpose === p.key} onClick={() => setPurpose(p.key)} />
+                <Chip key={p.key} label={p.key === "humans" ? "🧑 " + t('humansAudience') : p.key === "animals" ? "🐾 " + t('animalsAudience') : "♻️ " + t('bothAudience')} active={purpose === p.key} onClick={() => setPurpose(p.key)} />
               ))}
             </View>
           </View>
