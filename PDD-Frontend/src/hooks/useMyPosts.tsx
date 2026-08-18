@@ -266,7 +266,7 @@ export function useMyPosts() {
       globalMyPostsCache = [newFood, ...globalMyPostsCache];
       setPosts((prev) => [newFood, ...prev]);
 
-      // Broadcast food notification & background push notification to nearby registered users
+      // Location-based broadcast of food post notification & background push notification
       (async () => {
         try {
           const { data: profiles } = await supabase.from("profiles").select("*").neq("id", user.id);
@@ -280,20 +280,28 @@ export function useMyPosts() {
 
             for (const p of profiles) {
               let isNearby = true;
-              if (p.lat && p.lng && !isNaN(foodLat) && !isNaN(foodLng)) {
-                // Calculate distance between food post location and user's past/saved location
+              let distText = "";
+
+              const userLat = Number(p.lat);
+              const userLng = Number(p.lng);
+
+              // Calculate exact distance between food location and user's saved GPS location
+              if (!isNaN(foodLat) && !isNaN(foodLng) && !isNaN(userLat) && !isNaN(userLng) && userLat !== 0 && userLng !== 0) {
                 const R = 6371;
-                const dLat = ((Number(p.lat) - foodLat) * Math.PI) / 180;
-                const dLon = ((Number(p.lng) - foodLng) * Math.PI) / 180;
+                const dLat = ((userLat - foodLat) * Math.PI) / 180;
+                const dLon = ((userLng - foodLng) * Math.PI) / 180;
                 const a =
                   Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                   Math.cos((foodLat * Math.PI) / 180) *
-                  Math.cos((Number(p.lat) * Math.PI) / 180) *
+                  Math.cos((userLat * Math.PI) / 180) *
                   Math.sin(dLon / 2) *
                   Math.sin(dLon / 2);
                 const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                const dist = R * c;
-                isNearby = dist <= 50; // Within 50km radius
+                const distKm = R * c;
+
+                // Filter users within 50 km radius
+                isNearby = distKm <= 50;
+                distText = distKm < 1 ? ` (${Math.round(distKm * 1000)}m away)` : ` (${distKm.toFixed(1)}km away)`;
               }
 
               if (isNearby) {
@@ -301,7 +309,7 @@ export function useMyPosts() {
                   user_id: p.id,
                   food_id: data.id,
                   title: "🍱 Fresh Food Available Nearby!",
-                  message: `${donorName} just posted "${input.name}" near ${input.address || 'your location'}. Tap to claim!`,
+                  message: `${donorName} posted "${input.name}"${distText} at ${input.address || 'your area'}. Tap to view and claim!`,
                   is_read: false,
                 });
 
@@ -319,13 +327,13 @@ export function useMyPosts() {
               }
             }
 
-            // Send Expo Push Notification payload to devices even if app is closed!
+            // Send background Expo Push Notification to nearby devices even if app is closed!
             if (pushTokens.length > 0) {
               const pushMessages = pushTokens.map(token => ({
                 to: token,
                 sound: 'default',
                 title: '🍱 Fresh Food Available Nearby!',
-                body: `${donorName} posted "${input.name}" near you!`,
+                body: `${donorName} posted "${input.name}" near you! Tap to claim.`,
                 data: { foodId: data.id },
               }));
 
@@ -341,7 +349,7 @@ export function useMyPosts() {
             }
           }
         } catch (err) {
-          console.warn("Broadcasting food post notification notice:", err);
+          console.warn("Location-based food post notification notice:", err);
         }
       })();
 

@@ -107,8 +107,13 @@ export async function registerPushAndSyncLocation(userId: string) {
   try {
     let pushToken: string | null = null;
     if (typeof Notifications.getPermissionsAsync === 'function') {
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status === 'granted' && typeof Notifications.getExpoPushTokenAsync === 'function') {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let activeStatus = existingStatus;
+      if (activeStatus !== 'granted' && typeof Notifications.requestPermissionsAsync === 'function') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        activeStatus = status;
+      }
+      if (activeStatus === 'granted' && typeof Notifications.getExpoPushTokenAsync === 'function') {
         const res = await Notifications.getExpoPushTokenAsync();
         pushToken = res?.data || null;
       }
@@ -117,8 +122,13 @@ export async function registerPushAndSyncLocation(userId: string) {
     let lat: number | null = null;
     let lng: number | null = null;
     if (typeof Location.getForegroundPermissionsAsync === 'function') {
-      const { status } = await Location.getForegroundPermissionsAsync();
-      if (status === 'granted' && typeof Location.getCurrentPositionAsync === 'function') {
+      const { status: existingStatus } = await Location.getForegroundPermissionsAsync();
+      let activeLocStatus = existingStatus;
+      if (activeLocStatus !== 'granted' && typeof Location.requestForegroundPermissionsAsync === 'function') {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        activeLocStatus = status;
+      }
+      if (activeLocStatus === 'granted' && typeof Location.getCurrentPositionAsync === 'function') {
         const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         lat = pos.coords.latitude;
         lng = pos.coords.longitude;
@@ -260,7 +270,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       )
       .subscribe();
 
-    // Real-time listener for new food posts across community
+    // Real-time listener for new food posts across community with location filtering
     const foodChannelId = `foods-broadcast-${user.id}-${Math.random().toString(36).substring(2, 9)}`;
     const foodChannel = supabase
       .channel(foodChannelId)
@@ -274,29 +284,62 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         async (payload) => {
           const newFood = payload.new as any;
           if (newFood && newFood.user_id !== user.id) {
-            const title = "🍱 Fresh Food Available Nearby!";
-            const message = `A community donor just posted "${newFood.name}" near ${newFood.address || 'your location'}. Tap to claim!`;
+            let isNearby = true;
+            let distText = "";
 
-            try {
-              const { data: inserted } = await supabase
-                .from("notifications")
-                .insert({
-                  user_id: user.id,
-                  food_id: newFood.id,
-                  title,
-                  message,
-                  is_read: false,
-                })
-                .select()
-                .single();
+            const foodLat = Number(newFood.lat);
+            const foodLng = Number(newFood.lng);
 
-              if (inserted) {
-                setNotifications((prev) => [inserted, ...prev]);
-              }
-            } catch (e) {}
+            if (!isNaN(foodLat) && !isNaN(foodLng)) {
+              try {
+                const { data: myProfile } = await supabase.from("profiles").select("lat, lng").eq("id", user.id).single();
+                if (myProfile && myProfile.lat && myProfile.lng) {
+                  const myLat = Number(myProfile.lat);
+                  const myLng = Number(myProfile.lng);
+                  if (!isNaN(myLat) && !isNaN(myLng) && myLat !== 0 && myLng !== 0) {
+                    const R = 6371;
+                    const dLat = ((myLat - foodLat) * Math.PI) / 180;
+                    const dLon = ((myLng - foodLng) * Math.PI) / 180;
+                    const a =
+                      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos((foodLat * Math.PI) / 180) *
+                      Math.cos((myLat * Math.PI) / 180) *
+                      Math.sin(dLon / 2) *
+                      Math.sin(dLon / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    const distKm = R * c;
+                    isNearby = distKm <= 50; // Within 50km radius
+                    distText = distKm < 1 ? ` (${Math.round(distKm * 1000)}m away)` : ` (${distKm.toFixed(1)}km away)`;
+                  }
+                }
+              } catch (e) {}
+            }
 
-            if (soundEnabled) playNotificationSound();
-            sendNativeStatusBarNotification(title, message);
+            if (isNearby) {
+              const title = "🍱 Fresh Food Available Nearby!";
+              const message = `A community donor just posted "${newFood.name}"${distText}. Tap to view and claim!`;
+
+              try {
+                const { data: inserted } = await supabase
+                  .from("notifications")
+                  .insert({
+                    user_id: user.id,
+                    food_id: newFood.id,
+                    title,
+                    message,
+                    is_read: false,
+                  })
+                  .select()
+                  .single();
+
+                if (inserted) {
+                  setNotifications((prev) => [inserted, ...prev]);
+                }
+              } catch (e) {}
+
+              if (soundEnabled) playNotificationSound();
+              sendNativeStatusBarNotification(title, message);
+            }
           }
         }
       )
