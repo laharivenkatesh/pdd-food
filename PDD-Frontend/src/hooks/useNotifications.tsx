@@ -209,15 +209,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
             // Trigger Android status bar push notification!
             sendNativeStatusBarNotification("🍱 " + newNotif.title, newNotif.message);
-
-            // Display on-screen Alert popup dialog
-            if (Platform.OS === 'web') {
-              if (typeof window !== 'undefined' && window.alert) {
-                window.alert(`🍱 ${newNotif.title}\n${newNotif.message}`);
-              }
-            } else {
-              Alert.alert("🍱 " + newNotif.title, newNotif.message);
-            }
           } else if (payload.eventType === "DELETE") {
             const oldId = payload.old.id;
             setNotifications((prev) => prev.filter((n) => n.id !== oldId));

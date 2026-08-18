@@ -11,7 +11,7 @@ import { getFoodTimes } from "@/lib/utils";
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useLanguage } from "@/context/LanguageContext";
-import { translateNGOName } from "@/i18n/translations";
+import { translateNGOName, translateNGODescription, translateNGOAddress } from "@/i18n/ngoTranslations";
 
 interface NGO {
   id: string;
@@ -87,14 +87,14 @@ function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; 
       <View style={styles.ngoCardHeader}>
         <View style={{ flex: 1 }}>
           <Text style={styles.ngoCardTitle}>{translateNGOName(ngo.name, language)}</Text>
-          {ngo.description && <Text style={styles.ngoCardDesc}>{ngo.description}</Text>}
+          {ngo.description && <Text style={styles.ngoCardDesc}>{translateNGODescription(ngo.description, language)}</Text>}
         </View>
         {distance !== null && (
           <Text style={styles.distText}>{distance.toFixed(1)} {t('kmSuffix')}</Text>
         )}
       </View>
 
-      <Text style={styles.ngoAddress}>📍 {ngo.address}</Text>
+      <Text style={styles.ngoAddress}>📍 {translateNGOAddress(ngo.address, language)}</Text>
 
       <TouchableOpacity onPress={() => Linking.openURL(`tel:${ngo.phone}`)}>
         <Text style={styles.ngoPhone}>📞 {ngo.phone}</Text>
