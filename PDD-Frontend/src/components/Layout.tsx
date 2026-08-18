@@ -78,7 +78,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   });
   const { user, logout } = useAuth();
-  const hideNav = currentRouteName === "Auth";
+  const hideNav = currentRouteName === "Auth" || !user;
 
   const { transactions } = useTransactions();
   const { foods } = useAllFoods();
@@ -132,35 +132,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <View style={[styles.container, isDesktop && styles.desktopContainer]}>
       {/* Top Header */}
-      <View style={[styles.header, isDesktop && styles.desktopHeader]}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
-          <View style={styles.logoBadge}>
-            <Ionicons name="restaurant" size={20} color="#FFFFFF" />
+      {!hideNav && (
+        <View style={[styles.header, isDesktop && styles.desktopHeader]}>
+          <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
+            <View style={styles.logoBadge}>
+              <Ionicons name="restaurant" size={20} color="#FFFFFF" />
+            </View>
+            <Text style={styles.brandText}>Zerra</Text>
+          </TouchableOpacity>
+
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
+              <Ionicons name="globe-outline" size={16} color="#16A34A" />
+              <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
+              <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
+              <Ionicons name="chevron-down" size={13} color="#374151" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
+              <Ionicons name="notifications-outline" size={22} color="#1F2937" />
+              {unreadCount > 0 && (
+                <View style={styles.unreadBadge}>
+                  <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
+              <Text style={styles.logoutBtnText}>{t('logOut')}</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.brandText}>Zerra</Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
-            <Ionicons name="globe-outline" size={16} color="#16A34A" />
-            <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
-            <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
-            <Ionicons name="chevron-down" size={13} color="#374151" />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
-            <Ionicons name="notifications-outline" size={22} color="#1F2937" />
-            {unreadCount > 0 && (
-              <View style={styles.unreadBadge}>
-                <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
-            <Text style={styles.logoutBtnText}>{t('logOut')}</Text>
-          </TouchableOpacity>
         </View>
-      </View>
+      )}
 
       {/* Main Content Area */}
       <View style={[styles.content, isDesktop && styles.desktopContent]}>
@@ -248,48 +250,50 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </Modal>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <NavTabItem
-          name="Home"
-          route="Home"
-          icon="home-outline"
-          label={t('navHome')}
-          currentRoute={currentRouteName}
-          onPress={() => navigation.navigate("Home" as never)}
-        />
-        <NavTabItem
-          name="Expired"
-          route="Expired"
-          icon="time-outline"
-          label={t('navExpired')}
-          currentRoute={currentRouteName}
-          onPress={() => navigation.navigate("Expired" as never)}
-        />
-        <NavTabItem
-          name="PostFood"
-          route="PostFood"
-          icon="add-circle"
-          label={t('navPost')}
-          currentRoute={currentRouteName}
-          onPress={() => navigation.navigate("PostFood" as never)}
-        />
-        <NavTabItem
-          name="Activity"
-          route="Activity"
-          icon="list-outline"
-          label={t('navActivity')}
-          currentRoute={currentRouteName}
-          onPress={() => navigation.navigate("Activity" as never)}
-        />
-        <NavTabItem
-          name="NGOs"
-          route="NGOs"
-          icon="heart-outline"
-          label={t('navNGOs')}
-          currentRoute={currentRouteName}
-          onPress={() => navigation.navigate("NGOs" as never)}
-        />
-      </View>
+      {!hideNav && (
+        <View style={styles.bottomNav}>
+          <NavTabItem
+            name="Home"
+            route="Home"
+            icon="home-outline"
+            label={t('navHome')}
+            currentRoute={currentRouteName}
+            onPress={() => navigation.navigate("Home" as never)}
+          />
+          <NavTabItem
+            name="Expired"
+            route="Expired"
+            icon="time-outline"
+            label={t('navExpired')}
+            currentRoute={currentRouteName}
+            onPress={() => navigation.navigate("Expired" as never)}
+          />
+          <NavTabItem
+            name="PostFood"
+            route="PostFood"
+            icon="add-circle"
+            label={t('navPost')}
+            currentRoute={currentRouteName}
+            onPress={() => navigation.navigate("PostFood" as never)}
+          />
+          <NavTabItem
+            name="Activity"
+            route="Activity"
+            icon="list-outline"
+            label={t('navActivity')}
+            currentRoute={currentRouteName}
+            onPress={() => navigation.navigate("Activity" as never)}
+          />
+          <NavTabItem
+            name="NGOs"
+            route="NGOs"
+            icon="heart-outline"
+            label={t('navNGOs')}
+            currentRoute={currentRouteName}
+            onPress={() => navigation.navigate("NGOs" as never)}
+          />
+        </View>
+      )}
     </View>
   );
 }

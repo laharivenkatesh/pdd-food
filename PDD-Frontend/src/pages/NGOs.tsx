@@ -5,7 +5,7 @@ import { openInGoogleMaps } from "@/components/MapPreview";
 import Chip from "@/components/Chip";
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from "@/context/LanguageContext";
-import { translateNGOName } from "@/i18n/translations";
+import { translateNGOName, translateNGODescription, translateNGOAddress } from "@/i18n/ngoTranslations";
 
 interface NGO {
   id: string;
@@ -80,8 +80,8 @@ function AnimatedNGOCard({ ngo, index, isDesktop, language, t, navigation }: { n
   return (
     <Animated.View style={[styles.card, isDesktop && styles.desktopCard, { opacity: fadeAnim, transform: [{ translateY }] }]}>
       <Text style={styles.ngoName}>{translateNGOName(ngo.name, language)}</Text>
-      {ngo.description && <Text style={styles.ngoDesc}>{ngo.description}</Text>}
-      <Text style={styles.address}>📍 {ngo.address}</Text>
+      {ngo.description && <Text style={styles.ngoDesc}>{translateNGODescription(ngo.description, language)}</Text>}
+      <Text style={styles.address}>📍 {translateNGOAddress(ngo.address, language)}</Text>
 
       <TouchableOpacity onPress={() => Linking.openURL(`tel:${ngo.phone}`)}>
         <Text style={styles.phoneText}>📞 {ngo.phone}</Text>
