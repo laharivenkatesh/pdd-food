@@ -71,73 +71,10 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught app error:", error, errorInfo);
-    // Auto reset error state after 300ms so app never gets stuck on error UI
     setTimeout(() => {
       this.setState({ hasError: false, error: null });
     }, 300);
   }
-
-  private autoCheckForUpdate = async () => {
-    try {
-      if (typeof Updates.checkForUpdateAsync === 'function') {
-        const update = await Updates.checkForUpdateAsync();
-        if (update && update.isAvailable) {
-          this.setState({ updateStatus: "New update found! Fetching..." });
-          if (typeof Updates.fetchUpdateAsync === 'function') {
-            await Updates.fetchUpdateAsync();
-          }
-          this.setState({ updateStatus: "Update ready! Tap below to apply." });
-        }
-      }
-    } catch (e) {
-      console.warn("ErrorBoundary update check notice:", e);
-    }
-  };
-
-  private handleForceUpdate = async () => {
-    this.setState({ checkingUpdate: true, updateStatus: "Checking for updates..." });
-    try {
-      const updatePromise = (async () => {
-        if (typeof Updates.checkForUpdateAsync === 'function') {
-          const update = await Updates.checkForUpdateAsync();
-          if (update && update.isAvailable) {
-            this.setState({ updateStatus: "Downloading update..." });
-            if (typeof Updates.fetchUpdateAsync === 'function') {
-              await Updates.fetchUpdateAsync();
-            }
-            if (typeof Updates.reloadAsync === 'function') {
-              await Updates.reloadAsync();
-              return true;
-            }
-          }
-        }
-        return false;
-      })();
-
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Update fetch timeout")), 8000)
-      );
-
-      const reloaded = await Promise.race([updatePromise, timeoutPromise]);
-      if (!reloaded) {
-        if (typeof Updates.reloadAsync === 'function') {
-          await Updates.reloadAsync();
-        } else if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.reload) {
-          window.location.reload();
-        } else {
-          this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "" });
-        }
-      }
-    } catch {
-      if (typeof Updates.reloadAsync === 'function') {
-        try { await Updates.reloadAsync(); } catch {}
-      } else if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.reload) {
-        window.location.reload();
-      } else {
-        this.setState({ hasError: false, error: null, checkingUpdate: false, updateStatus: "App reloaded!" });
-      }
-    }
-  };
 
   public render() {
     if (this.state.hasError) {
@@ -272,17 +209,19 @@ const AppContent = () => {
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={user ? "Home" : "Auth"}>
-      <Stack.Screen name="Auth" component={Auth} />
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="Expired" component={Expired} />
-      <Stack.Screen name="FoodDetail" component={FoodDetail} />
-      <Stack.Screen name="PostFood" component={PostFood} />
-      <Stack.Screen name="Activity" component={Activity} />
-      <Stack.Screen name="Profile" component={Activity} />
-      <Stack.Screen name="NGOs" component={NGOs} />
-      <Stack.Screen name="NotFound" component={NotFound} />
-    </Stack.Navigator>
+    <Layout>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={user ? "Home" : "Auth"}>
+        <Stack.Screen name="Auth" component={Auth} />
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="Expired" component={Expired} />
+        <Stack.Screen name="FoodDetail" component={FoodDetail} />
+        <Stack.Screen name="PostFood" component={PostFood} />
+        <Stack.Screen name="Activity" component={Activity} />
+        <Stack.Screen name="Profile" component={Activity} />
+        <Stack.Screen name="NGOs" component={NGOs} />
+        <Stack.Screen name="NotFound" component={NotFound} />
+      </Stack.Navigator>
+    </Layout>
   );
 };
 
@@ -318,11 +257,9 @@ const App = () => {
           <LanguageProvider>
             <NotificationProvider>
               <TransactionProvider>
-                <View style={{ flex: 1, width: '100%', height: '100%' }}>
+                <View style={{ flex: 1, width: '100%', height: '100%', backgroundColor: '#1C7B50' }}>
                   <NavigationContainer>
-                    <Layout>
-                      <AppContent />
-                    </Layout>
+                    <AppContent />
                   </NavigationContainer>
                 </View>
               </TransactionProvider>

@@ -3,7 +3,29 @@ import { FoodItem } from "@/types/food";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/lib/supabase";
 
+const LOCAL_STORAGE_DELETED_FOODS = "zerra_deleted_food_ids_v1";
+
 const deletedFoodIds = new Set<string>();
+
+try {
+  if (typeof localStorage !== 'undefined' && localStorage !== null) {
+    const saved = localStorage.getItem(LOCAL_STORAGE_DELETED_FOODS);
+    if (saved) {
+      const parsed: string[] = JSON.parse(saved);
+      parsed.forEach(id => deletedFoodIds.add(id));
+    }
+  }
+} catch (e) {}
+
+const saveDeletedFoodId = (id: string) => {
+  deletedFoodIds.add(id);
+  try {
+    const arr = Array.from(deletedFoodIds);
+    if (typeof localStorage !== 'undefined' && localStorage !== null) {
+      localStorage.setItem(LOCAL_STORAGE_DELETED_FOODS, JSON.stringify(arr));
+    }
+  } catch (e) {}
+};
 
 function resolveImageUrl(image: string | null | undefined): string {
   if (!image || typeof image !== 'string' || image.trim() === '' || image === 'none') return '';
@@ -143,7 +165,7 @@ export function useMyPosts() {
         return;
       }
 
-      const mapped = (data || []).map(mapRow);
+      const mapped = (data || []).map(mapRow).filter((f) => (f.status as string) !== "deleted" && !deletedFoodIds.has(f.id));
       globalMyPostsCache = mapped;
       globalMyPostsLoaded = true;
       setPosts(mapped);
@@ -239,21 +261,20 @@ export function useMyPosts() {
   );
 
   const removePost = useCallback(async (id: string) => {
-    deletedFoodIds.add(id);
+    saveDeletedFoodId(id);
 
     try {
-      // 1. Delete child records individually with try-catch so one failure doesn't block the rest
+      // 1. Delete associated transactions, notifications, and reviews in Supabase
       try { await supabase.from("transactions").delete().eq("food_id", id); } catch {}
       try { await supabase.from("notifications").delete().eq("food_id", id); } catch {}
       try { await supabase.from("reviews").delete().eq("food_id", id); } catch {}
       
-      // 2. Delete parent food row
+      // 2. Perform direct deletion and status soft-delete in Supabase
       const { error } = await supabase.from("foods").delete().eq("id", id);
       if (error) {
         console.warn("Supabase direct delete notice, applying status fallback:", error);
-        // Fallback update in case Supabase RLS blocks direct delete
-        await supabase.from("foods").update({ status: "deleted" }).eq("id", id);
       }
+      await supabase.from("foods").update({ status: "deleted" }).eq("id", id);
     } catch (err) {
       console.warn("Exception deleting post:", err);
     }

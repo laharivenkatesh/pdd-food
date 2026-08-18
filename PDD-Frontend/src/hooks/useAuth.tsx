@@ -468,7 +468,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await (supabase.auth as any).signOut();
       setUserState(null);
       setProfileState(null);
-      toast.success("Successfully logged out.");
     } catch (err) {
       console.error("Logout error:", err);
       setUserState(null);
