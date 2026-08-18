@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Platform, Animated, ActivityIndicator } from 'react-native';
 import React, { Component, ErrorInfo, ReactNode } from "react";
 
 if (typeof window !== 'undefined') {
@@ -27,6 +27,7 @@ import NGOs from "./pages/NGOs";
 import NotFound from "./pages/NotFound";
 import Expired from "./pages/Expired";
 import OtaUpdateModal from "./components/OtaUpdateModal";
+import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import * as Updates from 'expo-updates';
@@ -167,20 +168,111 @@ class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
 const Stack = createNativeStackNavigator();
 const queryClient = new QueryClient();
 
+const SplashScreen = () => {
+  const scaleAnim = React.useRef(new Animated.Value(0.85)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <View style={splashStyles.container}>
+      <Animated.View style={[splashStyles.logoWrapper, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
+        <View style={splashStyles.iconBadge}>
+          <Ionicons name="restaurant" size={48} color="#FFFFFF" />
+        </View>
+        <Text style={splashStyles.title}>Zerra Food Hub</Text>
+        <Text style={splashStyles.subtitle}>Zero Waste, Full Bellies 🌱</Text>
+        <ActivityIndicator size="small" color="#A7F3D0" style={{ marginTop: 28 }} />
+      </Animated.View>
+    </View>
+  );
+};
+
+const splashStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1C7B50',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  logoWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconBadge: {
+    width: 88,
+    height: 88,
+    borderRadius: 24,
+    backgroundColor: '#15803D',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#86EFAC',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#A7F3D0',
+    marginTop: 6,
+  },
+});
+
 const AppContent = () => {
   const { user, loading } = useAuth();
   const navigation = useNavigation<any>();
+  const [isSplashing, setIsSplashing] = React.useState(true);
 
   React.useEffect(() => {
-    if (!loading) {
+    const timer = setTimeout(() => {
+      setIsSplashing(false);
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  React.useEffect(() => {
+    if (!isSplashing && !loading) {
       if (user) {
         navigation.navigate("Home" as never);
+      } else {
+        navigation.navigate("Auth" as never);
       }
     }
-  }, [user, loading, navigation]);
+  }, [isSplashing, loading, user, navigation]);
+
+  if (isSplashing) {
+    return <SplashScreen />;
+  }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Auth">
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={user ? "Home" : "Auth"}>
       <Stack.Screen name="Auth" component={Auth} />
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Expired" component={Expired} />
