@@ -209,6 +209,7 @@ const App = () => {
                         <Stack.Screen name="FoodDetail" component={FoodDetail} />
                         <Stack.Screen name="PostFood" component={PostFood} />
                         <Stack.Screen name="Activity" component={Activity} />
+                        <Stack.Screen name="Profile" component={Activity} />
                         <Stack.Screen name="NGOs" component={NGOs} />
                         <Stack.Screen name="NotFound" component={NotFound} />
                       </Stack.Navigator>

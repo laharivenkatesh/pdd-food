@@ -24,7 +24,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 function NavTabItem({ name, route, icon, label, currentRoute, onPress }: { name: string; route: string; icon: any; label: string; currentRoute: string; onPress: () => void }) {
-  const isActive = currentRoute === route;
+  const isActive = currentRoute === route || currentRoute === name;
   const scaleAnim = useRef(new Animated.Value(isActive ? 1.15 : 1)).current;
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navigation = useNavigation<any>();
   const currentRouteName = useNavigationState(state => {
     try {
-      if (!state || !state.routes || state.routes.length === 0) return "Auth";
+      if (!state || !state.routes || state.routes.length === 0) return "";
       const currentRoute = state.routes[state.index];
       return currentRoute ? currentRoute.name : "";
     } catch {
@@ -78,7 +78,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   });
   const { user, logout } = useAuth();
-  const isAuthPage = currentRouteName === "Auth";
+  const isAuthPage = currentRouteName === "Auth" && !user;
 
   const { transactions } = useTransactions();
   const { foods } = useAllFoods();
@@ -251,7 +251,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </View>
       </Modal>
 
-      {/* Bottom Navigation - Hidden ONLY on Auth/Login Page */}
+      {/* Bottom Navigation */}
       {!isAuthPage && (
         <View style={styles.bottomNav}>
           <NavTabItem
@@ -279,20 +279,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             onPress={() => navigation.navigate("PostFood" as never)}
           />
           <NavTabItem
-            name="Activity"
-            route="Activity"
-            icon="list-outline"
-            label={t('navActivity')}
-            currentRoute={currentRouteName}
-            onPress={() => navigation.navigate("Activity" as never)}
-          />
-          <NavTabItem
             name="NGOs"
             route="NGOs"
             icon="heart-outline"
             label={t('navNGOs')}
             currentRoute={currentRouteName}
             onPress={() => navigation.navigate("NGOs" as never)}
+          />
+          <NavTabItem
+            name="Profile"
+            route="Activity"
+            icon="person-outline"
+            label={t('profileTitle')}
+            currentRoute={currentRouteName}
+            onPress={() => navigation.navigate("Activity" as never)}
           />
         </View>
       )}
