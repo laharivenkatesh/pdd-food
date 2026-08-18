@@ -63,7 +63,7 @@ export default function Activity() {
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.userName}>{profile.name}</Text>
-            <Text style={styles.userRole}>{t('communityMember')}</Text>
+            <Text style={styles.userRole}>⭐ {profile.trustScore ? profile.trustScore : '5.0'} Trust Rating · {t('communityMember')}</Text>
             {profile.phone && <Text style={styles.userPhone}>📞 {profile.phone}</Text>}
           </View>
         </View>

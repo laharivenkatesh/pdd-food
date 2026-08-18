@@ -162,7 +162,7 @@ const getCategoryStyle = (category: string) => {
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
-      {food.image ? (
+      {food.image && typeof food.image === 'string' && food.image.trim() !== '' && (food.image.startsWith("http://") || food.image.startsWith("https://") || food.image.startsWith("data:")) ? (
         <View style={styles.imageContainer}>
           <Image source={{ uri: food.image }} style={styles.image} />
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -228,7 +228,13 @@ const getCategoryStyle = (category: string) => {
         {/* Provider */}
         <View style={styles.providerCard}>
           <View style={styles.providerRow}>
-            <Text style={{ fontSize: 32 }}>{food.provider.avatar || "🧑"}</Text>
+            {food.provider.avatar && typeof food.provider.avatar === 'string' && (food.provider.avatar.startsWith("http://") || food.provider.avatar.startsWith("https://")) ? (
+              <Image source={{ uri: food.provider.avatar }} style={styles.providerAvatarImage} />
+            ) : (
+              <View style={styles.providerAvatarBadge}>
+                <Ionicons name="person" size={20} color="#15803D" />
+              </View>
+            )}
             <View style={{ flex: 1 }}>
               <Text style={styles.providerName}>{food.provider.name}</Text>
               <Text style={styles.providerSub}>⭐ {food.provider.trustScore} Trust Score</Text>
@@ -530,6 +536,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  providerAvatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E5E7EB',
+  },
+  providerAvatarBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
   },
   providerName: {
     fontSize: 16,

@@ -260,9 +260,52 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       )
       .subscribe();
 
+    // Real-time listener for new food posts across community
+    const foodChannelId = `foods-broadcast-${user.id}-${Math.random().toString(36).substring(2, 9)}`;
+    const foodChannel = supabase
+      .channel(foodChannelId)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "foods",
+        },
+        async (payload) => {
+          const newFood = payload.new as any;
+          if (newFood && newFood.user_id !== user.id) {
+            const title = "🍱 Fresh Food Available Nearby!";
+            const message = `A community donor just posted "${newFood.name}" near ${newFood.address || 'your location'}. Tap to claim!`;
+
+            try {
+              const { data: inserted } = await supabase
+                .from("notifications")
+                .insert({
+                  user_id: user.id,
+                  food_id: newFood.id,
+                  title,
+                  message,
+                  is_read: false,
+                })
+                .select()
+                .single();
+
+              if (inserted) {
+                setNotifications((prev) => [inserted, ...prev]);
+              }
+            } catch (e) {}
+
+            if (soundEnabled) playNotificationSound();
+            sendNativeStatusBarNotification(title, message);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       clearInterval(pollInterval);
       supabase.removeChannel(channel);
+      supabase.removeChannel(foodChannel);
     };
   }, [user, refresh, soundEnabled, authLoading]);
 

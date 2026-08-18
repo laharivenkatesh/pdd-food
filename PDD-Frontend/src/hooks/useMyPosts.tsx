@@ -38,6 +38,16 @@ function resolveImageUrl(image: string | null | undefined): string {
 
 function mapRow(row: any): FoodItem {
   const profileInfo = row.profiles || {};
+
+  // Calculate donor's real trust score rating from profile or reviews
+  const reviewsArr = row.reviews || [];
+  let calculatedScore: number | null = profileInfo.trust_score ? Number(profileInfo.trust_score) : null;
+  if (!calculatedScore && reviewsArr.length > 0) {
+    const sum = reviewsArr.reduce((s: number, r: any) => s + (r.rating || 5), 0);
+    calculatedScore = Number((sum / reviewsArr.length).toFixed(1));
+  }
+  const realScore = calculatedScore !== null ? calculatedScore : 5.0;
+
   return {
     id: row.id,
     name: row.name,
@@ -60,9 +70,9 @@ function mapRow(row: any): FoodItem {
     allowSplit: row.allow_split,
     postedAt: row.created_at,
     bookedPortions: row.booked_portions || 0,
-    trustScore: 92,
+    trustScore: realScore,
     confidence: "High",
-    reviews: (row.reviews || []).map((r: any) => ({
+    reviews: reviewsArr.map((r: any) => ({
       id: r.id,
       user: r.user_name || "Anonymous",
       rating: r.rating,
@@ -72,11 +82,11 @@ function mapRow(row: any): FoodItem {
     provider: {
       id: row.user_id,
       name: profileInfo.name || "Community Donor",
-      trustScore: 92,
+      trustScore: realScore,
       badges: ["🌱 Donor"],
       streak: 3,
       reliability: "high",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80",
+      avatar: profileInfo.avatar || "",
       email: profileInfo.email || "",
       phone: profileInfo.phone || "",
     },
@@ -302,7 +312,11 @@ export function useMyPosts() {
             }
 
             if (notifs.length > 0) {
-              await supabase.from("notifications").insert(notifs);
+              for (const n of notifs) {
+                try {
+                  await supabase.from("notifications").insert(n);
+                } catch (e) {}
+              }
             }
 
             // Send Expo Push Notification payload to devices even if app is closed!

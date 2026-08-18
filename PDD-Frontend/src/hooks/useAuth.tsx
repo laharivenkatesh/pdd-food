@@ -153,14 +153,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           phone: session.user.user_metadata?.phone || "",
         };
 
+        let dbProfile: any = null;
+        try {
+          const { data: pData } = await supabase.from("profiles").select("*").eq("id", userId).single();
+          dbProfile = pData;
+        } catch (pErr) {}
+
         const newProfile: UserProfile = {
           id: userId,
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
+          name: dbProfile?.name || session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Community Member",
           email: session.user.email || "",
-          phone: session.user.user_metadata?.phone || "",
+          phone: dbProfile?.phone || session.user.user_metadata?.phone || "",
           created_at: session.user.created_at,
           role: session.user.user_metadata?.role || "Community Member",
-          trustScore: null,
+          trustScore: dbProfile?.trust_score ? Number(dbProfile.trust_score) : 4.8,
           reviewCount: 0,
         };
 
