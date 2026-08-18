@@ -302,10 +302,60 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       )
       .subscribe();
 
+    // Real-time listener for food claims/bookings on user's posted foods
+    const txChannelId = `txs-broadcast-${user.id}-${Math.random().toString(36).substring(2, 9)}`;
+    const txChannel = supabase
+      .channel(txChannelId)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "transactions",
+        },
+        async (payload) => {
+          const newTx = payload.new as any;
+          if (newTx && newTx.donor_id === user.id && newTx.collector_id !== user.id) {
+            try {
+              const { data: foodObj } = await supabase.from("foods").select("name").eq("id", newTx.food_id).single();
+              const { data: collectorProfile } = await supabase.from("profiles").select("name").eq("id", newTx.collector_id).single();
+              
+              const foodName = foodObj?.name || "your food post";
+              const collectorName = collectorProfile?.name || "A community member";
+              const title = "Food Claimed! 🍱";
+              const message = `${collectorName} booked ${newTx.portions || 1} portion(s) of your ${foodName}!`;
+
+              const { data: inserted } = await supabase
+                .from("notifications")
+                .insert({
+                  user_id: user.id,
+                  food_id: newTx.food_id,
+                  title,
+                  message,
+                  is_read: false,
+                })
+                .select()
+                .single();
+
+              if (inserted) {
+                setNotifications((prev) => [inserted, ...prev]);
+              }
+
+              if (soundEnabled) playNotificationSound();
+              sendNativeStatusBarNotification(title, message);
+            } catch (e) {
+              console.warn("Tx realtime notification notice:", e);
+            }
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       clearInterval(pollInterval);
       supabase.removeChannel(channel);
       supabase.removeChannel(foodChannel);
+      supabase.removeChannel(txChannel);
     };
   }, [user, refresh, soundEnabled, authLoading]);
 

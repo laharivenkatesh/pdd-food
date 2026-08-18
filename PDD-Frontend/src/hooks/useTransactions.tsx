@@ -285,20 +285,50 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         })
         .eq("id", foodId);
 
-      // 4. Create notification row for donor
+      // 4. Create notification & send background push to donor
       try {
         const collectorName = profile?.name || user.email?.split("@")[0] || "A community member";
         const { data: foodObj } = await supabase.from("foods").select("name").eq("id", foodId).single();
         const foodName = foodObj?.name || "food post";
-        await supabase.from("notifications").insert({
-          user_id: donorId,
-          food_id: foodId,
-          title: "Food Claimed! 🍱",
-          message: `${collectorName} booked ${portions} portion(s) of your ${foodName}!`,
-          is_read: false,
-        });
+        const title = "Food Claimed! 🍱";
+        const message = `${collectorName} booked ${portions} portion(s) of your ${foodName}!`;
+
+        try {
+          await supabase.from("notifications").insert({
+            user_id: donorId,
+            food_id: foodId,
+            title,
+            message,
+            is_read: false,
+          });
+        } catch (e) {}
+
+        // Send background push notification to donor
+        const { data: donorProfile } = await supabase
+          .from("profiles")
+          .select("expo_push_token")
+          .eq("id", donorId)
+          .single();
+
+        if (donorProfile?.expo_push_token) {
+          await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Accept-encoding': 'gzip, deflate',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify([{
+              to: donorProfile.expo_push_token,
+              sound: 'default',
+              title,
+              body: message,
+              data: { foodId },
+            }]),
+          });
+        }
       } catch (e) {
-        console.warn("Notification insert notice:", e);
+        console.warn("Donor notification notice:", e);
       }
 
       await fetchTransactions();
