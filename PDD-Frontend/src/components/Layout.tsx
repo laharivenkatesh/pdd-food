@@ -78,7 +78,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   });
   const { user, logout } = useAuth();
-  const hideNav = currentRouteName === "Auth" || !user;
+  const isAuthPage = currentRouteName === "Auth";
 
   const { transactions } = useTransactions();
   const { foods } = useAllFoods();
@@ -131,38 +131,40 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <View style={[styles.container, isDesktop && styles.desktopContainer]}>
-      {/* Top Header */}
-      {!hideNav && (
-        <View style={[styles.header, isDesktop && styles.desktopHeader]}>
-          <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
-            <View style={styles.logoBadge}>
-              <Ionicons name="restaurant" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={styles.brandText}>Zerra</Text>
+      {/* Top Header - Always Visible */}
+      <View style={[styles.header, isDesktop && styles.desktopHeader]}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
+          <View style={styles.logoBadge}>
+            <Ionicons name="restaurant" size={20} color="#FFFFFF" />
+          </View>
+          <Text style={styles.brandText}>Zerra</Text>
+        </TouchableOpacity>
+
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
+            <Ionicons name="globe-outline" size={16} color="#16A34A" />
+            <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
+            <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
+            <Ionicons name="chevron-down" size={13} color="#374151" />
           </TouchableOpacity>
 
-          <View style={styles.headerRight}>
-            <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
-              <Ionicons name="globe-outline" size={16} color="#16A34A" />
-              <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
-              <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
-              <Ionicons name="chevron-down" size={13} color="#374151" />
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={22} color="#1F2937" />
-              {unreadCount > 0 && (
-                <View style={styles.unreadBadge}>
-                  <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
-              <Text style={styles.logoutBtnText}>{t('logOut')}</Text>
-            </TouchableOpacity>
-          </View>
+          {user && (
+            <>
+              <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
+                <Ionicons name="notifications-outline" size={22} color="#1F2937" />
+                {unreadCount > 0 && (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
+                <Text style={styles.logoutBtnText}>{t('logOut')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
-      )}
+      </View>
 
       {/* Main Content Area */}
       <View style={[styles.content, isDesktop && styles.desktopContent]}>
@@ -249,8 +251,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </View>
       </Modal>
 
-      {/* Bottom Navigation */}
-      {!hideNav && (
+      {/* Bottom Navigation - Hidden ONLY on Auth/Login Page */}
+      {!isAuthPage && (
         <View style={styles.bottomNav}>
           <NavTabItem
             name="Home"
