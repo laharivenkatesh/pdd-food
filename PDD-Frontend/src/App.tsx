@@ -1,5 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Platform, Animated, ActivityIndicator } from 'react-native';
 import React, { Component, ErrorInfo, ReactNode } from "react";
+let ExpoSplashScreen: any = null;
+try {
+  ExpoSplashScreen = require('expo-splash-screen');
+  if (ExpoSplashScreen && typeof ExpoSplashScreen.preventAutoHideAsync === 'function') {
+    ExpoSplashScreen.preventAutoHideAsync();
+  }
+} catch (e) {}
 
 if (typeof window !== 'undefined') {
   if (typeof (window as any).CustomEvent !== 'function') {
@@ -8,7 +15,13 @@ if (typeof window !== 'undefined') {
       return { type: event, detail: params?.detail, bubbles: !!params?.bubbles, cancelable: !!params?.cancelable };
     };
   }
+  try {
+    if (document && document.body) {
+      document.body.style.backgroundColor = '#1C7B50';
+    }
+  } catch (e) {}
 }
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -187,6 +200,13 @@ const AppContent = () => {
   const [isSplashing, setIsSplashing] = React.useState(true);
 
   React.useEffect(() => {
+    // Seamlessly hide native Expo splash screen now that React component is rendered
+    try {
+      if (typeof ExpoSplashScreen.hideAsync === 'function') {
+        ExpoSplashScreen.hideAsync();
+      }
+    } catch (e) {}
+
     const timer = setTimeout(() => {
       setIsSplashing(false);
     }, 3500);

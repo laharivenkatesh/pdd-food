@@ -255,9 +255,85 @@ export function useMyPosts() {
       const newFood = mapRow(data);
       globalMyPostsCache = [newFood, ...globalMyPostsCache];
       setPosts((prev) => [newFood, ...prev]);
+
+      // Broadcast food notification & background push notification to nearby registered users
+      (async () => {
+        try {
+          const { data: profiles } = await supabase.from("profiles").select("*").neq("id", user.id);
+          if (profiles && profiles.length > 0) {
+            const foodLat = Number(input.lat);
+            const foodLng = Number(input.lng);
+            const donorName = profile?.name || user.name || user.email?.split("@")[0] || "A community donor";
+
+            const notifs: any[] = [];
+            const pushTokens: string[] = [];
+
+            for (const p of profiles) {
+              let isNearby = true;
+              if (p.lat && p.lng && !isNaN(foodLat) && !isNaN(foodLng)) {
+                // Calculate distance between food post location and user's past/saved location
+                const R = 6371;
+                const dLat = ((Number(p.lat) - foodLat) * Math.PI) / 180;
+                const dLon = ((Number(p.lng) - foodLng) * Math.PI) / 180;
+                const a =
+                  Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos((foodLat * Math.PI) / 180) *
+                  Math.cos((Number(p.lat) * Math.PI) / 180) *
+                  Math.sin(dLon / 2) *
+                  Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                const dist = R * c;
+                isNearby = dist <= 50; // Within 50km radius
+              }
+
+              if (isNearby) {
+                notifs.push({
+                  user_id: p.id,
+                  food_id: data.id,
+                  title: "🍱 Fresh Food Available Nearby!",
+                  message: `${donorName} just posted "${input.name}" near ${input.address || 'your location'}. Tap to claim!`,
+                  is_read: false,
+                });
+
+                if (p.expo_push_token) {
+                  pushTokens.push(p.expo_push_token);
+                }
+              }
+            }
+
+            if (notifs.length > 0) {
+              await supabase.from("notifications").insert(notifs);
+            }
+
+            // Send Expo Push Notification payload to devices even if app is closed!
+            if (pushTokens.length > 0) {
+              const pushMessages = pushTokens.map(token => ({
+                to: token,
+                sound: 'default',
+                title: '🍱 Fresh Food Available Nearby!',
+                body: `${donorName} posted "${input.name}" near you!`,
+                data: { foodId: data.id },
+              }));
+
+              await fetch('https://exp.host/--/api/v2/push/send', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Accept-encoding': 'gzip, deflate',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(pushMessages),
+              });
+            }
+          }
+        } catch (err) {
+          console.warn("Broadcasting food post notification notice:", err);
+        }
+      })();
+
       return { ok: true as const, data: newFood };
     },
-    [user]
+    [user, profile]
   );
 
   const removePost = useCallback(async (id: string) => {

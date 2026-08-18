@@ -100,6 +100,46 @@ export const playNotificationSound = () => {
   }
 };
 
+import * as Location from 'expo-location';
+
+export async function registerPushAndSyncLocation(userId: string) {
+  if (!userId || !isSupabaseConfigured) return;
+  try {
+    let pushToken: string | null = null;
+    if (typeof Notifications.getPermissionsAsync === 'function') {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === 'granted' && typeof Notifications.getExpoPushTokenAsync === 'function') {
+        const res = await Notifications.getExpoPushTokenAsync();
+        pushToken = res?.data || null;
+      }
+    }
+
+    let lat: number | null = null;
+    let lng: number | null = null;
+    if (typeof Location.getForegroundPermissionsAsync === 'function') {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status === 'granted' && typeof Location.getCurrentPositionAsync === 'function') {
+        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+      }
+    }
+
+    const updates: any = {};
+    if (pushToken) updates.expo_push_token = pushToken;
+    if (lat !== null && lng !== null) {
+      updates.lat = lat;
+      updates.lng = lng;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await supabase.from("profiles").update(updates).eq("id", userId);
+    }
+  } catch (err) {
+    console.warn("Push token & location sync notice:", err);
+  }
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<DbNotification[]>([]);
@@ -174,6 +214,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    registerPushAndSyncLocation(user.id);
     refresh();
 
     const pollInterval = setInterval(() => {
