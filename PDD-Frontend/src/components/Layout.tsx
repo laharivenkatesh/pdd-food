@@ -295,10 +295,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.notifList}>
-              {notifications.length === 0 ? (
-                <Text style={styles.emptyNotifText}>No notifications</Text>
-              ) : (
-                notifications.map((n) => (
+              {(() => {
+                const now = Date.now();
+                const activeRecentNotifs = notifications.filter((n) => {
+                  const notifTime = new Date(n.created_at).getTime();
+                  const isRecent = (now - notifTime) <= 24 * 3600 * 1000;
+                  if (n.food_id) {
+                    const food = foods.find(f => f.id === n.food_id);
+                    if (food && (food.status === "expired" || food.status === "deleted" || food.status === "collected")) {
+                      return false;
+                    }
+                  }
+                  return isRecent;
+                });
+
+                if (activeRecentNotifs.length === 0) {
+                  return <Text style={styles.emptyNotifText}>No active notifications for today</Text>;
+                }
+
+                return activeRecentNotifs.map((n) => (
                   <TouchableOpacity
                     key={n.id}
                     onPress={() => {
@@ -312,8 +327,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <Text style={styles.notifMessage}>{n.message}</Text>
                     <Text style={styles.notifTime}>{formatTimeAgo(n.created_at)}</Text>
                   </TouchableOpacity>
-                ))
-              )}
+                ));
+              })()}
             </ScrollView>
           </View>
         </View>
