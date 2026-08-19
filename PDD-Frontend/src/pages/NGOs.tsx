@@ -93,7 +93,6 @@ function AnimatedNGOCard({ ngo, index, isDesktop, language, t, navigation }: { n
           <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={styles.btnDonate}>
-          <Ionicons name="heart" size={14} color="#15803D" />
           <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
         </TouchableOpacity>
       </View>
@@ -133,6 +132,17 @@ export default function NGOs() {
         {nearbyNGOs.map((ngo, index) => (
           <AnimatedNGOCard key={`${filter}-${ngo.id}`} ngo={ngo} index={index} isDesktop={isDesktop} language={language} t={t} navigation={navigation} />
         ))}
+      </View>
+
+      {/* NGO Partner Support Info Widget */}
+      <View style={styles.ngoInfoWidget}>
+        <Ionicons name="shield-checkmark" size={24} color="#16A34A" />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.ngoInfoTitle}>Verified Food Rescue Partners</Text>
+          <Text style={styles.ngoInfoDesc}>
+            All listed NGOs adhere to food safety guidelines and distribute surplus food directly to local shelters and community kitchens.
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -240,5 +250,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#15803D',
+  },
+  ngoInfoWidget: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F0FDF4',
+    padding: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    marginTop: 8,
+  },
+  ngoInfoTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#15803D',
+  },
+  ngoInfoDesc: {
+    fontSize: 12,
+    color: '#4B5563',
+    marginTop: 2,
+    lineHeight: 16,
   },
 });

@@ -106,7 +106,6 @@ function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; 
           <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={onDonate} style={styles.btnDonate}>
-          <Ionicons name="heart" size={14} color="#15803D" />
           <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
         </TouchableOpacity>
       </View>
@@ -265,6 +264,20 @@ export default function Home() {
             </View>
           </View>
         )}
+      </View>
+
+      {/* Quick Anti-Waste & Community Widget */}
+      <View style={styles.quickTipWidget}>
+        <View style={styles.quickTipHeader}>
+          <Ionicons name="bulb-outline" size={20} color="#16A34A" />
+          <Text style={styles.quickTipTitle}>Daily Zero-Waste Tip</Text>
+        </View>
+        <Text style={styles.quickTipBody}>
+          💡 "Storing fresh herbs in a glass of water prolongs freshness by up to 2 weeks, preventing quick food spoilage!"
+        </Text>
+        <View style={styles.quickTipFooter}>
+          <Text style={styles.quickTipBadge}>🌱 14,890 Meals Rescued Community-wide</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -477,5 +490,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#15803D',
+  },
+  quickTipWidget: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 16,
+    marginBottom: 8,
+    gap: 8,
+  },
+  quickTipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  quickTipTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  quickTipBody: {
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 18,
+  },
+  quickTipFooter: {
+    marginTop: 4,
+  },
+  quickTipBadge: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
   },
 });

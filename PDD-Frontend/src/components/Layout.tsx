@@ -175,21 +175,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {user && (
             <View style={styles.sidebarFooter}>
-              <View style={styles.sidebarUserCard}>
-                <View style={styles.sidebarUserAvatar}>
-                  <Ionicons name="person" size={18} color="#15803D" />
+              <View style={styles.sidebarImpactWidget}>
+                <View style={styles.sidebarImpactHeader}>
+                  <Ionicons name="leaf-outline" size={16} color="#16A34A" />
+                  <Text style={styles.sidebarImpactTitle}>Community Impact</Text>
                 </View>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={styles.sidebarUserName}>{profile?.name || user.email?.split('@')[0]}</Text>
-                  {(profile?.email || user.email) && (
-                    <Text style={styles.sidebarUserEmail}>✉️ {profile?.email || user.email}</Text>
-                  )}
-                  {profile?.phone && (
-                    <Text style={styles.sidebarUserPhone}>📞 {profile.phone}</Text>
-                  )}
-                  <Text style={styles.sidebarUserRole}>{t('communityMember')}</Text>
-                </View>
+                <Text style={styles.sidebarImpactVal}>🌱 1,420+ kg Saved</Text>
+                <Text style={styles.sidebarImpactSub}>Zero-waste community goal</Text>
               </View>
+
               <TouchableOpacity onPress={handleSignOut} style={styles.sidebarLogoutBtn}>
                 <Ionicons name="log-out-outline" size={18} color="#EF4444" />
                 <Text style={styles.sidebarLogoutText}>{t('logOut')}</Text>
@@ -464,6 +458,37 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6',
     paddingTop: 16,
     gap: 10,
+  },
+  sidebarImpactWidget: {
+    backgroundColor: '#F0FDF4',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    marginBottom: 4,
+  },
+  sidebarImpactHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  sidebarImpactTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#15803D',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  sidebarImpactVal: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  sidebarImpactSub: {
+    fontSize: 11,
+    color: '#4B5563',
+    marginTop: 2,
   },
   sidebarUserCard: {
     flexDirection: 'row',

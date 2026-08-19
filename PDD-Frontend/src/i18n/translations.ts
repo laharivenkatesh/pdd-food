@@ -144,8 +144,8 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     searchExpiredPlaceholder: "Search expired items...",
     zeroExpiredTitle: "Zero Food Expired! 🎉",
     zeroExpiredSub: "All food listings were saved before they reached expiration.",
-    directionsBtn: "Directions 🧭",
-    donateFoodBtn: "Donate Food ❤️",
+    directionsBtn: "Directions",
+    donateFoodBtn: "Donate Food",
     loadingFood: "Loading available food...",
     noFoodFound: "No food listings found",
     checkBackSoon: "Check back soon for fresh listings!",
@@ -193,8 +193,8 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
   },
 
   hi: {
-    directionsBtn: "दिशा-निर्देश 🧭",
-    donateFoodBtn: "भोजन दान करें ❤️",
+    directionsBtn: "दिशा-निर्देश",
+    donateFoodBtn: "भोजन दान करें",
     loadingFood: "उपलब्ध भोजन लोड हो रहा है...",
     noFoodFound: "कोई भोजन सूची नहीं मिली",
     checkBackSoon: "नवीनतम सूचियों के लिए पुन: प्रयास करें!",
@@ -463,7 +463,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     zeroExpiredTitle: "ఏ ఆహారం గడువు ముగియలేదు! 🎉",
     zeroExpiredSub: "అన్ని ఆహార పదార్థాలు గడువు ముగిసేలోపే ఆదా చేయబడ్డాయి.",
     directionsBtn: "దారి చూపు 🧭",
-    donateFoodBtn: "ఆహారం దానం చేయి ❤️",
+    donateFoodBtn: "ఆహారం దానం చేయి",
     loadingFood: "ఆహార పోస్ట్‌లు లోడ్ అవుతున్నాయి...",
     noFoodFound: "ఆహార పోస్ట్‌లేవీ కనుగొనబడలేదు",
     checkBackSoon: "కొత్త పోస్ట్‌ల కోసం మళ్లీ చూడండి!",
@@ -512,7 +512,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   ta: {
     directionsBtn: "வழிப்பாதை 🧭",
-    donateFoodBtn: "உணவு தானம் செய் ❤️",
+    donateFoodBtn: "உணவு தானம் செய்",
     loadingFood: "உணவுப் பட்டியல் ஏற்றப்படுகிறது...",
     noFoodFound: "உணவு எதுவும் கிடைக்கவில்லை",
     checkBackSoon: "புதிய உணவுகளுக்கு மீண்டும் பார்க்கவும்!",
@@ -671,7 +671,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   kn: {
     directionsBtn: "ದಾರಿ 🧭",
-    donateFoodBtn: "ಆಹಾರ ದಾನ ಮಾಡಿ ❤️",
+    donateFoodBtn: "ಆಹಾರ ದಾನ ಮಾಡಿ",
     loadingFood: "ಆಹಾರ ಪಟ್ಟಿ ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
     noFoodFound: "ಯಾವುದೇ ಆಹಾರ ಸಿಕ್ಕಿಲ್ಲ",
     checkBackSoon: "ಹೊಸ ಪಟ್ಟಿಗಳಿಗಾಗಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ!",
@@ -830,7 +830,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   mr: {
     directionsBtn: "दिशा 🧭",
-    donateFoodBtn: "अन्न दान करा ❤️",
+    donateFoodBtn: "अन्न दान करा",
     loadingFood: "अन्न सूची लोड होत आहे...",
     noFoodFound: "कोणतीही अन्न सूची सापडली नाही",
     checkBackSoon: "नवीन सूचीसाठी पुन्हा तपासा!",
@@ -989,7 +989,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   bn: {
     directionsBtn: "দিকনির্দেশ 🧭",
-    donateFoodBtn: "খাবার দান করুন ❤️",
+    donateFoodBtn: "খাবার দান করুন",
     loadingFood: "খাবারের তালিকা লোড হচ্ছে...",
     noFoodFound: "কোনো খাবার পাওয়া যায়নি",
     checkBackSoon: "নতুন খাবারের জন্য আবার চেষ্টা করুন!",
@@ -1148,7 +1148,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   ml: {
     directionsBtn: "വഴി 🧭",
-    donateFoodBtn: "ഭക്ഷണം നൽകുക ❤️",
+    donateFoodBtn: "ഭക്ഷണം നൽകുക",
     loadingFood: "ഭക്ഷണ വിവരങ്ങൾ ലഭ്യമാക്കുന്നു...",
     noFoodFound: "ഭക്ഷണം ഒന്നും കണ്ടെത്തിയില്ല",
     checkBackSoon: "പുതിയവയ്ക്കായി വീണ്ടും പരിശോധിക്കുക!",
@@ -1307,7 +1307,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   gu: {
     directionsBtn: "દિશા 🧭",
-    donateFoodBtn: "ભોજન દાન કરો ❤️",
+    donateFoodBtn: "ભોજન દાન કરો",
     loadingFood: "ભોજન યાદી લોડ થઈ રહી છે...",
     noFoodFound: "કોઈ ભોજન મળ્યું નથી",
     checkBackSoon: "નવી યાદીઓ માટે ફરી જુઓ!",
@@ -1466,7 +1466,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   pa: {
     directionsBtn: "ਦਿਸ਼ਾ 🧭",
-    donateFoodBtn: "ਭੋਜਨ ਦਾਨ ਕਰੋ ❤️",
+    donateFoodBtn: "ਭੋਜਨ ਦਾਨ ਕਰੋ",
     loadingFood: "ਭੋਜਨ ਸੂਚੀ ਲੋਡ ਹੋ ਰਹੀ ਹੈ...",
     noFoodFound: "ਕੋਈ ਭੋਜਨ ਨਹੀਂ ਮਿਲਿਆ",
     checkBackSoon: "ਤਾਜ਼ਾ ਸੂਚੀਆਂ ਲਈ ਦੁਬਾਰਾ ਦੇਖੋ!",
@@ -1625,7 +1625,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   or: {
     directionsBtn: "ଦିଗ 🧭",
-    donateFoodBtn: "ଖାଦ୍ୟ ଦାନ କରନ୍ତୁ ❤️",
+    donateFoodBtn: "ଖାଦ୍ୟ ଦାନ କରନ୍ତୁ",
     loadingFood: "ଖାଦ୍ୟ ତାଲିକା ଲୋଡ୍ ହେଉଛି...",
     noFoodFound: "କୌଣସି ଖାଦ୍ୟ ମିଳିଲା ନାହିଁ",
     checkBackSoon: "ନୂଆ ତାଲିକା ପାଇଁ ପୁଣି ଦେଖନ୍ତୁ!",
@@ -1784,7 +1784,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   ur: {
     directionsBtn: "راستہ 🧭",
-    donateFoodBtn: "کھانا عطیہ کریں ❤️",
+    donateFoodBtn: "کھانا عطیہ کریں",
     loadingFood: "کھانے کی فہرست لوڈ ہو رہی ہے...",
     noFoodFound: "کوئی کھانا نہیں ملا",
     checkBackSoon: "تازہ فہرست کے لیے دوبارہ دیکھیں!",
@@ -1942,8 +1942,8 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
   },
 
   es: {
-    directionsBtn: "Indicaciones 🧭",
-    donateFoodBtn: "Donar comida ❤️",
+    directionsBtn: "Indicaciones",
+    donateFoodBtn: "Donar comida",
     loadingFood: "Cargando comida disponible...",
     noFoodFound: "No se encontraron publicaciones",
     checkBackSoon: "¡Vuelve pronto para ver publicaciones frescas!",
@@ -2101,8 +2101,8 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
   },
 
   fr: {
-    directionsBtn: "Itinéraire 🧭",
-    donateFoodBtn: "Faire un don ❤️",
+    directionsBtn: "Itinéraire",
+    donateFoodBtn: "Faire un don",
     loadingFood: "Chargement des repas disponibles...",
     noFoodFound: "Aucune annonce trouvée",
     checkBackSoon: "Revenez bientôt pour de nouvelles annonces !",
@@ -2260,8 +2260,8 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
   },
 
   ar: {
-    directionsBtn: "الاتجاهات 🧭",
-    donateFoodBtn: "تبرع بالطعام ❤️",
+    directionsBtn: "الاتجاهات",
+    donateFoodBtn: "تبرع بالطعام",
     loadingFood: "جاري تحميل الطعام المتاح...",
     noFoodFound: "لم يتم العثور على منشورات طعام",
     checkBackSoon: "عد قريباً للاطلاع على منشورات جديدة!",
@@ -2420,7 +2420,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
 
   de: {
     directionsBtn: "Route 🧭",
-    donateFoodBtn: "Essen spenden ❤️",
+    donateFoodBtn: "Essen spenden",
     loadingFood: "Lade verfügbares Essen...",
     noFoodFound: "Keine Essensinserate gefunden",
     checkBackSoon: "Schauen Sie bald wieder vorbei!",

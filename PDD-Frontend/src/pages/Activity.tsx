@@ -185,6 +185,73 @@ export default function Activity() {
         </View>
       </View>
 
+      {/* Community Achievements & Badges Widget */}
+      <View style={styles.widgetCard}>
+        <View style={styles.widgetHeader}>
+          <Ionicons name="trophy-outline" size={20} color="#D97706" />
+          <Text style={styles.widgetTitle}>Impact Badges & Milestones</Text>
+        </View>
+        <View style={styles.badgeGrid}>
+          <View style={styles.badgeItem}>
+            <Text style={styles.badgeIcon}>🏆</Text>
+            <Text style={styles.badgeName}>Zero-Waste Hero</Text>
+            <Text style={styles.badgeStatusUnlocked}>Unlocked</Text>
+          </View>
+          <View style={styles.badgeItem}>
+            <Text style={styles.badgeIcon}>🌟</Text>
+            <Text style={styles.badgeName}>Super Donor</Text>
+            <Text style={styles.badgeStatusUnlocked}>Unlocked</Text>
+          </View>
+          <View style={styles.badgeItem}>
+            <Text style={styles.badgeIcon}>🛡️</Text>
+            <Text style={styles.badgeName}>Food Guardian</Text>
+            <Text style={styles.badgeStatusUnlocked}>Unlocked</Text>
+          </View>
+          <View style={styles.badgeItem}>
+            <Text style={styles.badgeIcon}>🍃</Text>
+            <Text style={styles.badgeName}>Eco Champion</Text>
+            <Text style={styles.badgeStatusProgress}>92% Done</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Category Savings Breakdown Widget */}
+      <View style={styles.widgetCard}>
+        <View style={styles.widgetHeader}>
+          <Ionicons name="pie-chart-outline" size={20} color="#0284C7" />
+          <Text style={styles.widgetTitle}>Rescued Food Breakdown</Text>
+        </View>
+        <View style={styles.categoryList}>
+          <View style={styles.categoryRow}>
+            <View style={styles.categoryLabelRow}>
+              <Text style={styles.categoryName}>🍲 Cooked Meals & Dishes</Text>
+              <Text style={styles.categoryPct}>48%</Text>
+            </View>
+            <View style={styles.categoryTrack}>
+              <View style={[styles.categoryFill, { width: '48%', backgroundColor: '#16A34A' }]} />
+            </View>
+          </View>
+          <View style={styles.categoryRow}>
+            <View style={styles.categoryLabelRow}>
+              <Text style={styles.categoryName}>🥦 Fresh Produce & Fruits</Text>
+              <Text style={styles.categoryPct}>32%</Text>
+            </View>
+            <View style={styles.categoryTrack}>
+              <View style={[styles.categoryFill, { width: '32%', backgroundColor: '#0284C7' }]} />
+            </View>
+          </View>
+          <View style={styles.categoryRow}>
+            <View style={styles.categoryLabelRow}>
+              <Text style={styles.categoryName}>🍞 Bakery & Packaged Foods</Text>
+              <Text style={styles.categoryPct}>20%</Text>
+            </View>
+            <View style={styles.categoryTrack}>
+              <View style={[styles.categoryFill, { width: '20%', backgroundColor: '#D97706' }]} />
+            </View>
+          </View>
+        </View>
+      </View>
+
       {/* My Donations Section */}
       <View style={styles.listingsSection}>
         <View style={styles.listingsHeader}>
@@ -639,5 +706,99 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: '#FEF2F2',
     borderRadius: 10,
+  },
+  widgetCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 20,
+    gap: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  widgetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  widgetTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  badgeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  badgeItem: {
+    flex: 1,
+    minWidth: 120,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  badgeIcon: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+  badgeName: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1E293B',
+    textAlign: 'center',
+  },
+  badgeStatusUnlocked: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#16A34A',
+    marginTop: 4,
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  badgeStatusProgress: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#D97706',
+    marginTop: 4,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  categoryList: {
+    gap: 14,
+  },
+  categoryRow: {
+    gap: 6,
+  },
+  categoryLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  categoryName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  categoryPct: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  categoryTrack: {
+    height: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  categoryFill: {
+    height: '100%',
+    borderRadius: 4,
   },
 });
