@@ -106,7 +106,7 @@ export async function registerPushAndSyncLocation(userId: string) {
   if (!userId || !isSupabaseConfigured) return;
   try {
     let pushToken: string | null = null;
-    if (typeof Notifications.getPermissionsAsync === 'function') {
+    if (Platform.OS !== 'web' && typeof Notifications.getPermissionsAsync === 'function') {
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let activeStatus = existingStatus;
       if (activeStatus !== 'granted' && typeof Notifications.requestPermissionsAsync === 'function') {

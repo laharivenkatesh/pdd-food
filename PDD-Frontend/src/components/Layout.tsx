@@ -100,6 +100,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
 
+  const { foods } = useAllFoods();
+
   const {
     notifications,
     unreadCount,
