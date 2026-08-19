@@ -9,20 +9,6 @@ import { supabase } from "@/lib/supabase";
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from "@/context/LanguageContext";
 
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) *
-    Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
 function NavTabItem({ name, route, icon, label, currentRoute, onPress }: { name: string; route: string; icon: any; label: string; currentRoute: string; onPress: () => void }) {
   const isActive = currentRoute === route || currentRoute === name;
   const scaleAnim = useRef(new Animated.Value(isActive ? 1.15 : 1)).current;
@@ -42,6 +28,34 @@ function NavTabItem({ name, route, icon, label, currentRoute, onPress }: { name:
         <Ionicons name={icon} size={name === "PostFood" ? 30 : 22} color={isActive ? "#16A34A" : "#6B7280"} />
         <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{label}</Text>
       </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
+function SidebarNavItem({ name, route, icon, label, currentRoute, onPress }: { name: string; route: string; icon: any; label: string; currentRoute: string; onPress: () => void }) {
+  const isActive = currentRoute === route || currentRoute === name;
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        styles.sidebarNavItem,
+        isActive && styles.sidebarNavItemActive,
+      ]}
+    >
+      <Ionicons
+        name={icon}
+        size={22}
+        color={isActive ? "#16A34A" : "#4B5563"}
+      />
+      <Text
+        style={[
+          styles.sidebarNavLabel,
+          isActive && styles.sidebarNavLabelActive,
+        ]}
+      >
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -77,51 +91,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       return "";
     }
   });
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const isAuthPage = currentRouteName === "Auth" && !user;
 
-  const { transactions } = useTransactions();
-  const { foods } = useAllFoods();
-  const [oppositeProfiles, setOppositeProfiles] = useState<Record<string, any>>({});
-  const bellDistancesRef = useRef<Record<string, number>>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const { t, setLanguage, currentLanguageOption, languageOptions } = useLanguage();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
 
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      if (transactions.length > 0 && user) {
-        const otherUserIds = Array.from(new Set(
-          transactions.map(t => t.donor_id === user.id ? t.collector_id : t.donor_id)
-        ));
-
-        if (otherUserIds.length > 0) {
-          const { data } = await supabase
-            .from("profiles")
-            .select("*")
-            .in("id", otherUserIds);
-
-          if (data) {
-            const profileMap: Record<string, any> = {};
-            data.forEach(p => {
-              profileMap[p.id] = p;
-            });
-            setOppositeProfiles(profileMap);
-          }
-        }
-      }
-    };
-    fetchProfiles();
-  }, [transactions, user]);
-
   const {
     notifications,
     unreadCount,
     markAsRead,
-    markAllAsRead,
-    clearAll,
   } = useNotifications();
 
   const handleSignOut = async () => {
@@ -130,45 +112,131 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <View style={[styles.container, isDesktop && styles.desktopContainer]}>
-      {/* Top Header - Always Visible */}
-      <View style={[styles.header, isDesktop && styles.desktopHeader]}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
-          <View style={styles.logoBadge}>
-            <Ionicons name="restaurant" size={20} color="#FFFFFF" />
-          </View>
-          <Text style={styles.brandText}>Zerra</Text>
-        </TouchableOpacity>
+    <View style={[styles.container, isDesktop && styles.desktopRootContainer]}>
+      {/* Sidebar for Desktop / Laptop / PC */}
+      {isDesktop && !isAuthPage && (
+        <View style={styles.sidebar}>
+          <View>
+            <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.sidebarBrand}>
+              <View style={styles.logoBadge}>
+                <Ionicons name="restaurant" size={22} color="#FFFFFF" />
+              </View>
+              <View>
+                <Text style={styles.sidebarBrandTitle}>Zerra</Text>
+                <Text style={styles.sidebarBrandSubtitle}>Food Hub 🌱</Text>
+              </View>
+            </TouchableOpacity>
 
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
-            <Ionicons name="globe-outline" size={16} color="#16A34A" />
-            <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
-            <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
-            <Ionicons name="chevron-down" size={13} color="#374151" />
-          </TouchableOpacity>
+            <View style={styles.sidebarNavList}>
+              <SidebarNavItem
+                name="Home"
+                route="Home"
+                icon="home-outline"
+                label={t('navHome')}
+                currentRoute={currentRouteName}
+                onPress={() => navigation.navigate("Home" as never)}
+              />
+              <SidebarNavItem
+                name="Expired"
+                route="Expired"
+                icon="time-outline"
+                label={t('navExpired')}
+                currentRoute={currentRouteName}
+                onPress={() => navigation.navigate("Expired" as never)}
+              />
+              <SidebarNavItem
+                name="PostFood"
+                route="PostFood"
+                icon="add-circle-outline"
+                label={t('navPost')}
+                currentRoute={currentRouteName}
+                onPress={() => navigation.navigate("PostFood" as never)}
+              />
+              <SidebarNavItem
+                name="NGOs"
+                route="NGOs"
+                icon="heart-outline"
+                label={t('navNGOs')}
+                currentRoute={currentRouteName}
+                onPress={() => navigation.navigate("NGOs" as never)}
+              />
+              <SidebarNavItem
+                name="Profile"
+                route="Activity"
+                icon="person-outline"
+                label={t('profileTitle')}
+                currentRoute={currentRouteName}
+                onPress={() => navigation.navigate("Activity" as never)}
+              />
+            </View>
+          </View>
 
           {user && (
-            <>
-              <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
-                <Ionicons name="notifications-outline" size={22} color="#1F2937" />
-                {unreadCount > 0 && (
-                  <View style={styles.unreadBadge}>
-                    <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-                  </View>
-                )}
+            <View style={styles.sidebarFooter}>
+              <View style={styles.sidebarUserCard}>
+                <View style={styles.sidebarUserAvatar}>
+                  <Ionicons name="person" size={18} color="#15803D" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sidebarUserName} numberOfLines={1}>{profile?.name || user.email?.split('@')[0]}</Text>
+                  <Text style={styles.sidebarUserRole}>{t('communityMember')}</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={handleSignOut} style={styles.sidebarLogoutBtn}>
+                <Ionicons name="log-out-outline" size={18} color="#EF4444" />
+                <Text style={styles.sidebarLogoutText}>{t('logOut')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
-                <Text style={styles.logoutBtnText}>{t('logOut')}</Text>
-              </TouchableOpacity>
-            </>
+            </View>
           )}
         </View>
-      </View>
+      )}
 
-      {/* Main Content Area */}
-      <View style={[styles.content, isDesktop && styles.desktopContent]}>
-        {children}
+      <View style={[styles.mainArea, isDesktop && styles.desktopMainArea]}>
+        {/* Top Header - Always Visible */}
+        <View style={[styles.header, isDesktop && styles.desktopHeader]}>
+          {!isDesktop ? (
+            <TouchableOpacity onPress={() => navigation.navigate("Home" as never)} style={styles.brandRow}>
+              <View style={styles.logoBadge}>
+                <Ionicons name="restaurant" size={20} color="#FFFFFF" />
+              </View>
+              <Text style={styles.brandText}>Zerra</Text>
+            </TouchableOpacity>
+          ) : (
+            <View />
+          )}
+
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => setLangModalOpen(true)} style={styles.langBtn}>
+              <Ionicons name="globe-outline" size={16} color="#16A34A" />
+              <Text style={styles.langBtnFlag}>{currentLanguageOption.flag}</Text>
+              <Text style={styles.langBtnText}>{currentLanguageOption.nativeLabel}</Text>
+              <Ionicons name="chevron-down" size={13} color="#374151" />
+            </TouchableOpacity>
+
+            {user && (
+              <>
+                <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
+                  <Ionicons name="notifications-outline" size={22} color="#1F2937" />
+                  {unreadCount > 0 && (
+                    <View style={styles.unreadBadge}>
+                      <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                {!isDesktop && (
+                  <TouchableOpacity onPress={handleSignOut} style={styles.logoutBtn}>
+                    <Text style={styles.logoutBtnText}>{t('logOut')}</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+          </View>
+        </View>
+
+        {/* Main Content Area */}
+        <View style={[styles.content, isDesktop && styles.desktopContent]}>
+          {children}
+        </View>
       </View>
 
       {/* Language Picker Modal */}
@@ -251,8 +319,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </View>
       </Modal>
 
-      {/* Bottom Navigation */}
-      {!isAuthPage && (
+      {/* Bottom Navigation for Mobile Devices only */}
+      {!isAuthPage && !isDesktop && (
         <View style={styles.bottomNav}>
           <NavTabItem
             name="Home"
@@ -305,8 +373,116 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F5EC',
   },
-  desktopContainer: {
+  desktopRootContainer: {
+    flexDirection: 'row',
     backgroundColor: '#FAF8F5',
+    width: '100%',
+    height: '100%',
+  },
+  sidebar: {
+    width: 250,
+    backgroundColor: '#FFFFFF',
+    borderRightWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    height: '100%',
+  },
+  sidebarBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 28,
+    paddingHorizontal: 4,
+  },
+  sidebarBrandTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#111827',
+  },
+  sidebarBrandSubtitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
+  sidebarNavList: {
+    gap: 8,
+  },
+  sidebarNavItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+  },
+  sidebarNavItemActive: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  sidebarNavLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4B5563',
+  },
+  sidebarNavLabelActive: {
+    color: '#16A34A',
+    fontWeight: '800',
+  },
+  sidebarFooter: {
+    borderTopWidth: 1,
+    borderColor: '#F3F4F6',
+    paddingTop: 16,
+    gap: 10,
+  },
+  sidebarUserCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#F9FAFB',
+    padding: 10,
+    borderRadius: 12,
+  },
+  sidebarUserAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sidebarUserName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  sidebarUserRole: {
+    fontSize: 11,
+    color: '#6B7280',
+  },
+  sidebarLogoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: '#FEF2F2',
+  },
+  sidebarLogoutText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#EF4444',
+  },
+  mainArea: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  desktopMainArea: {
+    flex: 1,
+    height: '100%',
   },
   header: {
     height: 60,
@@ -319,14 +495,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   desktopHeader: {
-    maxWidth: 1200,
-    width: '100%',
-    alignSelf: 'center',
+    paddingHorizontal: 24,
   },
   desktopContent: {
-    maxWidth: 1200,
-    width: '100%',
-    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
   brandRow: {
     flexDirection: 'row',
@@ -334,8 +507,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoBadge: {
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     borderRadius: 10,
     backgroundColor: '#16A34A',
     alignItems: 'center',
@@ -350,22 +523,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-  updateBadgeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#F0FDF4',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#DCFCE7',
-  },
-  updateBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#16A34A',
   },
   iconBtn: {
     position: 'relative',
@@ -415,9 +572,6 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  navHighlight: {
-    marginTop: -10,
   },
   navLabel: {
     fontSize: 11,
