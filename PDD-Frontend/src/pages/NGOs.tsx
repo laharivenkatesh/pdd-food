@@ -89,11 +89,11 @@ function AnimatedNGOCard({ ngo, index, isDesktop, language, t, navigation }: { n
 
       <View style={styles.btnRow}>
         <TouchableOpacity onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)} style={styles.btnNav}>
-          <Ionicons name="navigate" size={16} color="#1F2937" />
+          <Ionicons name="navigate-outline" size={14} color="#475569" />
           <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate("PostFood" as never)} style={styles.btnDonate}>
-          <Ionicons name="heart" size={16} color="#FFFFFF" />
+          <Ionicons name="heart" size={14} color="#15803D" />
           <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
         </TouchableOpacity>
       </View>
@@ -203,37 +203,42 @@ const styles = StyleSheet.create({
   },
   btnRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
-    marginTop: 6,
+    marginTop: 8,
   },
   btnNav: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-    paddingVertical: 10,
-    borderRadius: 12,
-    gap: 6,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 4,
   },
   btnNavText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#475569',
   },
   btnDonate: {
-    flex: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#16A34A',
-    paddingVertical: 10,
-    borderRadius: 12,
-    gap: 6,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 4,
   },
   btnDonateText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#15803D',
   },
 });
