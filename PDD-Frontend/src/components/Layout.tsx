@@ -175,15 +175,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {user && (
             <View style={styles.sidebarFooter}>
-              <View style={styles.sidebarImpactWidget}>
-                <View style={styles.sidebarImpactHeader}>
-                  <Ionicons name="leaf-outline" size={16} color="#16A34A" />
-                  <Text style={styles.sidebarImpactTitle}>Community Impact</Text>
-                </View>
-                <Text style={styles.sidebarImpactVal}>🌱 1,420+ kg Saved</Text>
-                <Text style={styles.sidebarImpactSub}>Zero-waste community goal</Text>
-              </View>
-
               <TouchableOpacity onPress={handleSignOut} style={styles.sidebarLogoutBtn}>
                 <Ionicons name="log-out-outline" size={18} color="#EF4444" />
                 <Text style={styles.sidebarLogoutText}>{t('logOut')}</Text>

@@ -56,7 +56,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; ngo: NGO; distance: number | null; onDonate: () => void; index: number; filter: string }) {
+function NGOCard({ ngo, distance, onDonate, index, filter, isDesktop }: { key?: React.Key; ngo: NGO; distance: number | null; onDonate: () => void; index: number; filter: string; isDesktop?: boolean }) {
   const { t, language } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(20)).current;
@@ -83,7 +83,7 @@ function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; 
   }, [ngo.id, filter]);
 
   return (
-    <Animated.View style={[styles.ngoCard, { opacity: fadeAnim, transform: [{ translateY }] }]}>
+    <Animated.View style={[styles.ngoCard, isDesktop && styles.desktopNgoCard, { opacity: fadeAnim, transform: [{ translateY }] }]}>
       <View style={styles.ngoCardHeader}>
         <View style={{ flex: 1 }}>
           <Text style={styles.ngoCardTitle}>{translateNGOName(ngo.name, language)}</Text>
@@ -250,7 +250,7 @@ export default function Home() {
               ))}
             </View>
 
-            <View style={styles.ngoList}>
+            <View style={[styles.ngoList, isDesktop && styles.desktopNgoGrid]}>
               {nearbyNGOs.map((ngo, index) => (
                 <NGOCard
                   key={`${ngoFilter}-${ngo.id}`}
@@ -259,6 +259,7 @@ export default function Home() {
                   onDonate={() => navigation.navigate("PostFood" as never)}
                   index={index}
                   filter={ngoFilter}
+                  isDesktop={isDesktop}
                 />
               ))}
             </View>
@@ -416,13 +417,22 @@ const styles = StyleSheet.create({
   ngoList: {
     gap: 12,
   },
+  desktopNgoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 14,
+  },
   ngoCard: {
-    backgroundColor: '#F9FAFB',
-    padding: 14,
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    gap: 6,
+    gap: 8,
+  },
+  desktopNgoCard: {
+    width: '48.5%',
   },
   ngoCardHeader: {
     flexDirection: 'row',

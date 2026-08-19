@@ -214,8 +214,11 @@ const AppContent = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const hasInitialNavigated = React.useRef(false);
+
   React.useEffect(() => {
-    if (!isSplashing && !loading) {
+    if (!isSplashing && !loading && !hasInitialNavigated.current) {
+      hasInitialNavigated.current = true;
       if (user) {
         navigation.navigate("Home" as never);
       } else {
