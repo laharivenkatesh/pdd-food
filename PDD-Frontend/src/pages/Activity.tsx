@@ -73,15 +73,16 @@ export default function Activity() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      {/* Header Banner */}
-      <View style={styles.topGreetingRow}>
-        <View>
-          <Text style={styles.greetingTitle}>Hello, {profile.name} 👋</Text>
-          <Text style={styles.greetingSub}>Here's your current food rescue & sustainability report</Text>
+      {/* Profile Details Card */}
+      <View style={styles.profileCard}>
+        <View style={styles.profileAvatarBox}>
+          <Ionicons name="person" size={30} color="#15803D" />
         </View>
-        <View style={styles.liveBadge}>
-          <View style={styles.greenDot} />
-          <Text style={styles.liveText}>LIVE IMPACT</Text>
+        <View style={styles.profileDetailsCol}>
+          <Text style={styles.profileNameText}>{profile.name}</Text>
+          {profile.email && <Text style={styles.profileDetailText}>✉️ {profile.email}</Text>}
+          {profile.phone && <Text style={styles.profileDetailText}>📞 {profile.phone}</Text>}
+          <Text style={styles.profileRoleText}>⭐ Trust Rating: {profile.trustScore || "5.0"}</Text>
         </View>
       </View>
 
@@ -262,10 +263,47 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 14,
   },
-  topGreetingRow: {
+  profileCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: 14,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  profileAvatarBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#86EFAC',
+  },
+  profileDetailsCol: {
+    flex: 1,
+    gap: 3,
+  },
+  profileNameText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+    flexWrap: 'wrap',
+  },
+  profileDetailText: {
+    fontSize: 13,
+    color: '#475569',
+    fontWeight: '600',
+    flexWrap: 'wrap',
+  },
+  profileRoleText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#15803D',
+    marginTop: 2,
   },
   greetingTitle: {
     fontSize: 24,

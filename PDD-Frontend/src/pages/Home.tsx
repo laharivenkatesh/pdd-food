@@ -102,11 +102,11 @@ function NGOCard({ ngo, distance, onDonate, index, filter }: { key?: React.Key; 
 
       <View style={styles.ngoBtnRow}>
         <TouchableOpacity onPress={() => openInGoogleMaps(ngo.lat, ngo.lng)} style={styles.btnNav}>
-          <Ionicons name="navigate-outline" size={14} color="#1F2937" />
+          <Ionicons name="navigate-outline" size={14} color="#475569" />
           <Text style={styles.btnNavText}>{t('directionsBtn')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={onDonate} style={styles.btnDonate}>
-          <Ionicons name="heart" size={14} color="#FFFFFF" />
+          <Ionicons name="heart" size={14} color="#15803D" />
           <Text style={styles.btnDonateText}>{t('donateFoodBtn')}</Text>
         </TouchableOpacity>
       </View>
@@ -440,37 +440,42 @@ const styles = StyleSheet.create({
   },
   ngoBtnRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
-    marginTop: 4,
+    marginTop: 6,
   },
   btnNav: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E5E7EB',
-    paddingVertical: 8,
-    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     gap: 4,
   },
   btnNavText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#475569',
   },
   btnDonate: {
-    flex: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#16A34A',
-    paddingVertical: 8,
-    borderRadius: 10,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     gap: 4,
   },
   btnDonateText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#15803D',
   },
 });

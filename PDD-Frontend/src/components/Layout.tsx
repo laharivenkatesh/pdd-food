@@ -179,8 +179,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <View style={styles.sidebarUserAvatar}>
                   <Ionicons name="person" size={18} color="#15803D" />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sidebarUserName} numberOfLines={1}>{profile?.name || user.email?.split('@')[0]}</Text>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.sidebarUserName}>{profile?.name || user.email?.split('@')[0]}</Text>
+                  {(profile?.email || user.email) && (
+                    <Text style={styles.sidebarUserEmail}>✉️ {profile?.email || user.email}</Text>
+                  )}
+                  {profile?.phone && (
+                    <Text style={styles.sidebarUserPhone}>📞 {profile.phone}</Text>
+                  )}
                   <Text style={styles.sidebarUserRole}>{t('communityMember')}</Text>
                 </View>
               </View>
@@ -477,12 +483,25 @@ const styles = StyleSheet.create({
   },
   sidebarUserName: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '800',
+    color: '#0F172A',
+    flexWrap: 'wrap',
+  },
+  sidebarUserEmail: {
+    fontSize: 11,
+    color: '#475569',
+    flexWrap: 'wrap',
+  },
+  sidebarUserPhone: {
+    fontSize: 11,
+    color: '#16A34A',
+    fontWeight: '600',
+    flexWrap: 'wrap',
   },
   sidebarUserRole: {
     fontSize: 11,
     color: '#6B7280',
+    marginTop: 2,
   },
   sidebarLogoutBtn: {
     flexDirection: 'row',
