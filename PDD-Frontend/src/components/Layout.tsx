@@ -304,8 +304,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   const isRecent = (now - notifTime) <= 24 * 3600 * 1000;
                   if (n.food_id) {
                     const food = foods.find(f => f.id === n.food_id);
-                    if (food && (food.status === "expired" || food.status === "deleted" || food.status === "collected")) {
-                      return false;
+                    if (food) {
+                      const fStatus = String(food.status);
+                      if (fStatus === "expired" || fStatus === "deleted" || fStatus === "collected") {
+                        return false;
+                      }
                     }
                   }
                   return isRecent;
