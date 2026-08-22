@@ -442,27 +442,45 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         }
         const dynamicName = foodName || "food item";
 
+        const collectorNotifTitle = "Food Handed Over! 🎉";
+        const collectorNotifMsg = `Your booked food (${dynamicName}) has been successfully handed over to you by the donor!`;
+
         await supabase.from("notifications").insert({
           user_id: tx.collector_id,
           food_id: tx.food_id,
-          title: "Food Handed Over! 🎉",
-          message: `Your booked food (${dynamicName}) has been successfully handed over to you by the donor!`,
+          title: collectorNotifTitle,
+          message: collectorNotifMsg,
           is_read: false,
         });
+
+        // Send background push notification to collector if token available
+        const { data: collectorProfile } = await supabase
+          .from("profiles")
+          .select("expo_push_token")
+          .eq("id", tx.collector_id)
+          .single();
+
+        if (collectorProfile?.expo_push_token) {
+          await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Accept-encoding': 'gzip, deflate',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify([{
+              to: collectorProfile.expo_push_token,
+              sound: 'default',
+              title: collectorNotifTitle,
+              body: collectorNotifMsg,
+              data: { foodId: tx.food_id },
+            }]),
+          });
+        }
       } catch (notifErr) {
         console.warn("Collector handover notification notice:", notifErr);
       }
 
-      // Delete notification for donor immediately
-      try {
-        await supabase
-          .from("notifications")
-          .delete()
-          .eq("food_id", tx.food_id)
-          .eq("user_id", tx.donor_id);
-      } catch (err) {
-        console.error("Error deleting notification after donation:", err);
-      }
       await fetchTransactions();
     }
   };
