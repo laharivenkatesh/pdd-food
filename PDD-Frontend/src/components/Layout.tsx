@@ -106,9 +106,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const {
     notifications,
-    unreadCount,
     markAsRead,
   } = useNotifications();
+
+  const now = Date.now();
+  const activeRecentNotifs = notifications.filter((n) => {
+    const notifTime = new Date(n.created_at).getTime();
+    const isRecent = (now - notifTime) <= 24 * 3600 * 1000;
+    if (n.food_id) {
+      const food = foods.find((f) => f.id === n.food_id);
+      if (food) {
+        const fStatus = String(food.status);
+        if (fStatus === "expired" || fStatus === "deleted" || fStatus === "collected") {
+          return false;
+        }
+      }
+    }
+    return isRecent;
+  });
+
+  const exactUnreadCount = activeRecentNotifs.filter((n) => !n.is_read).length;
 
   const handleSignOut = async () => {
     await logout();
@@ -213,9 +230,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <>
                   <TouchableOpacity onPress={() => setDrawerOpen(true)} style={styles.iconBtn}>
                     <Ionicons name="notifications-outline" size={18} color="#1F2937" />
-                    {unreadCount > 0 && (
+                    {exactUnreadCount > 0 && (
                       <View style={styles.unreadBadge}>
-                        <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                        <Text style={styles.unreadBadgeText}>{exactUnreadCount}</Text>
                       </View>
                     )}
                   </TouchableOpacity>
