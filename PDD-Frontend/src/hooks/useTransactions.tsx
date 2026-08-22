@@ -291,11 +291,20 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
       // 4. Create notification & send background push to donor
       try {
-        const collectorName = profile?.name || user.email?.split("@")[0] || "A community member";
+        const collectorName = profile?.name || user.name || user.email?.split("@")[0] || "A community member";
+        const collectorPhone = profile?.phone || user.phone || "";
+        const collectorEmail = profile?.email || user.email || "";
+
         const { data: foodObj } = await supabase.from("foods").select("name").eq("id", foodId).single();
-        const foodName = foodObj?.name || "food post";
+        const foodName = foodObj?.name || "your food post";
+
+        const contactDetails: string[] = [];
+        if (collectorPhone) contactDetails.push(`📞 ${collectorPhone}`);
+        if (collectorEmail) contactDetails.push(`✉️ ${collectorEmail}`);
+        const contactStr = contactDetails.length > 0 ? ` (${contactDetails.join(" · ")})` : "";
+
         const title = "Food Claimed! 🍱";
-        const message = `${collectorName} booked ${portions} portion(s) of your ${foodName}!`;
+        const message = `${collectorName}${contactStr} booked ${portions} portion(s) of your "${foodName}"! Please ensure food is handed over and mark as collected.`;
 
         try {
           await supabase.from("notifications").insert({

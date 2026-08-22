@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal, Platform, useWindowDimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Modal, Platform, Alert, useWindowDimensions, Animated } from 'react-native';
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -101,6 +101,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const isDesktop = width > 768;
 
   const { foods } = useAllFoods();
+
+  const { markDonated } = useTransactions();
 
   const {
     notifications,
@@ -311,21 +313,66 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   return <Text style={styles.emptyNotifText}>No active notifications for today</Text>;
                 }
 
-                return activeRecentNotifs.map((n) => (
-                  <TouchableOpacity
-                    key={n.id}
-                    onPress={() => {
-                      markAsRead(n.id);
-                      setDrawerOpen(false);
-                      if (n.food_id) navigation.navigate("FoodDetail" as never, { id: n.food_id } as never);
-                    }}
-                    style={[styles.notifCard, !n.is_read && styles.notifUnread]}
-                  >
-                    <Text style={styles.notifTitle}>{n.title}</Text>
-                    <Text style={styles.notifMessage}>{n.message}</Text>
-                    <Text style={styles.notifTime}>{formatTimeAgo(n.created_at)}</Text>
-                  </TouchableOpacity>
-                ));
+                return activeRecentNotifs.map((n) => {
+                  const isClaimNotif = n.title.includes("Claimed") || n.title.includes("Booked");
+
+                  return (
+                    <View
+                      key={n.id}
+                      style={[styles.notifCard, !n.is_read && styles.notifUnread]}
+                    >
+                      <TouchableOpacity
+                        onPress={() => {
+                          markAsRead(n.id);
+                          setDrawerOpen(false);
+                          if (n.food_id) navigation.navigate("FoodDetail" as never, { id: n.food_id } as never);
+                        }}
+                      >
+                        <Text style={styles.notifTitle}>{n.title}</Text>
+                        <Text style={styles.notifMessage}>{n.message}</Text>
+                        <Text style={styles.notifTime}>{formatTimeAgo(n.created_at)}</Text>
+                      </TouchableOpacity>
+
+                      {isClaimNotif && n.food_id && (
+                        <View style={styles.notifActionsRow}>
+                          <TouchableOpacity
+                            onPress={async () => {
+                              try {
+                                const { data: txs } = await supabase
+                                  .from("transactions")
+                                  .select("id")
+                                  .eq("food_id", n.food_id)
+                                  .neq("status", "completed")
+                                  .neq("status", "cancelled");
+
+                                if (txs && txs.length > 0) {
+                                  for (const tx of txs) {
+                                    await markDonated(tx.id);
+                                  }
+                                } else {
+                                  await supabase.from("foods").update({ status: "collected", realtime_status: "Not Available" }).eq("id", n.food_id);
+                                }
+
+                                markAsRead(n.id);
+                                if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+                                  window.alert("🎉 Marked food as collected & handed over!");
+                                } else {
+                                  Alert.alert("Success", "Marked food as collected & handed over!");
+                                }
+                              } catch (err) {
+                                console.warn("Error marking collected from notification:", err);
+                              }
+                            }}
+                            style={styles.notifCollectedBtn}
+                          >
+                            <Ionicons name="checkmark-circle" size={15} color="#FFFFFF" />
+                            <Text style={styles.notifCollectedBtnText}>Mark Collected / Handed Over</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  );
+                });
               })()}
             </ScrollView>
           </View>
@@ -759,5 +806,26 @@ const styles = StyleSheet.create({
   },
   langTextActive: {
     color: '#15803D',
+  },
+  notifActionsRow: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  notifCollectedBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#16A34A',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  notifCollectedBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });
