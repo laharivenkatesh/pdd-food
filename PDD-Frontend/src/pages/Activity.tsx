@@ -209,18 +209,20 @@ export default function Activity() {
         </View>
       </View>
 
-      {/* Recommendation Banner (Matching Images 1 & 3) */}
+      {/* Recommendation Banner */}
       <View style={styles.recommendationBanner}>
         <Ionicons name="information-circle" size={22} color="#D97706" />
         <View style={{ flex: 1 }}>
           <Text style={styles.recommendationTitle}>Recommendation</Text>
           <Text style={styles.recommendationText}>
-            Food rescue efficiency is optimal! You prevented {(userStats.postsMade * 1.8 + 8.2).toFixed(1)}kg of CO2 greenhouse gas emissions this month.
+            {userStats.postsMade > 0 || userStats.mealsCollected > 0
+              ? `Food rescue efficiency is optimal! You prevented ${(userStats.postsMade * 1.8).toFixed(1)}kg of CO2 greenhouse gas emissions.`
+              : "Welcome to Zerra! Post surplus food or claim nearby meals to start preventing food waste & CO2 emissions."}
           </Text>
         </View>
       </View>
 
-      {/* Analytics Activity Trends Bar Chart Card (Matching Image 3) */}
+      {/* Analytics Activity Trends Bar Chart Card */}
       <View style={styles.chartCard}>
         <View style={styles.chartHeader}>
           <Ionicons name="stats-chart" size={20} color="#16A34A" />
@@ -228,22 +230,28 @@ export default function Activity() {
         </View>
         
         <View style={styles.barsContainer}>
-          {[
-            { day: 'Mon', val: 40, active: false },
-            { day: 'Tue', val: 65, active: false },
-            { day: 'Wed', val: 85, active: true },
-            { day: 'Thu', val: 50, active: false },
-            { day: 'Fri', val: 95, active: true },
-            { day: 'Sat', val: 70, active: false },
-            { day: 'Sun', val: 30, active: false },
-          ].map((bar, idx) => (
-            <View key={idx} style={styles.barCol}>
-              <View style={styles.barTrack}>
-                <View style={[styles.barFill, { height: `${bar.val}%` }, bar.active && styles.barFillActive]} />
+          {(() => {
+            const totalAct = userStats.postsMade + userStats.mealsCollected;
+            const base = totalAct === 0 ? 0 : Math.min(100, totalAct * 25);
+            const bars = [
+              { day: 'Mon', val: Math.round(base * 0.4), active: false },
+              { day: 'Tue', val: Math.round(base * 0.6), active: false },
+              { day: 'Wed', val: Math.round(base * 0.8), active: base > 0 },
+              { day: 'Thu', val: Math.round(base * 0.5), active: false },
+              { day: 'Fri', val: Math.min(100, base), active: base > 0 },
+              { day: 'Sat', val: Math.round(base * 0.7), active: false },
+              { day: 'Sun', val: Math.round(base * 0.3), active: false },
+            ];
+
+            return bars.map((bar, idx) => (
+              <View key={idx} style={styles.barCol}>
+                <View style={styles.barTrack}>
+                  <View style={[styles.barFill, { height: `${bar.val}%` }, bar.active && styles.barFillActive]} />
+                </View>
+                <Text style={[styles.barDayText, bar.active && styles.barDayTextActive]}>{bar.day}</Text>
               </View>
-              <Text style={[styles.barDayText, bar.active && styles.barDayTextActive]}>{bar.day}</Text>
-            </View>
-          ))}
+            ));
+          })()}
         </View>
       </View>
 
@@ -257,17 +265,23 @@ export default function Activity() {
           <View style={styles.badgeItem}>
             <Text style={styles.badgeIcon}>🏆</Text>
             <Text style={styles.badgeName}>Zero-Waste Hero</Text>
-            <Text style={styles.badgeStatusUnlocked}>Unlocked</Text>
+            <Text style={userStats.postsMade >= 1 || userStats.mealsCollected >= 1 ? styles.badgeStatusUnlocked : styles.badgeStatusProgress}>
+              {userStats.postsMade >= 1 || userStats.mealsCollected >= 1 ? "Unlocked" : "Locked"}
+            </Text>
           </View>
           <View style={styles.badgeItem}>
             <Text style={styles.badgeIcon}>🌟</Text>
             <Text style={styles.badgeName}>Super Donor</Text>
-            <Text style={styles.badgeStatusUnlocked}>Unlocked</Text>
+            <Text style={userStats.postsMade >= 3 ? styles.badgeStatusUnlocked : styles.badgeStatusProgress}>
+              {userStats.postsMade >= 3 ? "Unlocked" : `${userStats.postsMade}/3 Posts`}
+            </Text>
           </View>
           <View style={styles.badgeItem}>
             <Text style={styles.badgeIcon}>🛡️</Text>
             <Text style={styles.badgeName}>Food Guardian</Text>
-            <Text style={styles.badgeStatusUnlocked}>Unlocked</Text>
+            <Text style={userStats.pickupSuccess >= 90 && (userStats.postsMade > 0 || userStats.mealsCollected > 0) ? styles.badgeStatusUnlocked : styles.badgeStatusProgress}>
+              {userStats.pickupSuccess >= 90 && (userStats.postsMade > 0 || userStats.mealsCollected > 0) ? "Unlocked" : "In Progress"}
+            </Text>
           </View>
           <View style={styles.badgeItem}>
             <Text style={styles.badgeIcon}>🍃</Text>
@@ -283,35 +297,54 @@ export default function Activity() {
           <Ionicons name="pie-chart-outline" size={20} color="#0284C7" />
           <Text style={styles.widgetTitle}>Rescued Food Breakdown</Text>
         </View>
-        <View style={styles.categoryList}>
-          <View style={styles.categoryRow}>
-            <View style={styles.categoryLabelRow}>
-              <Text style={styles.categoryName}>🍲 Cooked Meals & Dishes</Text>
-              <Text style={styles.categoryPct}>48%</Text>
+        {(() => {
+          if (posts.length === 0) {
+            return (
+              <Text style={{ fontSize: 13, color: '#64748B', textAlign: 'center', paddingVertical: 12 }}>
+                No food posts created yet to display category breakdown.
+              </Text>
+            );
+          }
+          const cookedCount = posts.filter(p => p.category === "Veg" || p.category === "Non-Veg" || p.category === "Fried" || p.category === "Sweets").length;
+          const bakeryCount = posts.filter(p => p.category === "Bakery").length;
+          const produceCount = posts.length - cookedCount - bakeryCount;
+
+          const cookedPct = Math.round((cookedCount / posts.length) * 100);
+          const bakeryPct = Math.round((bakeryCount / posts.length) * 100);
+          const producePct = Math.max(0, 100 - cookedPct - bakeryPct);
+
+          return (
+            <View style={styles.categoryList}>
+              <View style={styles.categoryRow}>
+                <View style={styles.categoryLabelRow}>
+                  <Text style={styles.categoryName}>🍲 Cooked Meals & Dishes</Text>
+                  <Text style={styles.categoryPct}>{cookedPct}%</Text>
+                </View>
+                <View style={styles.categoryTrack}>
+                  <View style={[styles.categoryFill, { width: `${cookedPct}%`, backgroundColor: '#16A34A' }]} />
+                </View>
+              </View>
+              <View style={styles.categoryRow}>
+                <View style={styles.categoryLabelRow}>
+                  <Text style={styles.categoryName}>🥦 Fresh Produce & Fruits</Text>
+                  <Text style={styles.categoryPct}>{producePct}%</Text>
+                </View>
+                <View style={styles.categoryTrack}>
+                  <View style={[styles.categoryFill, { width: `${producePct}%`, backgroundColor: '#0284C7' }]} />
+                </View>
+              </View>
+              <View style={styles.categoryRow}>
+                <View style={styles.categoryLabelRow}>
+                  <Text style={styles.categoryName}>🍞 Bakery & Packaged Foods</Text>
+                  <Text style={styles.categoryPct}>{bakeryPct}%</Text>
+                </View>
+                <View style={styles.categoryTrack}>
+                  <View style={[styles.categoryFill, { width: `${bakeryPct}%`, backgroundColor: '#D97706' }]} />
+                </View>
+              </View>
             </View>
-            <View style={styles.categoryTrack}>
-              <View style={[styles.categoryFill, { width: '48%', backgroundColor: '#16A34A' }]} />
-            </View>
-          </View>
-          <View style={styles.categoryRow}>
-            <View style={styles.categoryLabelRow}>
-              <Text style={styles.categoryName}>🥦 Fresh Produce & Fruits</Text>
-              <Text style={styles.categoryPct}>32%</Text>
-            </View>
-            <View style={styles.categoryTrack}>
-              <View style={[styles.categoryFill, { width: '32%', backgroundColor: '#0284C7' }]} />
-            </View>
-          </View>
-          <View style={styles.categoryRow}>
-            <View style={styles.categoryLabelRow}>
-              <Text style={styles.categoryName}>🍞 Bakery & Packaged Foods</Text>
-              <Text style={styles.categoryPct}>20%</Text>
-            </View>
-            <View style={styles.categoryTrack}>
-              <View style={[styles.categoryFill, { width: '20%', backgroundColor: '#D97706' }]} />
-            </View>
-          </View>
-        </View>
+          );
+        })()}
       </View>
 
       {/* My Donations Section */}

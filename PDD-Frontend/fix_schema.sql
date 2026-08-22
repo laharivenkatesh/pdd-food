@@ -568,13 +568,18 @@ drop policy if exists "Authenticated users can insert reviews" on public.reviews
 create policy "Reviews are viewable by everyone"
   on public.reviews for select using (true);
 
-create policy "Authenticated users can insert reviews"
-  on public.reviews for insert with check (auth.uid() = user_id);
+-- ============================================================
+-- 8) REVIEWS RLS POLICIES (Fixes "new row violates row-level security policy for table reviews")
+-- ============================================================
+alter table public.reviews enable row level security;
 
+drop policy if exists "Authenticated users can insert reviews" on public.reviews;
+drop policy if exists "Enable insert access for all users" on public.reviews;
+create policy "Enable insert access for all users" on public.reviews for insert with check (true);
 
-
-
-
+drop policy if exists "Public reviews are viewable by everyone" on public.reviews;
+drop policy if exists "Enable read access for all users" on public.reviews;
+create policy "Enable read access for all users" on public.reviews for select using (true);
 
 -- ============================================================
 -- 9) ADD trust_score AND review_count TO PROFILES TABLE

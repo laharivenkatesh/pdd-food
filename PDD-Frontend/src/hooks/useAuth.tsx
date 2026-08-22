@@ -166,7 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           phone: dbProfile?.phone || session.user.user_metadata?.phone || "",
           created_at: session.user.created_at,
           role: session.user.user_metadata?.role || "Community Member",
-          trustScore: dbProfile?.trust_score ? Number(dbProfile.trust_score) : 4.8,
+          trustScore: typeof dbProfile?.trust_score === "number" && dbProfile.trust_score >= 1 ? Number(dbProfile.trust_score) : null,
           reviewCount: 0,
         };
 

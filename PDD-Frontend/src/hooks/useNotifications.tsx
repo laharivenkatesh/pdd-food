@@ -270,7 +270,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       )
       .subscribe();
 
-    // Real-time listener for new food posts across community with location filtering
+    // Real-time listener for new food posts across community to sync notification list
     const foodChannelId = `foods-broadcast-${user.id}-${Math.random().toString(36).substring(2, 9)}`;
     const foodChannel = supabase
       .channel(foodChannelId)
@@ -281,71 +281,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           schema: "public",
           table: "foods",
         },
-        async (payload) => {
-          const newFood = payload.new as any;
-          if (newFood && newFood.user_id !== user.id) {
-            let isNearby = true;
-            let distText = "";
-
-            const foodLat = Number(newFood.lat);
-            const foodLng = Number(newFood.lng);
-
-            if (!isNaN(foodLat) && !isNaN(foodLng)) {
-              try {
-                const { data: myProfile } = await supabase.from("profiles").select("lat, lng").eq("id", user.id).single();
-                if (myProfile && myProfile.lat && myProfile.lng) {
-                  const myLat = Number(myProfile.lat);
-                  const myLng = Number(myProfile.lng);
-                  if (!isNaN(myLat) && !isNaN(myLng) && myLat !== 0 && myLng !== 0) {
-                    const R = 6371;
-                    const dLat = ((myLat - foodLat) * Math.PI) / 180;
-                    const dLon = ((myLng - foodLng) * Math.PI) / 180;
-                    const a =
-                      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos((foodLat * Math.PI) / 180) *
-                      Math.cos((myLat * Math.PI) / 180) *
-                      Math.sin(dLon / 2) *
-                      Math.sin(dLon / 2);
-                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                    const distKm = R * c;
-                    isNearby = distKm <= 50; // Within 50km radius
-                    distText = distKm < 1 ? ` (${Math.round(distKm * 1000)}m away)` : ` (${distKm.toFixed(1)}km away)`;
-                  }
-                }
-              } catch (e) {}
-            }
-
-            if (isNearby) {
-              const title = "🍱 Fresh Food Available Nearby!";
-              const message = `A community donor just posted "${newFood.name}"${distText}. Tap to view and claim!`;
-
-              try {
-                const { data: inserted } = await supabase
-                  .from("notifications")
-                  .insert({
-                    user_id: user.id,
-                    food_id: newFood.id,
-                    title,
-                    message,
-                    is_read: false,
-                  })
-                  .select()
-                  .single();
-
-                if (inserted) {
-                  setNotifications((prev) => [inserted, ...prev]);
-                }
-              } catch (e) {}
-
-              if (soundEnabled) playNotificationSound();
-              sendNativeStatusBarNotification(title, message);
-            }
-          }
+        async () => {
+          refresh();
         }
       )
       .subscribe();
 
-    // Real-time listener for food claims/bookings on user's posted foods
+    // Real-time listener for food claims/bookings to sync notification list
     const txChannelId = `txs-broadcast-${user.id}-${Math.random().toString(36).substring(2, 9)}`;
     const txChannel = supabase
       .channel(txChannelId)
@@ -356,40 +298,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           schema: "public",
           table: "transactions",
         },
-        async (payload) => {
-          const newTx = payload.new as any;
-          if (newTx && newTx.donor_id === user.id && newTx.collector_id !== user.id) {
-            try {
-              const { data: foodObj } = await supabase.from("foods").select("name").eq("id", newTx.food_id).single();
-              const { data: collectorProfile } = await supabase.from("profiles").select("name").eq("id", newTx.collector_id).single();
-              
-              const foodName = foodObj?.name || "your food post";
-              const collectorName = collectorProfile?.name || "A community member";
-              const title = "Food Claimed! 🍱";
-              const message = `${collectorName} booked ${newTx.portions || 1} portion(s) of your ${foodName}!`;
-
-              const { data: inserted } = await supabase
-                .from("notifications")
-                .insert({
-                  user_id: user.id,
-                  food_id: newTx.food_id,
-                  title,
-                  message,
-                  is_read: false,
-                })
-                .select()
-                .single();
-
-              if (inserted) {
-                setNotifications((prev) => [inserted, ...prev]);
-              }
-
-              if (soundEnabled) playNotificationSound();
-              sendNativeStatusBarNotification(title, message);
-            } catch (e) {
-              console.warn("Tx realtime notification notice:", e);
-            }
-          }
+        async () => {
+          refresh();
         }
       )
       .subscribe();
