@@ -369,23 +369,27 @@ const getCategoryStyle = (category: string) => {
                         </TouchableOpacity>
                       ) : null}
 
-                      {t.status === "completed" ? (
-                        <View style={styles.completedBadgeBox}>
-                          <Ionicons name="checkmark-done-circle" size={16} color="#15803D" />
-                          <Text style={styles.completedBadgeText}>Handed Over</Text>
-                        </View>
-                      ) : (
-                        <TouchableOpacity
-                          onPress={async () => {
-                            await markDonated(t.id);
-                            Alert.alert("Handed Over! 🎉", "Marked as completed.");
-                          }}
-                          style={styles.completeBtn}
-                        >
-                          <Ionicons name="checkmark-circle" size={14} color="#16A34A" />
-                          <Text style={styles.completeBtnText}>Mark Handed Over</Text>
-                        </TouchableOpacity>
-                      )}
+                      <TouchableOpacity
+                        onPress={async () => {
+                          await markDonated(t.id);
+                          const successMsg = `Handed over ${t.portions} portion(s) to collector! Real-time notification sent.`;
+                          if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+                            window.alert(`Handed Over! 🎉\n${successMsg}`);
+                          } else {
+                            Alert.alert("Handed Over! 🎉", successMsg);
+                          }
+                        }}
+                        style={[styles.completeBtn, t.status === "completed" && styles.completeBtnDone]}
+                      >
+                        <Ionicons
+                          name={t.status === "completed" ? "checkmark-done-circle" : "checkmark-circle"}
+                          size={14}
+                          color={t.status === "completed" ? "#15803D" : "#16A34A"}
+                        />
+                        <Text style={[styles.completeBtnText, t.status === "completed" && styles.completeBtnTextDone]}>
+                          {t.status === "completed" ? "Handed Over ✓ (Click to resend)" : "Mark Handed Over"}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 );
@@ -848,5 +852,12 @@ const styles = StyleSheet.create({
     color: '#15803D',
     fontSize: 12,
     fontWeight: '800',
+  },
+  completeBtnDone: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#86EFAC',
+  },
+  completeBtnTextDone: {
+    color: '#15803D',
   },
 });
