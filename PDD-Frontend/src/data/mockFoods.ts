@@ -1,10 +1,10 @@
 import { FoodItem, Provider } from "@/types/food";
 
 const providers: Provider[] = [
-  { id: "p1", name: "Anita's Kitchen", trustScore: 4.8, badges: ["Consistent Provider", "Food Saver"], streak: 12, reliability: "high", avatar: "👩‍🍳" },
-  { id: "p2", name: "Spice Junction", trustScore: 4.5, badges: ["Top Contributor"], streak: 5, reliability: "high", avatar: "🍛" },
-  { id: "p3", name: "Sunrise Bakery", trustScore: 4.2, badges: ["Quick Rescuer"], streak: 3, reliability: "high", avatar: "🥐" },
-  { id: "p4", name: "Raj's Tiffin", trustScore: 3.4, badges: ["Regular Helper"], streak: 1, reliability: "low", avatar: "🍱" },
+  { id: "p1", name: "Anita's Kitchen", trustScore: 4.8, reviewCount: 2, badges: ["Consistent Provider", "Food Saver"], streak: 12, reliability: "high", avatar: "👩‍🍳" },
+  { id: "p2", name: "Spice Junction", trustScore: 4.5, reviewCount: 1, badges: ["Top Contributor"], streak: 5, reliability: "high", avatar: "🍛" },
+  { id: "p3", name: "Sunrise Bakery", trustScore: 4.2, reviewCount: 1, badges: ["Quick Rescuer"], streak: 3, reliability: "high", avatar: "🥐" },
+  { id: "p4", name: "Raj's Tiffin", trustScore: 3.4, reviewCount: 1, badges: ["Regular Helper"], streak: 1, reliability: "low", avatar: "🍱" },
 ];
 
 export const mockFoods: FoodItem[] = [

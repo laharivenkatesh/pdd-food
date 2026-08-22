@@ -36,17 +36,57 @@ function resolveImageUrl(image: string | null | undefined): string {
   return data?.publicUrl || '';
 }
 
+/**
+ * Calculate a real average rating from an array of review rows.
+ * Returns null when there are no reviews (new / unrated provider).
+ * Only counts reviews whose rating is a valid integer 1–5.
+ */
+function calcAvgRating(reviews: any[]): number | null {
+  if (!reviews || reviews.length === 0) return null;
+  const valid = reviews.filter(
+    (r) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+  );
+  if (valid.length === 0) return null;
+  const total = valid.reduce((sum: number, r: any) => sum + r.rating, 0);
+  return Number((total / valid.length).toFixed(1));
+}
+
 function mapRow(row: any): FoodItem {
   const profileInfo = row.profiles || {};
 
-  // Calculate donor's real trust score rating from profile or reviews
-  const reviewsArr = row.reviews || [];
-  let calculatedScore: number | null = profileInfo.trust_score ? Number(profileInfo.trust_score) : null;
-  if (!calculatedScore && reviewsArr.length > 0) {
-    const sum = reviewsArr.reduce((s: number, r: any) => s + (r.rating || 5), 0);
-    calculatedScore = Number((sum / reviewsArr.length).toFixed(1));
+  // Provider trust score: prefer DB value from profiles.trust_score.
+  // If absent or unrated, strictly set to null so UI displays "No rating yet" (no 5-star defaults for new users)
+  const rawProfileScore = profileInfo.trust_score;
+  const providerTrustScore: number | null =
+    typeof rawProfileScore === "number" &&
+    rawProfileScore >= 1 &&
+    rawProfileScore <= 5
+      ? Number(rawProfileScore.toFixed(1))
+      : null;
+
+  const providerReviewCount: number =
+    typeof profileInfo.review_count === "number" && profileInfo.review_count > 0
+      ? profileInfo.review_count
+      : 0;
+
+  // Food-level trust score: calculated live from reviews on this specific food item
+  const mappedReviews = (row.reviews || []).map((r: any) => ({
+    id: r.id,
+    user: r.user_name || "Anonymous",
+    rating: r.rating,
+    comment: r.comment,
+    date: new Date(r.created_at).toLocaleDateString(),
+  }));
+  const foodTrustScore = calcAvgRating(row.reviews || []);
+
+  // Dynamically sum booked portions from transactions if present
+  let dynamicBookedPortions = row.booked_portions || 0;
+  if (Array.isArray(row.transactions) && row.transactions.length > 0) {
+    const txPortions = row.transactions
+      .filter((t: any) => t.status !== "cancelled")
+      .reduce((sum: number, t: any) => sum + (t.portions || 1), 0);
+    dynamicBookedPortions = Math.max(dynamicBookedPortions, txPortions);
   }
-  const realScore = calculatedScore !== null ? calculatedScore : 5.0;
 
   return {
     id: row.id,
@@ -69,20 +109,15 @@ function mapRow(row: any): FoodItem {
     notes: row.notes,
     allowSplit: row.allow_split,
     postedAt: row.created_at,
-    bookedPortions: row.booked_portions || 0,
-    trustScore: realScore,
+    bookedPortions: dynamicBookedPortions,
+    trustScore: foodTrustScore,
     confidence: "High",
-    reviews: reviewsArr.map((r: any) => ({
-      id: r.id,
-      user: r.user_name || "Anonymous",
-      rating: r.rating,
-      comment: r.comment,
-      date: new Date(r.created_at).toLocaleDateString(),
-    })),
+    reviews: mappedReviews,
     provider: {
       id: row.user_id,
       name: profileInfo.name || "Community Donor",
-      trustScore: realScore,
+      trustScore: providerTrustScore,
+      reviewCount: providerReviewCount,
       badges: ["🌱 Donor"],
       streak: 3,
       reliability: "high",
@@ -119,7 +154,8 @@ async function cleanupExpiredImages(rawData: any[]) {
 }
 
 async function fetchFoodsQuery(userId?: string) {
-  let query = supabase.from("foods").select("*, profiles(*)");
+  // Join profiles (for trust_score, review_count), reviews (for per-food live scores), and transactions (for dynamic booked_portions)
+  let query = supabase.from("foods").select("*, profiles(*), reviews(id, rating, user_name, comment, created_at), transactions(portions, status)");
   if (userId) {
     query = query.eq("user_id", userId);
   }
@@ -128,7 +164,8 @@ async function fetchFoodsQuery(userId?: string) {
   const res = await query;
   let result = res;
   if (res.error) {
-    let fallbackQuery = supabase.from("foods").select("*");
+    // Fallback: at least fetch profiles and reviews so trust_score is available
+    let fallbackQuery = supabase.from("foods").select("*, profiles(*), reviews(id, rating, user_name, comment, created_at)");
     if (userId) {
       fallbackQuery = fallbackQuery.eq("user_id", userId);
     }

@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "jsx": "react-jsx",
     "noEmit": true,
@@ -18,8 +22,15 @@
     "types": [],
     "typeRoots": [],
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     }
   },
-  "exclude": ["node_modules", "babel.config.js", "src/test"]
+  "exclude": [
+    "node_modules",
+    "babel.config.js",
+    "src/test"
+  ],
+  "extends": "expo/tsconfig.base"
 }

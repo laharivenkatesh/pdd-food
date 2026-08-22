@@ -44,8 +44,10 @@ const userSchema = new mongoose.Schema(
       default: 1,
     },
     trustScore: {
+      // null = no reviews yet. Never assign a default numeric value.
+      // This field must only be updated when real reviews are submitted.
       type: Number,
-      default: 4.5,
+      default: null,
     },
     createdDate: {
       type: Date,

@@ -202,10 +202,12 @@ const getCategoryStyle = (category: string) => {
         <View style={styles.portionsCard}>
           <View style={styles.portionsHeader}>
             <Text style={styles.portionsLabel}>Portions Booked</Text>
-            <Text style={styles.portionsVal}>{booked} / {total} Claimed</Text>
+            <Text style={[styles.portionsVal, isFullyBooked && { color: "#EF4444" }]}>
+              {booked} / {total} Claimed {isFullyBooked ? "🔴 Fully Booked" : ""}
+            </Text>
           </View>
           <View style={styles.progressTrack}>
-            <View style={[styles.progressBar, { width: `${(booked / total) * 100}%` }]} />
+            <View style={[styles.progressBar, { width: `${Math.min(100, (booked / total) * 100)}%`, backgroundColor: isFullyBooked ? "#EF4444" : "#16A34A" }]} />
           </View>
         </View>
 
@@ -237,7 +239,13 @@ const getCategoryStyle = (category: string) => {
             )}
             <View style={{ flex: 1 }}>
               <Text style={styles.providerName}>{food.provider.name}</Text>
-              <Text style={styles.providerSub}>⭐ {food.provider.trustScore} Trust Score</Text>
+              {food.provider.trustScore !== null && food.provider.trustScore !== undefined ? (
+                <Text style={styles.providerSub}>
+                  ⭐ {food.provider.trustScore} · {food.provider.reviewCount} {food.provider.reviewCount === 1 ? "review" : "reviews"}
+                </Text>
+              ) : (
+                <Text style={styles.providerSub}>No ratings yet</Text>
+              )}
             </View>
           </View>
         </View>
@@ -246,6 +254,17 @@ const getCategoryStyle = (category: string) => {
           <View style={styles.notesBox}>
             <Text style={styles.notesTitle}>Notes from provider</Text>
             <Text style={styles.notesText}>{food.notes}</Text>
+          </View>
+        )}
+
+        {/* Fully Booked Banner for Collectors */}
+        {!isDonor && !isCollected && isFullyBooked && (
+          <View style={styles.fullyBookedCard}>
+            <Ionicons name="lock-closed" size={28} color="#EF4444" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.fullyBookedTitle}>Fully Booked / All Portions Claimed</Text>
+              <Text style={styles.fullyBookedSub}>All portions of this food listing have already been booked by community members.</Text>
+            </View>
           </View>
         )}
 
@@ -788,5 +807,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#EF4444',
+  },
+  fullyBookedCard: {
+    backgroundColor: '#FEF2F2',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  fullyBookedTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#991B1B',
+  },
+  fullyBookedSub: {
+    fontSize: 12,
+    color: '#B91C1C',
+    marginTop: 2,
   },
 });

@@ -7,7 +7,10 @@ export type RealtimeStatus = "Still Available" | "Almost Gone" | "Not Available"
 export interface Provider {
   id: string;
   name: string;
-  trustScore: number;
+  /** null = no reviews yet; a number = real average from the reviews table */
+  trustScore: number | null;
+  /** How many real reviews this provider has received */
+  reviewCount: number;
   badges: string[];
   streak: number;
   reliability: "high" | "low";
@@ -41,7 +44,8 @@ export interface FoodItem {
   safeForAnimals: boolean;
   status: FoodStatus;
   realtimeStatus: RealtimeStatus;
-  trustScore: number;
+  /** null = provider has no reviews yet */
+  trustScore: number | null;
   confidence: Confidence;
   quantity: string;
   notes?: string;

@@ -574,3 +574,13 @@ create policy "Authenticated users can insert reviews"
 
 
 
+
+
+-- ============================================================
+-- 9) ADD trust_score AND review_count TO PROFILES TABLE
+--    Run this in Supabase SQL Editor to support the rating fix.
+--    trust_score = real average from reviews (null = no reviews yet)
+--    review_count = total valid reviews received by this provider
+-- ============================================================
+alter table public.profiles add column if not exists trust_score numeric(3,1) check (trust_score >= 1 and trust_score <= 5);
+alter table public.profiles add column if not exists review_count integer not null default 0;

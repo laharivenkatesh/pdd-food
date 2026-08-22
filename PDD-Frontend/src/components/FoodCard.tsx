@@ -72,7 +72,7 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
     statusText = t('collectedBadge');
     statusBg = "#9CA3AF";
   } else if (isReserved || isFullyBooked) {
-    statusText = isFullyBooked ? t('bookedBadge') : t('bookedBadge');
+    statusText = isFullyBooked ? t('bookedBadge') : "Reserved";
     statusBg = isFullyBooked ? "#EF4444" : "#F59E0B";
   }
 
@@ -172,10 +172,12 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
               <Text style={styles.title}>{translatedTitle}</Text>
               <View style={styles.infoRow}>
                 <Text style={styles.infoText}>👥 {t('feedsPeople', { count: total })}</Text>
-                <Text style={styles.remainingText}>📊 {t('portionsLeft', { remaining, total })}</Text>
+                <Text style={[styles.remainingText, isFullyBooked && { color: "#EF4444" }]}>
+                  📊 {isFullyBooked ? `0 / ${total} Portions Left (Fully Booked)` : t('portionsLeft', { remaining, total })}
+                </Text>
               </View>
               <View style={styles.progressTrack}>
-                <View style={[styles.progressBar, { width: `${(remaining / total) * 100}%` }]} />
+                <View style={[styles.progressBar, { width: `${(remaining / total) * 100}%`, backgroundColor: isFullyBooked ? "#EF4444" : "#16A34A" }]} />
               </View>
             </View>
             <View>
@@ -225,15 +227,27 @@ export default function FoodCard({ food }: { key?: React.Key; food: FoodItem }) 
 
         <View style={styles.trustRow}>
           <View style={styles.trustScore}>
-            <Ionicons name="star" size={16} color="#F59E0B" />
-            <Text style={styles.trustScoreText}>{food.trustScore}</Text>
-            <Text style={styles.dot}>·</Text>
-            <Text style={styles.confidenceText}>{food.confidence}</Text>
+            {food.trustScore !== null && food.trustScore !== undefined ? (
+              <>
+                <Ionicons name="star" size={16} color="#F59E0B" />
+                <Text style={styles.trustScoreText}>{food.trustScore}</Text>
+                {food.reviews && food.reviews.length > 0 && (
+                  <>
+                    <Text style={styles.dot}>·</Text>
+                    <Text style={styles.confidenceText}>
+                      {food.reviews.length} {food.reviews.length === 1 ? "review" : "reviews"}
+                    </Text>
+                  </>
+                )}
+              </>
+            ) : (
+              <Text style={styles.noRatingText}>No ratings yet</Text>
+            )}
           </View>
         </View>
 
         <View style={styles.actionsRow}>
-          {!isDonor && !isCollected && ((food.feeds || 1) - (food.bookedPortions || 0) > 0) ? (
+          {!isDonor && !isCollected && !isReserved && !isFullyBooked && ((food.feeds || 1) - (food.bookedPortions || 0) > 0) ? (
             <TouchableOpacity
               onPress={() => navigation.navigate("FoodDetail" as never, { id: food.id } as never)}
               style={styles.btnBook}
@@ -472,6 +486,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#16A34A',
+  },
+  noRatingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    fontStyle: 'italic',
   },
   actionsRow: {
     flexDirection: 'row',

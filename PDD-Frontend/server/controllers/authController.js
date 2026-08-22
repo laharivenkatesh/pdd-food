@@ -223,7 +223,8 @@ export const verifyOtp = async (req, res) => {
           phone: phone || undefined,
           password: password || undefined,
           streak: 1,
-          trustScore: 4.5,
+          trustScore: null,   // null = no reviews yet, never a fake default
+          reviewCount: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         };

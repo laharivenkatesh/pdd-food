@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import FoodCard from "@/components/FoodCard";
 import Chip from "@/components/Chip";
 import { useAllFoods } from "@/hooks/useMyPosts";
+import { FoodItem } from "@/types/food";
 import { useTransactions } from "@/hooks/useTransactions";
 import { openInGoogleMaps } from "@/components/MapPreview";
 import { useNavigation } from "@react-navigation/native";
@@ -153,9 +154,16 @@ export default function Home() {
   const list = useMemo(() => {
     let arr = [...dbFoods];
     const now = Date.now();
+    
+    // 1. Filter out expired, deleted, collected, and fully booked food posts
     arr = arr.filter((f) => {
       const { primaryExpiry } = getFoodTimes(f);
-      return now < primaryExpiry && f.status !== "collected" && (f.status as string) !== "deleted";
+      const isExpired = now >= primaryExpiry;
+      const isCollected = f.status === "collected";
+      const isDeleted = (f.status as string) === "deleted";
+      const isFullyBooked = (f.bookedPortions || 0) >= (f.feeds || 1) || f.status === "reserved" || (f.status as string) === "booked" || f.realtimeStatus === "Not Available";
+      
+      return !isExpired && !isCollected && !isDeleted && !isFullyBooked;
     });
 
     if (userLoc) {
@@ -164,17 +172,31 @@ export default function Home() {
       );
     }
 
-    // Sort: Move self-posted food items to the bottom of the feed
-    if (user?.id) {
-      arr.sort((a, b) => {
-        const isSelfA = a.provider.id === user.id ? 1 : 0;
-        const isSelfB = b.provider.id === user.id ? 1 : 0;
-        return isSelfA - isSelfB;
-      });
-    }
+    // 2. Rating-Based Feed Ranking:
+    // Sort posts strictly by provider rating (5-star posters displayed first, followed by lower ratings, then unrated posters).
+    // If ratings are equal or both null, fall back to newest posted date.
+    const getEffectiveScore = (item: FoodItem) => {
+      if (item.provider.trustScore !== null && item.provider.trustScore !== undefined) return item.provider.trustScore;
+      if (item.trustScore !== null && item.trustScore !== undefined) return item.trustScore;
+      return -1; // Unrated posters placed below rated ones
+    };
+
+    arr.sort((a, b) => {
+      const scoreA = getEffectiveScore(a);
+      const scoreB = getEffectiveScore(b);
+
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA; // High score (e.g. 5.0) comes first at the top
+      }
+
+      // If scores match, newest post first
+      const timeA = new Date(a.postedAt).getTime();
+      const timeB = new Date(b.postedAt).getTime();
+      return timeB - timeA;
+    });
 
     return arr;
-  }, [dbFoods, userLoc, user?.id]);
+  }, [dbFoods, userLoc]);
 
   const nearbyNGOs = useMemo(() => {
     let filtered = ngosList;

@@ -1,3 +1,4 @@
+import * as RN from 'react-native';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Platform, Animated, ActivityIndicator } from 'react-native';
 import React, { Component, ErrorInfo, ReactNode } from "react";
 let ExpoSplashScreen: any = null;
@@ -20,6 +21,14 @@ if (typeof window !== 'undefined') {
       document.body.style.backgroundColor = '#1C7B50';
     }
   } catch (e) {}
+  if (!(RN as any).NativeEventEmitter) {
+    (RN as any).NativeEventEmitter = class NativeEventEmitter {
+      addListener() { return { remove: () => {} }; }
+      removeSubscription() {}
+      removeAllListeners() {}
+      emit() {}
+    };
+  }
 }
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

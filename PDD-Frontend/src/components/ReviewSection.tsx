@@ -54,6 +54,27 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
 
     setSubmitting(true);
     try {
+      // Verify eligibility: User must have claimed/collected this food item (or be the owner/collector)
+      const { data: userTxs } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("food_id", foodId)
+        .eq("collector_id", user.id);
+
+      const hasClaimed = userTxs && userTxs.length > 0;
+      const isOwner = user.id === providerId;
+
+      if (!hasClaimed && !isOwner) {
+        const notEligibleMsg = "Only community members who have booked or collected this food post can leave a rating & review!";
+        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+          window.alert(notEligibleMsg);
+        } else {
+          Alert.alert("Review Eligibility", notEligibleMsg);
+        }
+        setSubmitting(false);
+        return;
+      }
+
       const userName = profile?.name || user.email?.split("@")[0] || "Community Member";
 
       const { data, error } = await supabase
@@ -79,7 +100,8 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
         return;
       }
 
-      // Recalculate provider's overall trust score rating across all their foods
+      // Recalculate provider's overall trust score and review count across all their foods.
+      // Uses only valid ratings (integer 1–5). Never defaults a missing rating to 5.
       if (providerId) {
         try {
           const { data: providerFoods } = await supabase
@@ -94,12 +116,26 @@ export default function ReviewSection({ foodId, providerId, initial }: ReviewSec
               .select("rating")
               .in("food_id", foodIds);
 
-            if (allProviderReviews && allProviderReviews.length > 0) {
-              const totalRating = allProviderReviews.reduce((sum: number, r: any) => sum + (r.rating || 5), 0);
-              const avgScore = Number((totalRating / allProviderReviews.length).toFixed(1));
+            // Only count reviews with a valid rating in [1, 5]
+            const validReviews = (allProviderReviews || []).filter(
+              (r: any) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+            );
+
+            if (validReviews.length > 0) {
+              const totalRating = validReviews.reduce((sum: number, r: any) => sum + r.rating, 0);
+              const avgScore = Number((totalRating / validReviews.length).toFixed(1));
               await supabase
                 .from("profiles")
-                .update({ trust_score: avgScore })
+                .update({
+                  trust_score: avgScore,
+                  review_count: validReviews.length,
+                })
+                .eq("id", providerId);
+            } else {
+              // No valid reviews → clear the score so the UI shows "No ratings yet"
+              await supabase
+                .from("profiles")
+                .update({ trust_score: null, review_count: 0 })
                 .eq("id", providerId);
             }
           }

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Platform, Animated } from 'react-native';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/hooks/useAuth";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -16,8 +16,45 @@ export default function Activity() {
 
   const [activeTab, setActiveTab] = useState<"overview" | "history">("overview");
 
+  const hasRating = profile?.trustScore !== null && profile?.trustScore !== undefined;
+  const realRating = hasRating ? Number(profile.trustScore) : null;
+
+  // Dynamic Zero-Waste Score Calculation (0 to 100)
+  const scoreVal = useMemo(() => {
+    if (!profile) return 0;
+    if (userStats.postsMade === 0 && userStats.mealsCollected === 0 && !hasRating) {
+      return 0; // New member with no activity
+    }
+    const ratingPart = hasRating ? ((realRating || 0) / 5) * 50 : 25;
+    const pickupPart = ((userStats.pickupSuccess || 0) / 100) * 35;
+    const activityPart = Math.min(15, (userStats.postsMade + userStats.mealsCollected) * 3);
+    return Math.min(100, Math.max(0, Math.round(ratingPart + pickupPart + activityPart)));
+  }, [profile, userStats, hasRating, realRating]);
+
+  // Dynamic status text pill
+  let statusText = "● New Member";
+  let statusBg = "#F3F4F6";
+  let statusColor = "#4B5563";
+  let statusDotColor = "#9CA3AF";
+
+  if (scoreVal >= 80) {
+    statusText = "● Excellent Impact";
+    statusBg = "#DCFCE7";
+    statusColor = "#15803D";
+    statusDotColor = "#16A34A";
+  } else if (scoreVal >= 50) {
+    statusText = "● Good Impact";
+    statusBg = "#FEF3C7";
+    statusColor = "#B45309";
+    statusDotColor = "#F59E0B";
+  } else if (scoreVal > 0) {
+    statusText = "● Building Impact";
+    statusBg = "#E0F2FE";
+    statusColor = "#0369A1";
+    statusDotColor = "#0284C7";
+  }
+
   // Gauge needle animated rotation
-  const scoreVal = profile?.trustScore ? Number(profile.trustScore) * 19 : 92;
   const needleAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -82,15 +119,17 @@ export default function Activity() {
           <Text style={styles.profileNameText}>{profile.name}</Text>
           {profile.email && <Text style={styles.profileDetailText}>✉️ {profile.email}</Text>}
           {profile.phone && <Text style={styles.profileDetailText}>📞 {profile.phone}</Text>}
-          <Text style={styles.profileRoleText}>⭐ Trust Rating: {profile.trustScore || "5.0"}</Text>
+          <Text style={styles.profileRoleText}>
+            ⭐ Trust Rating: {hasRating ? `${realRating} / 5.0` : "No ratings yet"}
+          </Text>
         </View>
       </View>
 
-      {/* Main Analytics Dashboard Hero Gauge (Matching Reference Images 1, 3 & 4) */}
+      {/* Main Analytics Dashboard Hero Gauge */}
       <View style={styles.gaugeCard}>
-        <View style={styles.statusPill}>
-          <View style={styles.statusDot} />
-          <Text style={styles.statusText}>● Excellent Impact</Text>
+        <View style={[styles.statusPill, { backgroundColor: statusBg }]}>
+          <View style={[styles.statusDot, { backgroundColor: statusDotColor }]} />
+          <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
         </View>
 
         {/* Semi-Circle Arc Gauge */}
@@ -106,27 +145,50 @@ export default function Activity() {
           </Animated.View>
 
           <View style={styles.gaugeCenterCircle}>
-            <Text style={styles.scoreNumber}>{scoreVal}</Text>
+            <Text style={styles.scoreNumber}>{scoreVal}%</Text>
             <Text style={styles.scoreLabel}>Zero-Waste Score</Text>
           </View>
         </View>
       </View>
 
-      {/* Metric Cards Row (4 Stat Cards - Matching Reference Image 1) */}
-      <View style={styles.metricsGrid}>
-        <View style={styles.metricCard}>
-          <View style={[styles.metricIconBox, { backgroundColor: '#FEF2F2' }]}>
-            <Ionicons name="restaurant" size={20} color="#EF4444" />
+      {/* Dynamic Personalized Profile Analytics & Quality Meter */}
+      <View style={styles.meterCard}>
+        <View style={styles.meterHeader}>
+          <View style={styles.meterHeaderLeft}>
+            <Ionicons name="speedometer" size={22} color="#16A34A" />
+            <Text style={styles.meterTitle}>Community Impact & Trust Meter</Text>
           </View>
-          <Text style={styles.metricVal}>{(userStats.postsMade * 3.5 + 12.4).toFixed(1)} kg</Text>
-          <Text style={styles.metricLabel}>Food Saved</Text>
+          <View style={styles.meterBadge}>
+            <Text style={styles.meterBadgeText}>
+              {hasRating ? `${realRating} ⭐` : "No ratings yet"}
+            </Text>
+          </View>
         </View>
 
+        {/* Dynamic Meter Gauge Calculation */}
+        <View style={styles.meterBody}>
+          <View style={styles.meterScoreRow}>
+            <Text style={[styles.meterScoreVal, { color: scoreVal >= 50 ? "#16A34A" : scoreVal > 0 ? "#F59E0B" : "#9CA3AF" }]}>{scoreVal}%</Text>
+            <Text style={styles.meterScoreLabel}>Personalized Quality Index</Text>
+          </View>
+
+          <View style={styles.meterTrack}>
+            <View style={[styles.meterFill, { width: `${scoreVal}%`, backgroundColor: scoreVal >= 50 ? "#16A34A" : scoreVal > 0 ? "#F59E0B" : "#9CA3AF" }]} />
+          </View>
+
+          <Text style={styles.meterExplanationText}>
+            💡 <Text style={{ fontWeight: '700' }}>What this meter indicates:</Text> Live personalized performance index calculated from your pickup completion rate ({userStats.postsMade > 0 || userStats.mealsCollected > 0 ? `${userStats.pickupSuccess}%` : "0%"} completion), real feedback ratings ({hasRating ? `${realRating} / 5 stars` : 'No reviews yet'}, {profile?.reviewCount || 0} reviews), and food rescue contributions.
+          </Text>
+        </View>
+      </View>
+
+      {/* Dynamic Metrics Row */}
+      <View style={styles.metricsGrid}>
         <View style={styles.metricCard}>
           <View style={[styles.metricIconBox, { backgroundColor: '#F0FDF4' }]}>
             <Ionicons name="checkmark-circle" size={20} color="#16A34A" />
           </View>
-          <Text style={styles.metricVal}>{userStats.pickupSuccess || 98}%</Text>
+          <Text style={styles.metricVal}>{userStats.postsMade > 0 || userStats.mealsCollected > 0 ? `${userStats.pickupSuccess}%` : "0%"}</Text>
           <Text style={styles.metricLabel}>Claim Success</Text>
         </View>
 
@@ -134,7 +196,7 @@ export default function Activity() {
           <View style={[styles.metricIconBox, { backgroundColor: '#F0F9FF' }]}>
             <Ionicons name="cloud-done" size={20} color="#0284C7" />
           </View>
-          <Text style={styles.metricVal}>{(userStats.postsMade * 1.8 + 8.2).toFixed(1)} kg</Text>
+          <Text style={styles.metricVal}>{(userStats.postsMade * 1.8).toFixed(1)} kg</Text>
           <Text style={styles.metricLabel}>CO2 Prevented</Text>
         </View>
 
@@ -142,7 +204,7 @@ export default function Activity() {
           <View style={[styles.metricIconBox, { backgroundColor: '#FFFBEB' }]}>
             <Ionicons name="star" size={20} color="#D97706" />
           </View>
-          <Text style={styles.metricVal}>⭐ {profile.trustScore || "5.0"}</Text>
+          <Text style={styles.metricVal}>{hasRating ? `⭐ ${realRating}` : "N/A"}</Text>
           <Text style={styles.metricLabel}>Trust Index</Text>
         </View>
       </View>
@@ -210,7 +272,7 @@ export default function Activity() {
           <View style={styles.badgeItem}>
             <Text style={styles.badgeIcon}>🍃</Text>
             <Text style={styles.badgeName}>Eco Champion</Text>
-            <Text style={styles.badgeStatusProgress}>92% Done</Text>
+            <Text style={styles.badgeStatusProgress}>{scoreVal > 0 ? `${scoreVal}% Done` : "Locked"}</Text>
           </View>
         </View>
       </View>
@@ -521,6 +583,79 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#64748B',
+  },
+  userPhone: {
+    fontSize: 11,
+    color: '#6EE7B7',
+  },
+  meterCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 12,
+  },
+  meterHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  meterHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  meterTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  meterBadge: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  meterBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#374151',
+  },
+  meterBody: {
+    gap: 8,
+  },
+  meterScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+  },
+  meterScoreVal: {
+    fontSize: 28,
+    fontWeight: '900',
+  },
+  meterScoreLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  meterTrack: {
+    height: 10,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  meterFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  meterExplanationText: {
+    fontSize: 12,
+    color: '#4B5563',
+    lineHeight: 18,
+    marginTop: 4,
   },
   metricsGrid: {
     flexDirection: 'row',

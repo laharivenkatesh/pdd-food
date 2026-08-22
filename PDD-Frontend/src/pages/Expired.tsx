@@ -62,14 +62,14 @@ function ExpiredFoodCard({ food }: { food: FoodItem }) {
   const remaining = Math.max(0, total - booked);
   const isFullyBooked = remaining <= 0;
 
-  let statusText = t('availableBadge');
-  let statusBg = "#16A34A";
+  let statusText = "Expired";
+  let statusBg = "#DC2626";
 
   if (isCollected) {
     statusText = t('collectedBadge');
     statusBg = "#9CA3AF";
   } else if (isReserved || isFullyBooked) {
-    statusText = isFullyBooked ? t('bookedBadge') : t('bookedBadge');
+    statusText = isFullyBooked ? t('bookedBadge') : "Reserved";
     statusBg = isFullyBooked ? "#EF4444" : "#F59E0B";
   }
 

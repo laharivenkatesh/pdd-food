@@ -275,14 +275,18 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (error) {
       console.error("Error requesting food:", error);
     } else {
-      // 3. Update booked portions on foods table
+      // 3. Update booked portions and status on foods table
       const newRealtimeStatus = isFullyBookedNow ? "Not Available" : "Still Available";
+      const updateObj: Record<string, any> = {
+        realtime_status: newRealtimeStatus,
+        booked_portions: currentBooked
+      };
+      if (isFullyBookedNow) {
+        updateObj.status = "booked";
+      }
       await supabase
         .from("foods")
-        .update({
-          realtime_status: newRealtimeStatus,
-          booked_portions: currentBooked
-        })
+        .update(updateObj)
         .eq("id", foodId);
 
       // 4. Create notification & send background push to donor
