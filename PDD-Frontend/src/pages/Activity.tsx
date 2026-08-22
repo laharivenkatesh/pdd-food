@@ -19,21 +19,27 @@ export default function Activity() {
   const hasRating = profile?.trustScore !== null && profile?.trustScore !== undefined;
   const realRating = hasRating ? Number(profile.trustScore) : null;
 
-  // Dynamic Weekly Activity Analytics calculation based on real post and transaction timestamps
+  // Dynamic Weekly Activity Analytics calculation based on real post and transaction timestamps for current week
   const weeklyAnalytics = useMemo(() => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const counts: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
 
-    const todayIdx = new Date().getDay();
-    const todayDayName = days[todayIdx];
-
     const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+    const currentDay = now.getDay();
+    const diffToMon = (currentDay === 0 ? -6 : 1 - currentDay);
+    const monday = new Date(now);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(now.getDate() + diffToMon);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
 
     (posts || []).forEach((p) => {
-      if (p.postedAt) {
-        const pDate = new Date(p.postedAt);
-        if (pDate >= sevenDaysAgo) {
+      const dateStr = p.postedAt || (p as any).created_at;
+      if (dateStr) {
+        const pDate = new Date(dateStr);
+        if (pDate >= monday && pDate <= sunday) {
           const dayName = days[pDate.getDay()];
           if (counts[dayName] !== undefined) counts[dayName] += 1;
         }
@@ -43,30 +49,34 @@ export default function Activity() {
     (transactions || []).forEach((tr) => {
       if (tr.created_at) {
         const tDate = new Date(tr.created_at);
-        if (tDate >= sevenDaysAgo) {
+        if (tDate >= monday && tDate <= sunday) {
           const dayName = days[tDate.getDay()];
           if (counts[dayName] !== undefined) counts[dayName] += 1;
         }
       }
     });
 
-    const maxVal = Math.max(1, ...Object.values(counts));
-    const totalWeekActivity = Object.values(counts).reduce((a, b) => a + b, 0);
+    const maxCount = Math.max(1, ...Object.values(counts));
+    const totalActivity = Object.values(counts).reduce((a, b) => a + b, 0);
+    const todayDayName = days[now.getDay()];
     const orderedDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-    return orderedDays.map((d) => {
-      const cnt = counts[d];
-      const heightPct = totalWeekActivity === 0 ? 0 : Math.round((cnt / maxVal) * 100);
-      const isToday = d === todayDayName;
-      const isActive = cnt > 0 || isToday;
+    return {
+      totalActivity,
+      bars: orderedDays.map((d) => {
+        const cnt = counts[d];
+        const heightPct = totalActivity === 0 || cnt === 0 ? 0 : Math.max(20, Math.round((cnt / maxCount) * 100));
+        const isToday = d === todayDayName;
 
-      return {
-        day: d,
-        val: heightPct,
-        count: cnt,
-        active: isActive,
-      };
-    });
+        return {
+          day: d,
+          val: heightPct,
+          count: cnt,
+          isToday,
+          hasActivity: cnt > 0,
+        };
+      })
+    };
   }, [posts, transactions]);
 
   // Dynamic Zero-Waste Score Calculation (0 to 100)
@@ -278,17 +288,33 @@ export default function Activity() {
           <Ionicons name="stats-chart" size={20} color="#16A34A" />
           <Text style={styles.chartTitle}>Weekly Impact Analytics</Text>
         </View>
-        
-        <View style={styles.barsContainer}>
-          {weeklyAnalytics.map((bar, idx) => (
-            <View key={idx} style={styles.barCol}>
-              <View style={styles.barTrack}>
-                <View style={[styles.barFill, { height: `${bar.val}%` }, bar.active && styles.barFillActive]} />
+
+        {weeklyAnalytics.totalActivity === 0 ? (
+          <View style={{ paddingVertical: 16, alignItems: 'center', gap: 6 }}>
+            <Ionicons name="bar-chart-outline" size={28} color="#94A3B8" />
+            <Text style={{ fontSize: 13, color: '#64748B', fontWeight: '600' }}>
+              No posts or claims recorded for this week yet.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.barsContainer}>
+            {weeklyAnalytics.bars.map((bar, idx) => (
+              <View key={idx} style={styles.barCol}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: bar.hasActivity ? '#16A34A' : 'transparent', height: 16 }}>
+                  {bar.hasActivity ? bar.count : ''}
+                </Text>
+                <View style={styles.barTrack}>
+                  {bar.hasActivity && (
+                    <View style={[styles.barFillActive, { height: `${bar.val}%` }]} />
+                  )}
+                </View>
+                <Text style={[styles.barDayText, bar.isToday && styles.barDayTextActive]}>
+                  {bar.day}
+                </Text>
               </View>
-              <Text style={[styles.barDayText, bar.active && styles.barDayTextActive]}>{bar.day}</Text>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Community Achievements & Badges Widget */}
