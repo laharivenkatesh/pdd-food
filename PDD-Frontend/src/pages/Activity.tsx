@@ -10,7 +10,7 @@ import { useLanguage } from "@/context/LanguageContext";
 export default function Activity() {
   const navigation = useNavigation<any>();
   const { profile } = useAuth();
-  const { userStats } = useTransactions();
+  const { userStats, transactions } = useTransactions();
   const { posts, removePost } = useMyPosts();
   const { t } = useLanguage();
 
@@ -18,6 +18,56 @@ export default function Activity() {
 
   const hasRating = profile?.trustScore !== null && profile?.trustScore !== undefined;
   const realRating = hasRating ? Number(profile.trustScore) : null;
+
+  // Dynamic Weekly Activity Analytics calculation based on real post and transaction timestamps
+  const weeklyAnalytics = useMemo(() => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const counts: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+
+    const todayIdx = new Date().getDay();
+    const todayDayName = days[todayIdx];
+
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+
+    (posts || []).forEach((p) => {
+      if (p.postedAt) {
+        const pDate = new Date(p.postedAt);
+        if (pDate >= sevenDaysAgo) {
+          const dayName = days[pDate.getDay()];
+          if (counts[dayName] !== undefined) counts[dayName] += 1;
+        }
+      }
+    });
+
+    (transactions || []).forEach((tr) => {
+      if (tr.created_at) {
+        const tDate = new Date(tr.created_at);
+        if (tDate >= sevenDaysAgo) {
+          const dayName = days[tDate.getDay()];
+          if (counts[dayName] !== undefined) counts[dayName] += 1;
+        }
+      }
+    });
+
+    const maxVal = Math.max(1, ...Object.values(counts));
+    const totalWeekActivity = Object.values(counts).reduce((a, b) => a + b, 0);
+    const orderedDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    return orderedDays.map((d) => {
+      const cnt = counts[d];
+      const heightPct = totalWeekActivity === 0 ? 0 : Math.round((cnt / maxVal) * 100);
+      const isToday = d === todayDayName;
+      const isActive = cnt > 0 || isToday;
+
+      return {
+        day: d,
+        val: heightPct,
+        count: cnt,
+        active: isActive,
+      };
+    });
+  }, [posts, transactions]);
 
   // Dynamic Zero-Waste Score Calculation (0 to 100)
   const scoreVal = useMemo(() => {
@@ -230,28 +280,14 @@ export default function Activity() {
         </View>
         
         <View style={styles.barsContainer}>
-          {(() => {
-            const totalAct = userStats.postsMade + userStats.mealsCollected;
-            const base = totalAct === 0 ? 0 : Math.min(100, totalAct * 25);
-            const bars = [
-              { day: 'Mon', val: Math.round(base * 0.4), active: false },
-              { day: 'Tue', val: Math.round(base * 0.6), active: false },
-              { day: 'Wed', val: Math.round(base * 0.8), active: base > 0 },
-              { day: 'Thu', val: Math.round(base * 0.5), active: false },
-              { day: 'Fri', val: Math.min(100, base), active: base > 0 },
-              { day: 'Sat', val: Math.round(base * 0.7), active: false },
-              { day: 'Sun', val: Math.round(base * 0.3), active: false },
-            ];
-
-            return bars.map((bar, idx) => (
-              <View key={idx} style={styles.barCol}>
-                <View style={styles.barTrack}>
-                  <View style={[styles.barFill, { height: `${bar.val}%` }, bar.active && styles.barFillActive]} />
-                </View>
-                <Text style={[styles.barDayText, bar.active && styles.barDayTextActive]}>{bar.day}</Text>
+          {weeklyAnalytics.map((bar, idx) => (
+            <View key={idx} style={styles.barCol}>
+              <View style={styles.barTrack}>
+                <View style={[styles.barFill, { height: `${bar.val}%` }, bar.active && styles.barFillActive]} />
               </View>
-            ));
-          })()}
+              <Text style={[styles.barDayText, bar.active && styles.barDayTextActive]}>{bar.day}</Text>
+            </View>
+          ))}
         </View>
       </View>
 
@@ -289,62 +325,6 @@ export default function Activity() {
             <Text style={styles.badgeStatusProgress}>{scoreVal > 0 ? `${scoreVal}% Done` : "Locked"}</Text>
           </View>
         </View>
-      </View>
-
-      {/* Category Savings Breakdown Widget */}
-      <View style={styles.widgetCard}>
-        <View style={styles.widgetHeader}>
-          <Ionicons name="pie-chart-outline" size={20} color="#0284C7" />
-          <Text style={styles.widgetTitle}>Rescued Food Breakdown</Text>
-        </View>
-        {(() => {
-          if (posts.length === 0) {
-            return (
-              <Text style={{ fontSize: 13, color: '#64748B', textAlign: 'center', paddingVertical: 12 }}>
-                No food posts created yet to display category breakdown.
-              </Text>
-            );
-          }
-          const cookedCount = posts.filter(p => p.category === "Veg" || p.category === "Non-Veg" || p.category === "Fried" || p.category === "Sweets").length;
-          const bakeryCount = posts.filter(p => p.category === "Bakery").length;
-          const produceCount = posts.length - cookedCount - bakeryCount;
-
-          const cookedPct = Math.round((cookedCount / posts.length) * 100);
-          const bakeryPct = Math.round((bakeryCount / posts.length) * 100);
-          const producePct = Math.max(0, 100 - cookedPct - bakeryPct);
-
-          return (
-            <View style={styles.categoryList}>
-              <View style={styles.categoryRow}>
-                <View style={styles.categoryLabelRow}>
-                  <Text style={styles.categoryName}>🍲 Cooked Meals & Dishes</Text>
-                  <Text style={styles.categoryPct}>{cookedPct}%</Text>
-                </View>
-                <View style={styles.categoryTrack}>
-                  <View style={[styles.categoryFill, { width: `${cookedPct}%`, backgroundColor: '#16A34A' }]} />
-                </View>
-              </View>
-              <View style={styles.categoryRow}>
-                <View style={styles.categoryLabelRow}>
-                  <Text style={styles.categoryName}>🥦 Fresh Produce & Fruits</Text>
-                  <Text style={styles.categoryPct}>{producePct}%</Text>
-                </View>
-                <View style={styles.categoryTrack}>
-                  <View style={[styles.categoryFill, { width: `${producePct}%`, backgroundColor: '#0284C7' }]} />
-                </View>
-              </View>
-              <View style={styles.categoryRow}>
-                <View style={styles.categoryLabelRow}>
-                  <Text style={styles.categoryName}>🍞 Bakery & Packaged Foods</Text>
-                  <Text style={styles.categoryPct}>{bakeryPct}%</Text>
-                </View>
-                <View style={styles.categoryTrack}>
-                  <View style={[styles.categoryFill, { width: `${bakeryPct}%`, backgroundColor: '#D97706' }]} />
-                </View>
-              </View>
-            </View>
-          );
-        })()}
       </View>
 
       {/* My Donations Section */}
