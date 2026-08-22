@@ -369,7 +369,12 @@ const getCategoryStyle = (category: string) => {
                         </TouchableOpacity>
                       ) : null}
 
-                      {t.status !== "completed" && (
+                      {t.status === "completed" ? (
+                        <View style={styles.completedBadgeBox}>
+                          <Ionicons name="checkmark-done-circle" size={16} color="#15803D" />
+                          <Text style={styles.completedBadgeText}>Handed Over</Text>
+                        </View>
+                      ) : (
                         <TouchableOpacity
                           onPress={async () => {
                             await markDonated(t.id);
@@ -827,5 +832,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#B91C1C',
     marginTop: 2,
+  },
+  completedBadgeBox: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  completedBadgeText: {
+    color: '#15803D',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

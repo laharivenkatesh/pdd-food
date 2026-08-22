@@ -346,9 +346,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                                   .neq("status", "cancelled");
 
                                 if (txs && txs.length > 0) {
-                                  for (const tx of txs) {
-                                    await markDonated(tx.id);
-                                  }
+                                  await markDonated(txs[0].id);
                                 } else {
                                   await supabase.from("foods").update({ status: "collected", realtime_status: "Not Available" }).eq("id", n.food_id);
                                 }
